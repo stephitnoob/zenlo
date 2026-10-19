@@ -462,6 +462,41 @@
 
   // ---------- Transcript ----------
 
+  const cleanText = (value) => (typeof value === 'string' ? value.trim() : '')
+
+  // Zalo keeps extra data as a JSON string in "params"
+  function parseParams (data) {
+    if (!data || !data.params) return {}
+    if (typeof data.params === 'object') return data.params
+    try {
+      return JSON.parse(data.params) || {}
+    } catch (error) {
+      return {}
+    }
+  }
+
+  function isJSON (value) {
+    if (!/^[{[]/.test(value)) return false
+    try {
+      JSON.parse(value)
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+  // "title: description" without repeating either, and without empty parts or raw JSON
+  // (contact cards keep machine data in "description")
+  function joinParts (...parts) {
+    const seen = []
+    for (const part of parts.map(cleanText)) {
+      if (part && !isJSON(part) && !seen.some((s) => s.includes(part))) seen.push(part)
+    }
+    return seen.join(': ')
+  }
+
+  // Message content as text. Every kind found in real chats (Zalo 26.10.11) is turned into
+  // readable text, so the model never sees a bare type name instead of the content.
   function describeContent (message) {
     const type = message.originMsgType
     const content = message.message
@@ -469,16 +504,48 @@
     if (type === 'chat.undo') return null
     if (typeof content === 'string') return content
 
+    // List cards (e.g. account notices): a header item followed by child items
+    if (Array.isArray(content)) {
+      const items = content.map((item) => joinParts(item && item.title, item && item.description)).filter(Boolean)
+      return '[Thẻ] ' + (items.join(' / ') || 'không có nội dung')
+    }
+
     const data = content || {}
-    const title = typeof data.title === 'string' ? data.title.trim() : ''
+    const params = parseParams(data)
+    const title = cleanText(data.title)
+    const description = cleanText(data.description)
+    const caption = joinParts(title, description)
     switch (type) {
-      case 'chat.photo': return '[Ảnh]' + (title ? ' ' + title : '')
+      case 'chat.photo': return '[Ảnh]' + (caption ? ' ' + caption : '')
       case 'chat.sticker': return '[Sticker]'
+      case 'chat.gif': return '[GIF]'
       case 'chat.voice': return '[Tin nhắn thoại]'
-      case 'chat.video.msg': return '[Video]' + (title ? ' ' + title : '')
+      case 'chat.video.msg': return '[Video]' + (caption ? ' ' + caption : '')
       case 'share.file': return '[Tệp] ' + (title || 'không tên')
-      case 'chat.recommended': return '[Liên kết] ' + [title, data.href].filter(Boolean).join(' ')
-      default: return `[${type || 'Tin nhắn'}]` + (title ? ' ' + title : '')
+      case 'chat.location.new': return '[Vị trí] ' + (joinParts(title, data.desc) || 'không tên')
+      case 'chat.ecard': return '[Thiệp] ' + joinParts(title, description, params.previewTxt)
+      case 'chat.recommended':
+        if (data.action === 'recommened.misscall') return '[Cuộc gọi nhỡ] ' + caption
+        if (data.action === 'recommened.calltime') return '[Cuộc gọi] ' + caption
+        if (data.action === 'recommened.user') return '[Danh thiếp] ' + caption
+        return '[Liên kết] ' + [caption, cleanText(data.href)].filter(Boolean).join(' ')
+      case 'group.poll': {
+        // "msg.vi" is Zalo's own sentence, e.g. who voted for which option
+        const sentence = cleanText(params.msg && params.msg.vi)
+        const question = cleanText(params.question)
+        return '[Bình chọn] ' + (sentence && question && !sentence.includes(question)
+          ? `${sentence} (câu hỏi: "${question}")`
+          : sentence || (question ? `"${question}"` : ''))
+      }
+      case 'chat.webcontent': {
+        const fallback = cleanText(params.customMsg && params.customMsg.msg && params.customMsg.msg.vi)
+        // The fallback is often already a label like "[Thẻ ngân hàng]"
+        if (!caption && fallback.startsWith('[')) return fallback
+        return '[Nội dung]' + (caption || fallback ? ' ' + (caption || fallback) : '')
+      }
+      // Rich text and group activity cards carry their text in "title"
+      case 'webchat': return caption || null
+      default: return `[${type || 'Tin nhắn'}]` + (caption ? ' ' + caption : '')
     }
   }
 
