@@ -31,7 +31,8 @@
     'Đổi mọi mốc thời gian tương đối ("mai", "thứ 6", "tối nay", "tuần sau") thành ngày cụ thể dd/mm, tính từ ngày của tin nhắn chứa nó. Hạn nào đã qua so với bây giờ thì ghi thêm "(đã qua)".',
     'Bỏ qua chào hỏi, tán gẫu, sticker và tin hệ thống, trừ khi chúng mang thông tin quan trọng.',
     'Độ dài tương xứng nội dung: ít tin thì chỉ vài dòng; không lặp một ý ở nhiều mục.',
-    'Chỉ dùng tiêu đề "## ", gạch đầu dòng "- " và **in đậm**; không dùng bảng, danh sách đánh số hay dấu `code`.'
+    'Chỉ dùng tiêu đề "## ", gạch đầu dòng "- " và **in đậm**; không dùng bảng, danh sách đánh số hay dấu `code`.',
+    Z.CITATION_RULE
   ].join('\n')
 
   // Sections in order of how much the user needs them; empty ones are dropped
@@ -66,8 +67,60 @@
   let panel = null
   let activeJob = null
 
+  // Messages of the chosen range, read ahead so the panel can show the size and cost before
+  // "Tóm tắt" is pressed; the summary then reuses them. Only a local read, no tokens.
+  let rangeCache = null
+  let estimateId = 0
+  let estimateTimer = null
+
+  function loadRange (convId, fromMs, toMs, onProgress) {
+    const key = `${convId}|${fromMs}|${toMs}`
+    if (!rangeCache || rangeCache.key !== key) {
+      const promise = Z.loadMessagesInRange(convId, fromMs, toMs, onProgress)
+        .then(async ({ messages, localHistoryStart }) => ({ messages, localHistoryStart, ...await Z.prepareTranscript(messages) }))
+      rangeCache = { key, promise }
+      promise.catch(() => {
+        if (rangeCache && rangeCache.key === key) rangeCache = null
+      })
+    }
+    return rangeCache.promise
+  }
+
+  function setEstimate (text) {
+    panel.querySelector('.zenlo__estimate').textContent = text
+  }
+
+  // Shows "N tin · ~X token" for the current range, a moment after the user stops typing
+  function scheduleEstimate (delay = 400) {
+    clearTimeout(estimateTimer)
+    estimateTimer = setTimeout(updateEstimate, delay)
+  }
+
+  async function updateEstimate () {
+    const myId = ++estimateId
+    const convId = panel.dataset.convId
+    const fromMs = parseInputValue(panel.querySelector('.js-summary-from').value)
+    const toMs = parseInputValue(panel.querySelector('.js-summary-to').value)
+    if (!convId || Number.isNaN(fromMs) || Number.isNaN(toMs) || fromMs >= toMs) return setEstimate('')
+
+    setEstimate('Đang đếm tin nhắn…')
+    try {
+      const { lines, count } = await loadRange(convId, fromMs, toMs, (found) => {
+        if (myId === estimateId) setEstimate(`Đang đếm tin nhắn… ${found} tin`)
+      })
+      if (myId !== estimateId) return
+      if (!count) return setEstimate('Không có tin nhắn nào trong khoảng này.')
+      const chars = lines.join('\n').length + SYSTEM_PROMPT.length + SUMMARY_SECTIONS.length
+      const parts = Z.splitIntoChunks(lines).length
+      setEstimate(`${count} tin · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token đầu vào` +
+        (parts > 1 ? ` · chia ${parts} phần` : ''))
+    } catch (error) {
+      if (myId === estimateId) setEstimate('')
+    }
+  }
+
   function setStatus (text, isError = false) {
-    const el = panel.querySelector('.zenlo__status')
+    const el = panel.querySelector('.zenlo__main-status')
     el.textContent = text
     el.classList.toggle('zenlo__status--error', isError)
   }
@@ -128,7 +181,8 @@
         <button class="zenlo__btn js-summary-copy" hidden>Sao chép</button>
       </div>
 
-      <div class="zenlo__status"></div>
+      <div class="zenlo__status zenlo__estimate"></div>
+      <div class="zenlo__status zenlo__main-status"></div>
       <div class="zenlo__result" hidden></div>
     `
 
@@ -162,11 +216,23 @@
         fromEl.value = toInputValue(from)
         toEl.value = toInputValue(now)
         setStatus('')
+        scheduleEstimate(0)
       })
     })
 
     el.querySelector('.js-summary-now').addEventListener('click', () => {
       toEl.value = toInputValue(Date.now())
+      scheduleEstimate(0)
+    })
+    fromEl.addEventListener('input', () => scheduleEstimate())
+    toEl.addEventListener('input', () => scheduleEstimate())
+
+    // A citation in the summary opens the message it came from
+    el.querySelector('.zenlo__result').addEventListener('click', (event) => {
+      const cite = event.target.closest('.zenlo-cite')
+      if (!cite) return
+      Z.jumpToMessage(el.dataset.convId, Number(cite.dataset.time))
+        .catch((error) => setStatus(`Lỗi: ${error.message || error}`, true))
     })
 
     const modelEl = el.querySelector('.js-summary-model')
@@ -202,6 +268,7 @@
     panel.hidden = false
 
     if (activeJob) return
+    scheduleEstimate(0)
 
     // "Đến" always starts at now; "Từ" is kept while the panel stays on the same conversation
     const now = Date.now()
@@ -247,12 +314,10 @@
 
     try {
       setStatus('Đang đọc tin nhắn…')
-      const { messages, localHistoryStart } = await Z.loadMessagesInRange(convId, fromMs, toMs, (count, oldest) => {
+      const { messages, localHistoryStart, lines, count: messageCount } = await loadRange(convId, fromMs, toMs, (count, oldest) => {
         setStatus(`Đang đọc tin nhắn… ${count} tin (đã lùi tới ${formatTime(oldest, true)})`)
       })
       if (cancelled) throw new Error('Đã dừng.')
-
-      const { lines, count: messageCount } = Z.buildTranscript(messages)
       if (!messageCount) {
         setStatus('Không có tin nhắn nào trong khoảng thời gian này.')
         return

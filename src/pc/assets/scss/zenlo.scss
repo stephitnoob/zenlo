@@ -418,3 +418,21 @@
   font-weight: 600;
   text-align: center;
 }
+
+// Source citation "[dd/mm hh:mm]" in a summary: opens the original message
+.zenlo .zenlo-cite {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--layer-background-selected, #e5efff);
+  color: var(--text-link, #0068ff);
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

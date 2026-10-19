@@ -59,7 +59,7 @@
   async function buildRequest (conv, gist) {
     const recent = await Z.getLatestMessages(conv.id, STYLE_SCAN_MESSAGES)
     const context = recent.slice(-CONTEXT_MESSAGES)
-    const { lines } = Z.buildTranscript(context)
+    const { lines } = await Z.prepareTranscript(context)
 
     // The user's own recent text messages, as examples of how they write
     const samples = recent
