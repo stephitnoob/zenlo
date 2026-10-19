@@ -1,0 +1,40 @@
+/*
+  Zenlo – trình quản lí hội thoại Zalo
+
+  AI Summary (preload): exposes a small IPC bridge to the renderer as `window.$zenlo`.
+*/
+
+const { contextBridge, ipcRenderer } = require('electron')
+
+const listeners = new Map()
+
+ipcRenderer.on('zenlo:summary:event', (event, payload) => {
+  const listener = payload && listeners.get(payload.id)
+  if (!listener) return
+  if (payload.type === 'done' || payload.type === 'error') listeners.delete(payload.id)
+  listener(payload)
+})
+
+// Only Zalo's own local pages get the bridge
+if (window.location.protocol === 'file:') {
+  try {
+    exposeBridge()
+  } catch (error) {
+    // Already exposed, or this page runs without context isolation
+  }
+}
+
+function exposeBridge () {
+  contextBridge.exposeInMainWorld('$zenlo', {
+    run: (request, onEvent) => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      listeners.set(id, onEvent)
+      ipcRenderer.send('zenlo:summary:run', { ...request, id })
+      return id
+    },
+    cancel: (id) => {
+      listeners.delete(id)
+      ipcRenderer.send('zenlo:summary:cancel', id)
+    }
+  })
+}
