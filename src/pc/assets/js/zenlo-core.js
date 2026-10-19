@@ -154,14 +154,33 @@
     if (time > getReadWatermark(convId)) writeJSON(STORAGE_KEYS.read + convId, time)
   }
 
-  // Start of "unread" for a conversation: after the watermark and after the user's own last message,
-  // and never more than 24 hours back
-  function getUnreadStart (convId, messages, now = Date.now()) {
+  // Start of "unread" for a conversation, never more than 24 hours back. Read up to:
+  // - the read watermark,
+  // - the user's own last message,
+  // - the last message the user reacted to (a reaction means they saw that message)
+  async function getUnreadStart (convId, messages, now = Date.now()) {
     let start = Math.max(getReadWatermark(convId), now - MAX_RANGE)
     for (const message of messages) {
       if (message.fromUid === '0') start = Math.max(start, Number(message.sendDttm))
     }
-    return start
+    return Math.max(start, await getLastReactedTime(messages))
+  }
+
+  // Zalo keeps reactions apart from messages, as { reactorUid: { icon: count } }; the user is "0"
+  async function getLastReactedTime (messages) {
+    if (!messages.length) return 0
+    try {
+      const reactions = await getReactionCache().getMessageReactions(messages.map((m) => m.msgId))
+      let latest = 0
+      for (const message of messages) {
+        const entry = reactions && reactions[message.msgId]
+        if (entry && entry.reactions && entry.reactions['0']) latest = Math.max(latest, Number(message.sendDttm))
+      }
+      return latest
+    } catch (error) {
+      log('reactions unavailable', error)
+      return 0
+    }
   }
 
   // ---------- Zalo internals ----------
@@ -255,6 +274,11 @@
   function getUnreadManager () {
     if (!cache.unread) cache.unread = resolveService('yzMR', 'UnreadDataManager')
     return cache.unread
+  }
+
+  function getReactionCache () {
+    if (!cache.reactions) cache.reactions = required(findExport('ofhN', 'b', (v) => typeof v.getMessageReactions === 'function'), 'kho reaction')
+    return cache.reactions
   }
 
   function getConvNameHelper () {

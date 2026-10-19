@@ -85,7 +85,7 @@
       onProgress(i + 1, candidates.length)
 
       const { messages: recent } = await Z.loadMessagesInRange(convId, now - Z.MAX_RANGE, now)
-      const start = Z.getUnreadStart(convId, recent, now)
+      const start = await Z.getUnreadStart(convId, recent, now)
       const unread = recent.filter((m) => Number(m.sendDttm) > start && m.fromUid !== '0')
       if (!unread.length) continue
 
