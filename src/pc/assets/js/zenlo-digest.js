@@ -11,8 +11,10 @@
   const { formatTime, escapeHTML } = Z
 
   const SYSTEM_PROMPT = [
-    'Bạn là trợ lý tóm tắt nhanh các cuộc trò chuyện Zalo có tin mới cho người dùng.',
-    'Viết bằng tiếng Việt, rất ngắn gọn, đúng với nội dung, không bịa thêm. Gọi người theo tên hiển thị.'
+    'Bạn viết bản tin lướt nhanh các cuộc trò chuyện Zalo có tin mới cho người dùng Zenlo ("Tôi" trong bản chép). Gọi người dùng là "bạn"; gọi người khác theo tên hiển thị.',
+    'Mục tiêu: liếc qua là biết cuộc nào cần bạn để ý, có gì mới. Rất ngắn, đúng nội dung, không suy đoán.',
+    'Đổi mốc thời gian tương đối ("mai", "thứ 6", "tối nay") thành ngày cụ thể dd/mm, tính từ ngày của tin nhắn chứa nó; hạn đã qua thì ghi "(đã qua)".',
+    'Bỏ qua chào hỏi, tán gẫu, sticker và tin hệ thống, trừ khi chúng mang thông tin quan trọng. Không dùng bảng hay dấu `code`.'
   ].join('\n')
 
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/><path d="M18.5 13.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/></svg>'
@@ -319,10 +321,10 @@
           model,
           effort,
           instruction: [
-            `Có ${batch.length} cuộc trò chuyện với tin mới. Với MỖI cuộc trò chuyện, theo đúng thứ tự id, viết:`,
-            '"### [id]" trên một dòng riêng (giữ nguyên dấu ngoặc vuông), rồi 1–4 gạch đầu dòng ngắn: chuyện chính, quyết định hoặc việc cần làm.',
-            'Nếu có ai hỏi, nhờ hoặc nhắc tới "Tôi", ghi rõ ở gạch đầu dòng đầu tiên, bắt đầu bằng **Cần bạn:**.',
-            'Không viết gì ngoài các phần đó. Mẫu:\n### [1]\n- ...\n### [2]\n- ...'
+            `Có ${batch.length} cuộc trò chuyện với tin mới. Với MỖI cuộc trò chuyện, theo đúng thứ tự id, viết "### [id]" trên một dòng riêng (giữ nguyên dấu ngoặc vuông), rồi 1–3 gạch đầu dòng, mỗi dòng tối đa khoảng 25 từ:`,
+            'nếu có ai hỏi, nhờ, nhắc hoặc giao việc cho bạn thì dòng đầu bắt đầu bằng **Cần bạn:**; các dòng sau là chuyện chính, quyết định, hạn chót.',
+            'Cuộc nào chỉ toàn tán gẫu thì viết đúng một dòng "- Chỉ tán gẫu.".',
+            'Không viết gì ngoài các phần đó. Mẫu:\n### [1]\n- **Cần bạn:** ...\n- ...\n### [2]\n- Chỉ tán gẫu.'
           ].join(' '),
           input
         }, (text) => {

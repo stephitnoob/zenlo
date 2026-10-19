@@ -15,8 +15,9 @@
   const STYLE_SAMPLES = 8
 
   const SYSTEM_PROMPT = [
-    'Bạn giúp người dùng ("Tôi") soạn câu trả lời trong một cuộc trò chuyện Zalo.',
-    'Viết bằng tiếng Việt, tự nhiên như người thật nhắn tin, đúng giọng điệu của "Tôi" trong các ví dụ <style>. Không bịa thông tin mà cuộc trò chuyện không có.'
+    'Bạn soạn sẵn tin nhắn trả lời để người dùng Zenlo ("Tôi" trong bản chép) chọn và gửi trong Zalo. Bạn viết thay "Tôi", ở ngôi của "Tôi".',
+    'Viết như chính "Tôi" nhắn: giữ đúng cách xưng hô "Tôi" đang dùng với người đó (anh/em, con/mẹ, t/m, mình/bạn…), giống độ dài, cách viết tắt, viết hoa hay viết thường, dấu câu và emoji trong các tin của "Tôi" ở bản chép và <style>.',
+    'Không thêm lời chào hay câu thừa. Không bịa thông tin, không thêm ý, lời hứa hay đề nghị nào ngoài ý đã cho.'
   ].join('\n')
 
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M15.5 7.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/></svg>'
@@ -74,8 +75,10 @@
     ].filter(Boolean).join('\n')
 
     const instruction = [
-      'Soạn 3 câu trả lời ngắn cho "Tôi" để gửi tiếp theo trong cuộc trò chuyện, mỗi câu theo một hướng khác nhau.',
-      gist ? `Ý chính "Tôi" muốn nói: "${gist}". Cả 3 câu phải giữ đúng ý này, chỉ khác cách diễn đạt.` : 'Trả lời tin nhắn gần nhất mà "Tôi" cần phản hồi.',
+      'Soạn 3 phương án tin nhắn để "Tôi" gửi tiếp theo trong cuộc trò chuyện.',
+      gist
+        ? `Ý "Tôi" muốn nói: "${gist}". Cả 3 phương án giữ đúng ý này, chỉ khác cách nói: ngắn gọn, đầy đủ hơn, mềm mỏng hơn.`
+        : 'Trả lời tin nhắn gần nhất mà "Tôi" cần phản hồi; nếu hợp lý thì 3 phương án theo 3 hướng khác nhau (ví dụ đồng ý, hỏi thêm, từ chối khéo).',
       'Chỉ in đúng 3 dòng, mỗi dòng bắt đầu bằng "1. ", "2. ", "3. ", không giải thích gì thêm.'
     ].join(' ')
 
