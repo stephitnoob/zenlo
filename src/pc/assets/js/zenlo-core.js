@@ -79,7 +79,8 @@
   }
 
   // Source citations the model writes after a point, "[dd/mm hh:mm]"
-  const CITATION = /\[(\d{1,2})\/(\d{1,2}) (\d{1,2}):(\d{2})\]/g
+  // The model sometimes swaps the order to "[hh:mm dd/mm]" (like the transcript lines), so both are accepted
+  const CITATION = /\[\s*(?:(\d{1,2})\/(\d{1,2})[\s,]+(\d{1,2}):(\d{2})|(\d{1,2}):(\d{2})[\s,]+(\d{1,2})\/(\d{1,2}))\s*\]/g
   const CITATION_RULE = 'Cuối mỗi gạch đầu dòng, ghi mốc của tin nhắn gốc dạng [dd/mm hh:mm], lấy giờ ở đầu dòng của tin đó và ngày của nó (ví dụ [19/10 07:30]); ý gộp từ nhiều tin thì ghi mốc tin quan trọng nhất.'
 
   // The time a citation points to; the year is the latest one that is not in the future
@@ -96,7 +97,8 @@
     let inList = false
     const inline = (s) => s
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(CITATION, (match, day, month, hour, minute) => {
+      .replace(CITATION, (match, d1, m1, h1, n1, h2, n2, d2, m2) => {
+        const [day, month, hour, minute] = d1 ? [d1, m1, h1, n1] : [d2, m2, h2, n2]
         const time = citationTime(...[day, month, hour, minute].map(Number))
         return `<a class="zenlo-cite" data-time="${time}" title="Mở tin nhắn gốc">${pad(hour)}:${minute} ${pad(day)}/${pad(month)}</a>`
       })
