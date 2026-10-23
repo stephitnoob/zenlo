@@ -257,7 +257,7 @@
     panel.dataset.convId = conv.id
     panel.dataset.convName = conv.name
     panel.querySelector('.zenlo__conv').textContent = conv.name
-    panel.hidden = false
+    Z.showPanel(panel)
     renderLength()
 
     if (activeJob) return

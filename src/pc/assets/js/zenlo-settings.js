@@ -286,7 +286,8 @@
 
   function toggleOverlay () {
     if (!overlay) overlay = buildOverlay()
-    overlay.hidden = !overlay.hidden
+    if (overlay.hidden) Z.showPanel(overlay)
+    else overlay.hidden = true
     if (overlay.hidden) return
     // The lengths may have changed in the panels since this page was built
     overlay.querySelectorAll('.js-settings-length').forEach((select) => {

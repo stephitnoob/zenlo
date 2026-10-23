@@ -601,7 +601,8 @@
 
   function toggleOverlay () {
     if (!overlay) overlay = buildOverlay()
-    overlay.hidden = !overlay.hidden
+    if (overlay.hidden) Z.showPanel(overlay)
+    else overlay.hidden = true
     if (!overlay.hidden && !running) refresh()
   }
 
