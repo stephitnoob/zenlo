@@ -1,39 +1,40 @@
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
-  Digest ("Bản tin", renderer): a button in Zalo's left bar that lists every conversation
-  with unread messages (by Zenlo's own read watermark, not Zalo's) and summarizes them all.
-  Messages are read from the local store, so Zalo sends no "seen" receipt.
+  Digest ("Bản tin", renderer): a tab in Zalo's left bar that lists every conversation Zalo counts
+  as unread and summarizes the ticked ones, each with the same prompt as the summary panel.
+  Messages are read from the local store, so making a digest sends no "seen" receipt; only the
+  "Đã đọc" buttons mark conversations read in Zalo.
 */
 
 (function () {
   const Z = window.ZenloCore
-  const { formatTime, escapeHTML } = Z
-
-  const SYSTEM_PROMPT = [
-    'Bạn viết bản tin lướt nhanh các cuộc trò chuyện Zalo có tin mới cho người dùng Zenlo ("Tôi" trong bản chép). Gọi người dùng là "bạn"; gọi người khác theo tên hiển thị.',
-    'Mục tiêu: liếc qua là biết cuộc nào cần bạn để ý, có gì mới. Rất ngắn, đúng nội dung, không suy đoán.',
-    'Đổi mốc thời gian tương đối ("mai", "thứ 6", "tối nay") thành ngày cụ thể dd/mm, tính từ ngày của tin nhắn chứa nó; hạn đã qua thì ghi "(đã qua)".',
-    'Bỏ qua chào hỏi, tán gẫu, sticker và tin hệ thống, trừ khi chúng mang thông tin quan trọng. Không dùng bảng hay dấu `code`.',
-    Z.CITATION_RULE
-  ].join('\n')
+  const { formatTime, escapeHTML, LENGTHS } = Z
 
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/><path d="M18.5 13.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/></svg>'
 
-  let overlay = null
-  // Each item is either pending (unread, can be ticked) or done (already summarized, kept from the saved digest)
-  let items = []
-  let activeCall = null
-  let rawOutput = ''
+  // Conversations summarized at the same time. Claude Code handles a few parallel runs well;
+  // Gemini's free tier allows few requests per minute.
+  const PARALLEL = { claude: 3, gemini: 2 }
 
-  // The latest digest results, kept so they survive closing the panel, "Làm mới" and Zalo restarts
+  // Kinds of messages that automated accounts send (account notices, cards, bank cards)
+  const AUTOMATED_KINDS = ['chat.list.action', 'chat.webcontent', 'chat.ecard']
+
+  let overlay = null
+  // status: "pending" (can be ticked), "running", "done" (summarized), "error"
+  let items = []
+  let running = null
+
+  // ---------- Saved results ----------
+
+  // The latest summaries, kept so they survive closing the panel, "Làm mới" and Zalo restarts.
+  // A saved summary is shown again while the conversation is still unread with no newer message.
   const DIGEST_KEY = '@Zenlo:DIGEST_LAST'
 
   function loadSavedDigest () {
     try {
       const saved = JSON.parse(localStorage.getItem(DIGEST_KEY) || '[]')
-      // Results older than 24h are no longer useful
-      return Array.isArray(saved) ? saved.filter((entry) => Date.now() - entry.at < Z.MAX_RANGE) : []
+      return Array.isArray(saved) ? saved.filter((entry) => Date.now() - entry.at < Z.getLookback()) : []
     } catch (error) {
       return []
     }
@@ -45,72 +46,115 @@
     } catch (error) {}
   }
 
-  function rememberSummaries (summarized) {
-    const ids = new Set(summarized.map((item) => item.convId))
-    const at = Date.now()
-    const kept = loadSavedDigest().filter((entry) => !ids.has(entry.convId))
-    saveDigest(kept.concat(summarized.map((item) => ({
-      convId: item.convId,
-      name: item.name,
-      isGroup: item.isGroup,
-      mentions: item.mentions,
-      count: item.count,
-      lastTime: item.lastTime,
-      start: item.start,
-      summary: item.summary,
-      at
-    }))))
+  function rememberSummary (item) {
+    const kept = loadSavedDigest().filter((entry) => entry.convId !== item.convId)
+    kept.push({ convId: item.convId, lastTime: item.lastTime, start: item.start, summary: item.summary, at: Date.now() })
+    saveDigest(kept)
   }
 
-  function forgetSummary (convId) {
-    saveDigest(loadSavedDigest().filter((entry) => entry.convId !== convId))
+  function forgetSummaries (convIds) {
+    const ids = new Set(convIds)
+    saveDigest(loadSavedDigest().filter((entry) => !ids.has(entry.convId)))
   }
 
   // ---------- Data ----------
 
   let scanId = 0
 
-  // Every conversation with messages from others after its unread start (at most 24h back).
-  // Zalo's in-memory previews pick the candidates first, so only those are read from the message store.
+  // Every conversation Zalo counts as unread, with its unread messages (no further back than the
+  // lookback setting). Returns null when a newer scan started.
   async function collectUnread (onProgress) {
     const myScan = ++scanId
     const now = Date.now()
-    const mentions = Z.getMentionCounts()
-    const candidates = Z.getConversationPreviews()
-      .filter((p) => !p.fromMe && p.time > Math.max(Z.getReadWatermark(p.convId), now - Z.MAX_RANGE))
-      .sort((a, b) => b.time - a.time)
+    const unread = [...Z.readZaloUnread().entries()]
+    const saved = new Map(loadSavedDigest().map((entry) => [entry.convId, entry]))
     const found = []
+    let tooOld = 0
 
-    for (let i = 0; i < candidates.length; i++) {
-      // A newer scan started (e.g. "Làm mới"): stop this one
+    for (let i = 0; i < unread.length; i++) {
       if (myScan !== scanId) return null
-      const { convId, time: lastTime } = candidates[i]
-      onProgress(i + 1, candidates.length)
+      const [convId, state] = unread[i]
+      onProgress(i + 1, unread.length)
 
-      const { messages: recent } = await Z.loadMessagesInRange(convId, now - Z.MAX_RANGE, now)
-      const start = await Z.getUnreadStart(convId, recent, now)
-      const unread = recent.filter((m) => Number(m.sendDttm) > start && m.fromUid !== '0')
-      if (!unread.length) continue
-
-      const messages = recent.filter((m) => Number(m.sendDttm) > start)
+      const start = await Z.getUnreadStart(convId, state, now)
+      const { messages } = await Z.loadMessagesInRange(convId, start, now)
       const { lines, count } = await Z.prepareTranscript(messages)
-      if (!count) continue
+      if (!count) {
+        tooOld++
+        continue
+      }
 
-      found.push({
+      const fromOthers = messages.filter((m) => m.fromUid !== '0' && Z.describeContent(m))
+      const lastTime = Number(messages[messages.length - 1].sendDttm)
+      const item = {
         convId,
         name: Z.getConvName(convId),
         isGroup: convId.startsWith('g'),
-        mentions: mentions[convId] || 0,
+        mentions: state.mentions,
         start,
-        count: unread.length,
+        count: state.count || fromOthers.length,
         lastTime,
         lines,
         summary: '',
-        selected: !unticked.has(convId)
-      })
-    }
+        status: 'pending',
+        error: '',
+        selected: isSelectedByDefault(convId, fromOthers)
+      }
 
-    return sortItems(found)
+      // Already summarized and nothing newer since
+      const previous = saved.get(convId)
+      if (previous && previous.lastTime >= lastTime && previous.summary) {
+        item.summary = previous.summary
+        item.status = 'done'
+        item.selected = false
+      }
+      found.push(item)
+    }
+    return { items: sortItems(found), tooOld }
+  }
+
+  // ---------- Ticks ----------
+
+  // Conversations the user unticked; they start unticked next time too.
+  // Keep this storage key stable forever, like ORDER_KEY.
+  const UNTICKED_KEY = '@Zenlo:DIGEST_UNTICKED'
+  // Conversations the user ticked by hand, which overrides the automatic untick of automated notices
+  const TICKED_KEY = '@Zenlo:DIGEST_TICKED'
+
+  const readSet = (key) => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(key) || '[]'))
+    } catch (error) {
+      return new Set()
+    }
+  }
+  const writeSet = (key, set) => {
+    try {
+      localStorage.setItem(key, JSON.stringify([...set]))
+    } catch (error) {}
+  }
+
+  const unticked = readSet(UNTICKED_KEY)
+  const ticked = readSet(TICKED_KEY)
+
+  // Unticked by default: what the user unticked, and conversations whose unread messages are all
+  // automated notices (account notices, cards), unless the user ticked them by hand
+  function isSelectedByDefault (convId, fromOthers) {
+    if (unticked.has(convId)) return false
+    if (ticked.has(convId)) return true
+    return !(fromOthers.length && fromOthers.every((m) => AUTOMATED_KINDS.includes(m.originMsgType)))
+  }
+
+  function rememberTick (convId, selected) {
+    if (selected) {
+      unticked.delete(convId)
+      ticked.add(convId)
+    } else {
+      unticked.add(convId)
+      ticked.delete(convId)
+    }
+    writeSet(UNTICKED_KEY, unticked)
+    writeSet(TICKED_KEY, ticked)
   }
 
   // ---------- Priority order ----------
@@ -131,22 +175,6 @@
   function saveOrder (order) {
     try {
       localStorage.setItem(ORDER_KEY, JSON.stringify(order))
-    } catch (error) {}
-  }
-
-  // Conversations the user unticked; they start unticked next time too.
-  // Keep this storage key stable forever, like ORDER_KEY.
-  const UNTICKED_KEY = '@Zenlo:DIGEST_UNTICKED'
-  let unticked = new Set()
-  try {
-    unticked = new Set(JSON.parse(localStorage.getItem(UNTICKED_KEY) || '[]'))
-  } catch (error) {}
-
-  function rememberTick (convId, selected) {
-    if (selected) unticked.delete(convId)
-    else unticked.add(convId)
-    try {
-      localStorage.setItem(UNTICKED_KEY, JSON.stringify([...unticked]))
     } catch (error) {}
   }
 
@@ -188,49 +216,71 @@
     el.classList.toggle('zenlo__status--error', isError)
   }
 
+  function cardSummary (item) {
+    if (item.status === 'error') return `<div class="zenlo__status zenlo__status--error">Lỗi: ${escapeHTML(item.error)}</div>`
+    if (item.status === 'running' && !item.summary) return '<div class="zenlo__status">Đang tóm tắt…</div>'
+    if (item.status === 'running') return `<pre>${escapeHTML(item.summary)}</pre>`
+    return item.summary ? Z.renderMarkdown(item.summary, { range: { from: item.start, to: item.lastTime } }) : ''
+  }
+
   function renderItems () {
     const list = overlay.querySelector('.zenlo-digest__list')
-    const locked = !!activeCall
+    const locked = !!running
     list.classList.toggle('zenlo-digest__list--locked', locked)
     list.innerHTML = items.map((item, i) => `
-      <div class="zenlo-digest__card${item.done || item.selected ? '' : ' zenlo-digest__card--off'}" data-index="${i}">
+      <div class="zenlo-digest__card${item.status !== 'pending' || item.selected ? '' : ' zenlo-digest__card--off'}" data-index="${i}">
         <div class="zenlo-digest__card-head">
           <span class="zenlo-digest__handle" title="Giữ và kéo để sắp xếp ưu tiên">⋮⋮</span>
-          ${item.done
+          ${item.status === 'done'
             ? '<span class="zenlo-digest__done" title="Đã tóm tắt">✓</span>'
             : `<input type="checkbox" class="zenlo-digest__check js-digest-check" title="Tóm tắt hội thoại này" ${item.selected ? 'checked' : ''} ${locked ? 'disabled' : ''}>`}
           <div class="zenlo-digest__name">${escapeHTML(item.name)}</div>
           <div class="zenlo-digest__meta">
             ${item.mentions ? '<span class="zenlo-digest__badge">@ nhắc bạn</span>' : ''}
-            ${item.count} tin${item.done ? '' : ' mới'} · ${formatTime(item.lastTime)}
+            ${item.count} tin chưa đọc · ${formatTime(item.lastTime)}
           </div>
         </div>
-        <div class="zenlo-digest__summary">${item.summary ? Z.renderMarkdown(item.summary, { range: { from: item.start, to: item.lastTime } }) : ''}</div>
+        <div class="zenlo-digest__summary">${cardSummary(item)}</div>
         <div class="zenlo-digest__card-actions">
           <button class="zenlo__btn js-digest-open">Mở</button>
           <button class="zenlo__btn js-digest-detail">Tóm tắt chi tiết</button>
-          <button class="zenlo__btn js-digest-skip">Bỏ qua</button>
+          <button class="zenlo__btn js-digest-read" title="Đánh dấu đã đọc trong Zalo">Đã đọc</button>
         </div>
       </div>
     `).join('')
 
-    const pending = items.filter((item) => !item.done)
+    const pending = items.filter((item) => item.status !== 'done')
     const selected = pending.filter((item) => item.selected)
     const total = selected.reduce((sum, item) => sum + item.count, 0)
-    const chars = selected.reduce((sum, item) => sum + item.lines.join('\n').length, 0)
+    const chars = selected.reduce((sum, item) => sum + item.lines.join('\n').length + Z.SUMMARY_PROMPT.length, 0)
     overlay.querySelector('.zenlo-digest__summary-line').textContent = pending.length
-      ? `Đã chọn ${selected.length}/${pending.length} hội thoại · ${total} tin mới · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token`
+      ? `Đã chọn ${selected.length}/${pending.length} hội thoại · ${total} tin chưa đọc · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token · ${Z.getAILabel()}`
       : ''
     overlay.querySelector('.js-digest-run').disabled = !selected.length || locked
     overlay.querySelector('.js-digest-read-all').disabled = !items.length || locked
     overlay.querySelector('.zenlo-digest__select').hidden = !items.length
-
-    // Fallback when the answer could not be split per conversation: show it as is
-    const raw = overlay.querySelector('.zenlo-digest__raw')
-    raw.hidden = !rawOutput
-    raw.innerHTML = rawOutput ? Z.renderMarkdown(rawOutput) : ''
     overlay.querySelectorAll('.zenlo-digest__select button').forEach((button) => {
       button.disabled = locked
+    })
+    renderLength()
+  }
+
+  // Streaming text arrives many times a second from several conversations: render once per frame
+  let renderScheduled = false
+  function scheduleRender () {
+    if (renderScheduled) return
+    renderScheduled = true
+    requestAnimationFrame(() => {
+      renderScheduled = false
+      renderItems()
+    })
+  }
+
+  function renderLength () {
+    const current = Z.getLength('digest')
+    overlay.querySelectorAll('[data-length]').forEach((button) => {
+      button.classList.toggle('zenlo__segment-btn--active', button.dataset.length === current)
+      button.disabled = !!running
     })
   }
 
@@ -241,133 +291,140 @@
 
   function setAllSelected (selected) {
     for (const item of items) {
-      if (!item.done) setSelected(item, selected)
+      if (item.status !== 'done') setSelected(item, selected)
     }
     renderItems()
   }
 
-  function removeItem (index) {
-    forgetSummary(items[index].convId)
-    items.splice(index, 1)
+  // Marks conversations read in Zalo and removes them from the digest
+  function markRead (convIds) {
+    try {
+      Z.markReadInZalo(convIds)
+    } catch (error) {
+      setStatus(`Lỗi: ${error.message || error}`, true)
+      return false
+    }
+    const ids = new Set(convIds)
+    forgetSummaries(convIds)
+    items = items.filter((item) => !ids.has(item.convId))
     renderItems()
+    return true
   }
 
-  // Unread conversations from a fresh scan, plus saved results of conversations with nothing new since
   async function refresh () {
-    if (activeCall) return
-    const saved = loadSavedDigest().map((entry) => ({ ...entry, done: true, selected: false, lines: [] }))
-    items = sortItems(saved)
-    rawOutput = ''
+    if (running) return
+    items = []
     renderItems()
-    setStatus('Đang tìm hội thoại có tin mới…')
+    setStatus('Đang tìm hội thoại chưa đọc…')
     try {
-      const result = await collectUnread((done, total) => setStatus(`Đang đọc tin mới… ${done}/${total} hội thoại`))
+      const result = await collectUnread((done, total) => setStatus(`Đang đọc tin chưa đọc… ${done}/${total} hội thoại`))
       if (!result) return
-      const fresh = new Set(result.map((item) => item.convId))
-      items = sortItems(result.concat(saved.filter((entry) => !fresh.has(entry.convId))))
-      setStatus(result.length ? '' : 'Không có tin mới trong 24 giờ qua.')
+      items = result.items
+      const old = result.tooOld ? `${result.tooOld} hội thoại có tin chưa đọc cũ hơn ${Z.getLookback() / Z.DAY} ngày nên không đưa vào (đổi trong Cài đặt Zenlo).` : ''
+      setStatus(items.length ? old : old || 'Không có hội thoại nào chưa đọc.')
     } catch (error) {
       setStatus(`Lỗi: ${error.message || error}`, true)
     }
     renderItems()
   }
 
-  // Splits the model output into one summary per conversation. The model is asked for "### [n]",
-  // but it sometimes writes "### n", "### n." or "## n - name", so all of these are accepted.
-  const SECTION_HEADING = /^#{1,4}[ \t]*\[?[ \t]*(\d{1,3})[ \t]*\]?(?=$|[ \t.:)\-–—])[^\n]*$/m
+  // Summarizes one conversation with the summary panel's prompt
+  async function summarizeItem (item, length, calls) {
+    item.status = 'running'
+    item.summary = ''
+    item.error = ''
+    scheduleRender()
 
-  function applyOutput (text, batch) {
-    const parts = text.split(SECTION_HEADING)
-    let found = 0
-    for (let i = 1; i < parts.length; i += 2) {
-      const item = batch[Number(parts[i]) - 1]
-      if (item && parts[i + 1].trim()) {
-        item.summary = parts[i + 1].trim()
-        found++
+    try {
+      const chunks = Z.splitIntoChunks(item.lines)
+      let input = `<transcript>\n${item.lines.join('\n')}\n</transcript>`
+      if (chunks.length > 1) {
+        const notes = []
+        for (let i = 0; i < chunks.length; i++) {
+          const call = Z.runAI({
+            systemPrompt: Z.SUMMARY_PROMPT,
+            instruction: Z.buildPartInstruction({ convName: item.name, part: i + 1, parts: chunks.length }),
+            input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
+          })
+          calls.add(call)
+          notes.push(`### Phần ${i + 1}\n` + await call.promise)
+          calls.delete(call)
+        }
+        input = `<notes>\n${notes.join('\n\n')}\n</notes>`
       }
+
+      const call = Z.runAI({
+        systemPrompt: Z.SUMMARY_PROMPT,
+        instruction: Z.buildSummaryInstruction({
+          convName: item.name,
+          isGroup: item.isGroup,
+          from: item.start,
+          to: item.lastTime,
+          count: item.count,
+          length,
+          kind: 'unread',
+          notes: chunks.length > 1
+        }),
+        input
+      }, (text) => {
+        item.summary += text
+        scheduleRender()
+      })
+      calls.add(call)
+      item.summary = await call.promise
+      calls.delete(call)
+      item.status = 'done'
+      item.selected = false
+      rememberSummary(item)
+    } catch (error) {
+      item.status = 'error'
+      item.error = error.message || String(error)
     }
-    return found
+    scheduleRender()
   }
 
   async function runDigest () {
-    // Only the ticked conversations; unticked ones keep their read watermark for next time
-    const chosen = items.filter((item) => !item.done && item.selected)
-    if (activeCall || !chosen.length) return
-    const { model, effort } = Z.getModelSettings()
+    const chosen = items.filter((item) => item.status !== 'done' && item.selected)
+    if (running || !chosen.length) return
+
+    const length = Z.getLength('digest')
+    const { provider } = Z.getAISettings()
+    const calls = new Set()
+    let cancelled = false
+    running = {
+      cancel: () => {
+        cancelled = true
+        calls.forEach((call) => call.cancel())
+      }
+    }
     const stopButton = overlay.querySelector('.js-digest-stop')
     stopButton.hidden = false
+    setStatus(`Đang tạo bản tin bằng ${Z.getAILabel()}…`)
+    renderItems()
 
-    let cancelled = false
-    let unparsed = 0
-    rawOutput = ''
-    const batches = Z.splitIntoChunks(chosen, (item) => item.lines.join('\n').length + 100)
-
-    try {
-      for (let b = 0; b < batches.length; b++) {
-        const batch = batches[b]
-        setStatus(`Đang tạo bản tin${batches.length > 1 ? ` (phần ${b + 1}/${batches.length})` : ''} bằng ${model}…`)
-
-        const input = batch.map((item, i) => [
-          `<conversation id="${i + 1}" name="${item.name.replace(/"/g, "'")}" type="${item.isGroup ? 'nhóm' : 'cá nhân'}">`,
-          ...item.lines,
-          '</conversation>'
-        ].join('\n')).join('\n\n')
-
-        let streamed = ''
-        // Set before the call starts so the list renders locked (no ticking or dragging while it runs)
-        activeCall = { cancel: () => {} }
-        renderItems()
-        activeCall = Z.runClaude({
-          systemPrompt: SYSTEM_PROMPT,
-          model,
-          effort,
-          instruction: [
-            `Có ${batch.length} cuộc trò chuyện với tin mới. Với MỖI cuộc trò chuyện, theo đúng thứ tự id, viết "### [id]" trên một dòng riêng (giữ nguyên dấu ngoặc vuông), rồi 1–3 gạch đầu dòng, mỗi dòng tối đa khoảng 25 từ:`,
-            'nếu có ai hỏi, nhờ, nhắc hoặc giao việc cho bạn thì dòng đầu bắt đầu bằng **Cần bạn:**; các dòng sau là chuyện chính, quyết định, hạn chót.',
-            'Cuộc nào chỉ toàn tán gẫu thì viết đúng một dòng "- Chỉ tán gẫu." (không cần mốc).',
-            'Không viết gì ngoài các phần đó. Mẫu:\n### [1]\n- **Cần bạn:** ... [dd/mm hh:mm]\n- ... [dd/mm hh:mm]\n### [2]\n- Chỉ tán gẫu.'
-          ].join(' '),
-          input
-        }, (text) => {
-          streamed += text
-          applyOutput(streamed, batch)
-          renderItems()
-        })
-        stopButton.onclick = () => {
-          cancelled = true
-          activeCall.cancel()
-        }
-
-        const output = await activeCall.promise
-        applyOutput(output, batch)
-        if (cancelled) break
-
-        const summarized = batch.filter((item) => item.summary)
-        if (summarized.length < batch.length) {
-          // Keep the answer visible so nothing is lost; unparsed conversations stay unread
-          rawOutput += (rawOutput ? '\n\n' : '') + output
-          unparsed += batch.length - summarized.length
-        }
-
-        // These conversations have now been shown to the user
-        for (const item of summarized) {
-          item.done = true
-          item.selected = false
-          Z.advanceReadWatermark(item.convId, item.lastTime)
-        }
-        rememberSummaries(summarized)
-        renderItems()
+    // A few conversations at a time, in priority order
+    const queue = chosen.slice()
+    const worker = async () => {
+      while (queue.length) {
+        if (cancelled) return
+        await summarizeItem(queue.shift(), length, calls)
       }
-      if (cancelled) setStatus('Đã dừng.')
-      else if (unparsed) setStatus(`Không tách được phần tóm tắt của ${unparsed} hội thoại, nội dung Claude trả về hiện nguyên văn bên dưới. Các hội thoại này vẫn giữ là chưa đọc.`, true)
-      else setStatus(`Bản tin lúc ${formatTime(Date.now(), true)}.`)
-    } catch (error) {
-      setStatus(cancelled ? 'Đã dừng.' : `Lỗi: ${error.message || error}`, !cancelled)
-    } finally {
-      activeCall = null
-      stopButton.hidden = true
-      renderItems()
     }
+    await Promise.all(Array.from({ length: Math.min(PARALLEL[provider] || 2, queue.length) }, worker))
+
+    for (const item of chosen) {
+      if (item.status === 'running' || (cancelled && item.status === 'error')) {
+        item.status = 'pending'
+        item.summary = ''
+      }
+    }
+    const failed = chosen.filter((item) => item.status === 'error').length
+    running = null
+    stopButton.hidden = true
+    if (cancelled) setStatus('Đã dừng.')
+    else if (failed) setStatus(`${failed} hội thoại bị lỗi, xem trên từng thẻ. Bấm "Tạo bản tin" để thử lại.`, true)
+    else setStatus(`Bản tin lúc ${formatTime(Date.now(), true)}.`)
+    renderItems()
   }
 
   function buildOverlay () {
@@ -378,7 +435,7 @@
       <div class="zenlo__header">
         <div>
           <div class="zenlo__title"><span class="zenlo__brand">Zenlo</span> · Bản tin</div>
-          <div class="zenlo__conv">Tin mới từ lần đọc trước, tối đa 24 giờ</div>
+          <div class="zenlo__conv">Các hội thoại Zalo đang tính là chưa đọc</div>
         </div>
         <button class="zenlo__close js-digest-close" title="Đóng">&times;</button>
       </div>
@@ -387,7 +444,14 @@
         <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
         <button class="zenlo__btn js-digest-stop" hidden>Dừng</button>
         <button class="zenlo__btn js-digest-refresh">Làm mới</button>
-        <button class="zenlo__btn js-digest-read-all">Đánh dấu đã đọc hết</button>
+        <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc trong Zalo mọi hội thoại trong danh sách">Đã đọc hết</button>
+      </div>
+
+      <div class="zenlo__length">
+        <span>Độ dài</span>
+        <span class="zenlo__segment">
+          ${LENGTHS.map((l) => `<button type="button" class="zenlo__segment-btn" data-length="${l.value}">${l.label}</button>`).join('')}
+        </span>
       </div>
 
       <div class="zenlo__status zenlo-digest__summary-line"></div>
@@ -398,7 +462,6 @@
         <button class="zenlo-digest__link js-digest-select-none">Bỏ chọn hết</button>
         <button class="zenlo-digest__link js-digest-auto-order" title="Xoá thứ tự bạn đã kéo, quay về sắp xếp tự động">Sắp xếp tự động</button>
       </div>
-      <div class="zenlo__result zenlo-digest__raw" hidden></div>
       <div class="zenlo-digest__list"></div>
     `
 
@@ -406,15 +469,19 @@
       el.hidden = true
     })
     el.querySelector('.js-digest-run').addEventListener('click', runDigest)
+    el.querySelector('.js-digest-stop').addEventListener('click', () => {
+      if (running) running.cancel()
+    })
     el.querySelector('.js-digest-refresh').addEventListener('click', refresh)
     el.querySelector('.js-digest-read-all').addEventListener('click', () => {
-      const now = Date.now()
-      for (const item of items) Z.advanceReadWatermark(item.convId, now)
-      items = []
-      rawOutput = ''
-      saveDigest([])
-      renderItems()
-      setStatus('Đã đánh dấu đã đọc hết.')
+      if (!items.length) return
+      if (markRead(items.map((item) => item.convId))) setStatus('Đã đánh dấu đã đọc trong Zalo.')
+    })
+    el.querySelectorAll('[data-length]').forEach((button) => {
+      button.addEventListener('click', () => {
+        Z.setLength('digest', button.dataset.length)
+        renderLength()
+      })
     })
 
     el.querySelector('.js-digest-select-all').addEventListener('click', () => setAllSelected(true))
@@ -439,8 +506,7 @@
     list.addEventListener('click', (event) => {
       const card = event.target.closest('.zenlo-digest__card')
       if (!card) return
-      const index = Number(card.dataset.index)
-      const item = items[index]
+      const item = items[Number(card.dataset.index)]
 
       const cite = event.target.closest('.zenlo-cite')
       if (cite) {
@@ -449,9 +515,8 @@
           el.hidden = false
           setStatus(`Lỗi: ${error.message || error}`, true)
         })
-      } else if (event.target.closest('.js-digest-skip')) {
-        Z.advanceReadWatermark(item.convId, Date.now())
-        removeItem(index)
+      } else if (event.target.closest('.js-digest-read')) {
+        markRead([item.convId])
       } else if (event.target.closest('.js-digest-open')) {
         Z.openConversation(item.convId)
         el.hidden = true
@@ -479,7 +544,7 @@
     // Only the handle makes a card draggable, so buttons and text selection keep working
     list.addEventListener('mousedown', (event) => {
       const handle = event.target.closest('.zenlo-digest__handle')
-      if (!handle || activeCall) return
+      if (!handle || running) return
       handle.closest('.zenlo-digest__card').draggable = true
     })
 
@@ -531,16 +596,16 @@
   function toggleOverlay () {
     if (!overlay) overlay = buildOverlay()
     overlay.hidden = !overlay.hidden
-    if (!overlay.hidden && !activeCall) refresh()
+    if (!overlay.hidden && !running) refresh()
   }
 
   // A tab in Zalo's left bar, styled like Zalo's own tabs, above "Zalo Cloud"
   function injectNavButton () {
     const bottom = document.querySelector('#main-tab .nav__tabs__bottom')
-    if (!bottom || bottom.querySelector('.zenlo-nav-btn')) return
+    if (!bottom || bottom.querySelector('.zenlo-digest-btn')) return
 
     const tab = document.createElement('div')
-    tab.className = 'clickable leftbar-tab flx flx-col flx-al-c flx-center rel zenlo-nav-btn'
+    tab.className = 'clickable leftbar-tab flx flx-col flx-al-c flx-center rel zenlo-nav-btn zenlo-digest-btn'
     tab.title = 'Zenlo · Bản tin'
     tab.innerHTML = `<div class="mmi-icon-wr">${ICON_SVG}</div><div class="lb-tab-title truncate">Bản tin</div>`
     tab.addEventListener('click', (event) => {

@@ -7,7 +7,7 @@
 
 (function () {
   const Z = window.ZenloCore
-  const { MINUTE, MAX_RANGE, STORAGE_KEYS, MODELS, EFFORTS, formatTime, escapeHTML } = Z
+  const { MINUTE, LENGTHS, formatTime, escapeHTML } = Z
 
   const DEFAULT_FROM_MINUTES = 180
   const TIME_FORMAT_HINT = 'dd/mm/yyyy hh:mm'
@@ -23,15 +23,6 @@
     { label: 'Từ tin chưa đọc', unread: true },
     { label: 'Từ lần trước', since: true }
   ]
-
-  // Deliberately short. A fixed section template made models fill every bucket and invent content
-  // (a plain reply became a "decision", a request became a promise); a free summary was more faithful.
-  // The data-only rule and the transcript format come from ZenloCore's TRANSCRIPT_RULES.
-  const SYSTEM_PROMPT = [
-    'Bạn tóm tắt cuộc trò chuyện Zalo cho người dùng. "Tôi" trong bản chép là người dùng; gọi họ là "bạn". Viết theo cách bạn thấy giúp người đọc nắm nhanh nhất.',
-    'Mở đầu bằng những gì liên quan tới bạn hoặc cần bạn làm (bị nhắc tên, @Tất cả, được nhờ, được hỏi), nếu có.',
-    'Cuối mỗi ý ghi mốc tin nhắn gốc dạng [dd/mm hh:mm].'
-  ].join('\n')
 
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h10"/><path d="M18 3l1.2 2.8L22 7l-2.8 1.2L18 11l-1.2-2.8L14 7l2.8-1.2z"/></svg>'
 
@@ -97,10 +88,10 @@
       })
       if (myId !== estimateId) return
       if (!count) return setEstimate('Không có tin nhắn nào trong khoảng này.')
-      const chars = lines.join('\n').length + SYSTEM_PROMPT.length
+      const chars = lines.join('\n').length + Z.SUMMARY_PROMPT.length
       const parts = Z.splitIntoChunks(lines).length
       setEstimate(`${count} tin · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token đầu vào` +
-        (parts > 1 ? ` · chia ${parts} phần` : ''))
+        (parts > 1 ? ` · chia ${parts} phần` : '') + ` · ${Z.getAILabel()}`)
     } catch (error) {
       if (myId === estimateId) setEstimate('')
     }
@@ -127,11 +118,19 @@
     panel.dataset.result = text
   }
 
-  // "Từ" for the unread preset: Zenlo's own watermark or the user's last message, at most 24h back
+  // "Từ" for the unread preset: where Zalo's unread messages started when the user opened this
+  // conversation (Zalo marks it read right away). null when nothing was unread then.
   async function getUnreadFrom (convId) {
-    const now = Date.now()
-    const { messages } = await Z.loadMessagesInRange(convId, now - MAX_RANGE, now)
-    return Z.getUnreadStart(convId, messages, now)
+    const state = Z.getUnreadWhenOpened(convId)
+    if (!state) return null
+    return Z.getUnreadStart(convId, state, state.at || Date.now())
+  }
+
+  function renderLength () {
+    const current = Z.getLength('summary')
+    panel.querySelectorAll('[data-length]').forEach((button) => {
+      button.classList.toggle('zenlo__segment-btn--active', button.dataset.length === current)
+    })
   }
 
   function buildPanel () {
@@ -159,8 +158,13 @@
             <button type="button" class="zenlo__now js-summary-now" title="Đặt &quot;Đến&quot; là thời điểm hiện tại">Hiện tại</button>
           </span>
         </label>
-        <label>Model<select class="js-summary-model">${MODELS.map((m) => `<option value="${m.value}">${m.label}</option>`).join('')}</select></label>
-        <label>Effort<select class="js-summary-effort">${EFFORTS.map((e) => `<option value="${e}">${e}</option>`).join('')}</select></label>
+      </div>
+
+      <div class="zenlo__length">
+        <span>Độ dài</span>
+        <span class="zenlo__segment">
+          ${LENGTHS.map((l) => `<button type="button" class="zenlo__segment-btn" data-length="${l.value}">${l.label}</button>`).join('')}
+        </span>
       </div>
 
       <div class="zenlo__actions">
@@ -190,7 +194,7 @@
         if (preset.since) {
           const last = Z.loadLastSummary(el.dataset.convId)
           if (!last) return setStatus('Hội thoại này chưa có lần tóm tắt nào.', true)
-          from = Math.max(last.to, now - MAX_RANGE)
+          from = Math.max(last.to, now - Z.getLookback())
         }
 
         if (preset.unread) {
@@ -199,6 +203,7 @@
           } catch (error) {
             return setStatus(`Lỗi: ${error.message || error}`, true)
           }
+          if (from === null) return setStatus('Lúc bạn mở hội thoại này, Zalo không ghi nhận tin chưa đọc nào.', true)
         }
 
         fromEl.value = toInputValue(from)
@@ -223,13 +228,12 @@
         .catch((error) => setStatus(`Lỗi: ${error.message || error}`, true))
     })
 
-    const modelEl = el.querySelector('.js-summary-model')
-    const effortEl = el.querySelector('.js-summary-effort')
-    const settings = Z.getModelSettings()
-    modelEl.value = settings.model
-    effortEl.value = settings.effort
-    modelEl.addEventListener('change', () => Z.setSetting(STORAGE_KEYS.model, modelEl.value))
-    effortEl.addEventListener('change', () => Z.setSetting(STORAGE_KEYS.effort, effortEl.value))
+    el.querySelectorAll('[data-length]').forEach((button) => {
+      button.addEventListener('click', () => {
+        Z.setLength('summary', button.dataset.length)
+        renderLength()
+      })
+    })
 
     el.querySelector('.js-summary-run').addEventListener('click', handleRun)
     el.querySelector('.js-summary-stop').addEventListener('click', () => {
@@ -254,16 +258,27 @@
     panel.dataset.convName = conv.name
     panel.querySelector('.zenlo__conv').textContent = conv.name
     panel.hidden = false
+    renderLength()
 
     if (activeJob) return
     scheduleEstimate(0)
 
     // "Đến" always starts at now; "Từ" is kept while the panel stays on the same conversation
     const now = Date.now()
+    const fromEl = panel.querySelector('.js-summary-from')
     panel.querySelector('.js-summary-to').value = toInputValue(now)
-    if (options.from) panel.querySelector('.js-summary-from').value = toInputValue(options.from)
+    if (options.from) fromEl.value = toInputValue(options.from)
     if (sameConv) return
-    if (!options.from) panel.querySelector('.js-summary-from').value = toInputValue(now - DEFAULT_FROM_MINUTES * MINUTE)
+    if (!options.from) {
+      fromEl.value = toInputValue(now - DEFAULT_FROM_MINUTES * MINUTE)
+      // Had unread messages when opened: start "Từ" at the first of them
+      getUnreadFrom(conv.id).then((from) => {
+        if (from !== null && panel.dataset.convId === conv.id && !activeJob) {
+          fromEl.value = toInputValue(from)
+          scheduleEstimate(0)
+        }
+      }).catch(() => {})
+    }
 
     const last = Z.loadLastSummary(conv.id)
     if (last) {
@@ -282,8 +297,7 @@
     const convName = panel.dataset.convName
     const fromMs = parseInputValue(panel.querySelector('.js-summary-from').value)
     const toMs = parseInputValue(panel.querySelector('.js-summary-to').value)
-    const model = panel.querySelector('.js-summary-model').value
-    const effort = panel.querySelector('.js-summary-effort').value
+    const length = Z.getLength('summary')
 
     if (Number.isNaN(fromMs)) return setStatus(`"Từ" chưa đúng định dạng ${TIME_FORMAT_HINT}, ví dụ ${toInputValue(Date.now())}.`, true)
     if (Number.isNaN(toMs)) return setStatus(`"Đến" chưa đúng định dạng ${TIME_FORMAT_HINT}, ví dụ ${toInputValue(Date.now())}.`, true)
@@ -325,11 +339,9 @@
         for (let i = 0; i < chunks.length; i++) {
           if (cancelled) throw new Error('Đã dừng.')
           setStatus(`Đang tóm tắt phần ${i + 1}/${chunks.length} (${messageCount} tin nhắn).${historyNote}`)
-          currentCall = Z.runClaude({
-            systemPrompt: SYSTEM_PROMPT,
-            model,
-            effort,
-            instruction: `Đây là phần ${i + 1}/${chunks.length} của cuộc trò chuyện Zalo "${convName}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt. Ghi lại đầy đủ những gì đáng chú ý trong phần này, mỗi ý kèm mốc.`,
+          currentCall = Z.runAI({
+            systemPrompt: Z.SUMMARY_PROMPT,
+            instruction: Z.buildPartInstruction({ convName, part: i + 1, parts: chunks.length }),
             input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
           })
           notes.push(`### Phần ${i + 1}\n` + await currentCall.promise)
@@ -338,18 +350,12 @@
       }
 
       if (cancelled) throw new Error('Đã dừng.')
-      setStatus(`Đang tóm tắt ${messageCount} tin nhắn (${rangeText}) bằng ${model}…${historyNote}`)
+      setStatus(`Đang tóm tắt ${messageCount} tin nhắn (${rangeText}) bằng ${Z.getAILabel()}…${historyNote}`)
 
       let streamed = ''
-      currentCall = Z.runClaude({
-        systemPrompt: SYSTEM_PROMPT,
-        model,
-        effort,
-        instruction: [
-          `Cuộc trò chuyện Zalo "${convName}", ${rangeText}, ${messageCount} tin nhắn.`,
-          chunks.length > 1 ? 'Dữ liệu là ghi chú đã tóm tắt từng phần, xếp theo thời gian.' : '',
-          'Tóm tắt giúp mình.'
-        ].filter(Boolean).join(' '),
+      currentCall = Z.runAI({
+        systemPrompt: Z.SUMMARY_PROMPT,
+        instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, length, notes: chunks.length > 1 }),
         input
       }, (text) => {
         streamed += text
@@ -360,11 +366,6 @@
       showResult(result, false, { from: fromMs, to: toMs })
       setStatus(`Đã tóm tắt ${messageCount} tin nhắn (${rangeText}).${historyNote}`)
       Z.saveLastSummary(convId, { from: fromMs, to: toMs, text: result, count: messageCount, at: Date.now() })
-
-      // The summary covered everything since the read watermark, so the user has now seen it
-      if (fromMs <= Math.max(Z.getReadWatermark(convId), Date.now() - MAX_RANGE)) {
-        Z.advanceReadWatermark(convId, toMs)
-      }
     } catch (error) {
       setStatus(cancelled ? 'Đã dừng.' : `Lỗi: ${error.message || error}`, !cancelled)
     } finally {

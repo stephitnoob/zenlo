@@ -22,7 +22,7 @@ const ASSETS = path.join(__dirname, 'assets')
 
 const PAGE_STYLES = ['zenlo.min.css']
 // zenlo-styles first (Zalo strips unknown stylesheets at runtime, it puts them back), then the core
-const PAGE_SCRIPTS = ['zenlo-styles', 'zenlo-core', 'zenlo', 'zenlo-digest', 'zenlo-reply']
+const PAGE_SCRIPTS = ['zenlo-styles', 'zenlo-core', 'zenlo', 'zenlo-digest', 'zenlo-settings']
 
 const log = (...args) => console.log(...args)
 

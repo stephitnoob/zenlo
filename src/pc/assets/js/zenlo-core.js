@@ -2,34 +2,84 @@
   Zenlo – trình quản lí hội thoại Zalo
 
   Core (renderer): shared helpers for every Zenlo feature, exposed as window.ZenloCore.
-  - settings and the per-conversation read watermark
+  - settings (AI provider, model, effort, summary length, how far back to look)
+  - Zalo's own unread state, and marking conversations read in Zalo
   - access to Zalo internals (message store, conversation list, names, opening a conversation)
-  - compact transcript building
-  - the Claude Code bridge
+  - compact transcript building and the shared summary prompt
+  - the AI bridge (Claude Code or Gemini, run by the main process)
 */
 
 (function () {
   const MINUTE = 60 * 1000
-  const MAX_RANGE = 24 * 60 * MINUTE
+  const DAY = 24 * 60 * MINUTE
+  const MAX_RANGE = DAY
   const PAGE_SIZE = 200
-  // Rough size for one Claude Code request; longer inputs are split
+  // Rough size for one AI request; longer inputs are split
   const CHUNK_CHARS = 300000
 
   const STORAGE_KEYS = {
+    provider: '@Zenlo:PROVIDER',
     model: '@Zenlo:MODEL',
     effort: '@Zenlo:EFFORT',
-    last: '@Zenlo:LAST:',
-    read: '@Zenlo:READ:'
+    geminiModel: '@Zenlo:GEMINI_MODEL',
+    geminiEffort: '@Zenlo:GEMINI_EFFORT',
+    lookbackDays: '@Zenlo:LOOKBACK_DAYS',
+    length: '@Zenlo:LENGTH:',
+    last: '@Zenlo:LAST:'
   }
 
+  const PROVIDERS = [
+    { value: 'claude', label: 'Claude' },
+    { value: 'gemini', label: 'Gemini' }
+  ]
   const MODELS = [
     { value: 'haiku', label: 'Haiku' },
     { value: 'sonnet', label: 'Sonnet' },
     { value: 'opus', label: 'Opus' }
   ]
   const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
-  const DEFAULT_MODEL = 'sonnet'
-  const DEFAULT_EFFORT = 'medium'
+  const GEMINI_MODELS = [
+    { value: 'gemini-flash-latest', label: 'Gemini Flash' },
+    { value: 'gemini-flash-lite-latest', label: 'Gemini Flash-Lite' }
+  ]
+  // Gemini's "thinking level"; "high" was needed for it not to miss what concerns the user
+  const GEMINI_EFFORTS = ['low', 'medium', 'high']
+  const LOOKBACK_DAYS = ['1', '3', '7']
+
+  // Output length; whatever concerns the user is always kept in full
+  const LENGTHS = [
+    { value: 'short', label: 'Ngắn', rule: 'Viết thật ngắn: tối đa khoảng 3 ý, mỗi ý một câu, chỉ giữ điều quan trọng nhất.' },
+    { value: 'medium', label: 'Vừa', rule: 'Độ dài vừa phải: đủ các ý đáng chú ý, viết gọn.' },
+    { value: 'long', label: 'Dài', rule: 'Viết đầy đủ chi tiết, không bỏ sót ý nào đáng chú ý.' }
+  ]
+
+  // The summary prompt, shared by the summary panel and the digest. Deliberately short: a fixed
+  // section template made models fill every bucket and invent content (a plain reply became a
+  // "decision", a request became a promise); a free summary was more faithful.
+  const SUMMARY_PROMPT = [
+    'Bạn tóm tắt cuộc trò chuyện Zalo cho người dùng. "Tôi" trong bản chép là người dùng; gọi họ là "bạn". Viết theo cách bạn thấy giúp người đọc nắm nhanh nhất.',
+    'Mở đầu bằng những gì liên quan tới bạn hoặc cần bạn làm (bị nhắc tên, @Tất cả, được nhờ, được hỏi), nếu có. Dù viết ngắn, phần này vẫn phải giữ đủ.',
+    'Cuối mỗi ý ghi mốc tin nhắn gốc dạng [dd/mm hh:mm].'
+  ].join('\n')
+
+  // The request for one conversation. kind: "range" (the panel) or "unread" (the digest).
+  // notes: the input is part notes of a long conversation, not the transcript itself.
+  function buildSummaryInstruction ({ convName, isGroup, from, to, count, length, kind = 'range', notes = false }) {
+    const type = isGroup === undefined ? '' : isGroup ? ' (nhóm)' : ' (trò chuyện riêng)'
+    const what = kind === 'unread' ? 'tin chưa đọc' : 'tin nhắn'
+    const lengthRule = (LENGTHS.find((l) => l.value === length) || LENGTHS[1]).rule
+    return [
+      `Cuộc trò chuyện Zalo "${convName}"${type}, ${formatTime(from, true)} – ${formatTime(to, true)}, ${count} ${what}.`,
+      notes ? 'Dữ liệu là ghi chú đã tóm tắt từng phần, xếp theo thời gian.' : '',
+      lengthRule,
+      'Tóm tắt giúp mình.'
+    ].filter(Boolean).join(' ')
+  }
+
+  // Notes for one part of a conversation too long for one request
+  function buildPartInstruction ({ convName, part, parts }) {
+    return `Đây là phần ${part}/${parts} của cuộc trò chuyện Zalo "${convName}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt. Ghi lại đầy đủ những gì đáng chú ý trong phần này, mỗi ý kèm mốc.`
+  }
 
   // Shared rules about the transcript format, appended to every feature's system prompt
   const TRANSCRIPT_RULES = [
@@ -254,11 +304,41 @@
     } catch (error) {}
   }
 
-  function getModelSettings () {
-    return {
-      model: getSetting(STORAGE_KEYS.model, MODELS.map((m) => m.value), DEFAULT_MODEL),
-      effort: getSetting(STORAGE_KEYS.effort, EFFORTS, DEFAULT_EFFORT)
+  // The AI the user chose in Zenlo's settings, with its model and effort
+  function getAISettings () {
+    const provider = getSetting(STORAGE_KEYS.provider, PROVIDERS.map((p) => p.value), 'claude')
+    if (provider === 'gemini') {
+      return {
+        provider,
+        model: getSetting(STORAGE_KEYS.geminiModel, GEMINI_MODELS.map((m) => m.value), GEMINI_MODELS[0].value),
+        effort: getSetting(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high')
+      }
     }
+    return {
+      provider,
+      model: getSetting(STORAGE_KEYS.model, MODELS.map((m) => m.value), 'sonnet'),
+      effort: getSetting(STORAGE_KEYS.effort, EFFORTS, 'medium')
+    }
+  }
+
+  function getAILabel () {
+    const { provider, model, effort } = getAISettings()
+    const list = provider === 'gemini' ? GEMINI_MODELS : MODELS
+    return `${(list.find((m) => m.value === model) || {}).label || model} (${effort})`
+  }
+
+  // feature: "summary" (default medium) or "digest" (default short)
+  function getLength (feature) {
+    return getSetting(STORAGE_KEYS.length + feature, LENGTHS.map((l) => l.value), feature === 'digest' ? 'short' : 'medium')
+  }
+
+  function setLength (feature, value) {
+    setSetting(STORAGE_KEYS.length + feature, value)
+  }
+
+  // How far back unread messages are read at most (the digest and "Từ tin chưa đọc")
+  function getLookback () {
+    return Number(getSetting(STORAGE_KEYS.lookbackDays, LOOKBACK_DAYS, '3')) * DAY
   }
 
   function loadLastSummary (convId) {
@@ -269,43 +349,99 @@
     writeJSON(STORAGE_KEYS.last + convId, data)
   }
 
-  // Zenlo's own read watermark. Zalo marks a chat read as soon as it is opened,
-  // so Zenlo only moves this forward when the user has really seen the content.
-  function getReadWatermark (convId) {
-    return Number(readJSON(STORAGE_KEYS.read + convId, 0)) || 0
-  }
+  // "Xoá bản tóm tắt đã lưu" in the settings: saved summaries and digest results, plus the read
+  // watermarks of older Zenlo versions. Settings, the digest order and ticks are preferences and stay.
+  const SAVED_RESULT_PREFIXES = [STORAGE_KEYS.last, '@Zenlo:DIGEST_LAST', '@Zenlo:READ:']
 
-  function advanceReadWatermark (convId, time) {
-    if (time > getReadWatermark(convId)) writeJSON(STORAGE_KEYS.read + convId, time)
-  }
-
-  // Start of "unread" for a conversation, never more than 24 hours back. Read up to:
-  // - the read watermark,
-  // - the user's own last message,
-  // - the last message the user reacted to (a reaction means they saw that message)
-  async function getUnreadStart (convId, messages, now = Date.now()) {
-    let start = Math.max(getReadWatermark(convId), now - MAX_RANGE)
-    for (const message of messages) {
-      if (message.fromUid === '0') start = Math.max(start, Number(message.sendDttm))
+  function clearSavedResults () {
+    const keys = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && SAVED_RESULT_PREFIXES.some((prefix) => key.startsWith(prefix))) keys.push(key)
     }
-    return Math.max(start, await getLastReactedTime(messages))
+    keys.forEach((key) => localStorage.removeItem(key))
+    return keys.length
   }
 
-  // Zalo keeps reactions apart from messages, as { reactorUid: { icon: count } }; the user is "0"
-  async function getLastReactedTime (messages) {
-    if (!messages.length) return 0
+  // ---------- Unread (Zalo's own state) ----------
+
+  // Zalo clears a conversation's unread count as soon as it is opened. Zenlo keeps what it last saw,
+  // so "Từ tin chưa đọc" still knows how many messages were unread when the user opened the chat.
+  const KEEP_CLEARED = 15 * 1000
+  const recentUnread = new Map()
+  const unreadWhenOpened = new Map()
+  let lastOpenId = null
+
+  // { convId: { count, marked } } for every conversation Zalo counts as unread now
+  function readZaloUnread () {
+    const result = new Map()
+    for (const item of getUnreadManager().getAllUnreadsSync() || []) {
+      if (!item || !item.convId) continue
+      const count = Number(item.smsUnreadCount) || 0
+      const marked = !!item.unreadMark
+      if (count > 0 || marked) result.set(item.convId, { count, marked, mentions: Number(item.mentionUnreadCount) || 0 })
+    }
+    return result
+  }
+
+  // Zalo's services must not be touched while Zalo is still starting: resolving them before Zalo
+  // registers them breaks its startup (it stayed on a blank window). The left bar appears once ready.
+  function isZaloReady () {
+    return !!document.querySelector('#main-tab')
+  }
+
+  function trackUnread () {
+    if (!isZaloReady()) return
+    let current = null
     try {
-      const reactions = await getReactionCache().getMessageReactions(messages.map((m) => m.msgId))
-      let latest = 0
-      for (const message of messages) {
-        const entry = reactions && reactions[message.msgId]
-        if (entry && entry.reactions && entry.reactions['0']) latest = Math.max(latest, Number(message.sendDttm))
-      }
-      return latest
+      // First the conversation switch, using what was seen before Zalo cleared it
+      const conv = getCurrentConversation()
+      const id = conv && conv.id
+      if (id && id !== lastOpenId) unreadWhenOpened.set(id, recentUnread.get(id) || null)
+      lastOpenId = id || null
+      current = readZaloUnread()
     } catch (error) {
-      log('reactions unavailable', error)
-      return 0
+      return
     }
+    const now = Date.now()
+    for (const [convId, state] of current) recentUnread.set(convId, { ...state, at: now })
+    for (const [convId, state] of recentUnread) {
+      if (!current.has(convId) && now - state.at > KEEP_CLEARED) recentUnread.delete(convId)
+    }
+  }
+
+  // The unread state of a conversation when the user last opened it (null: nothing was unread)
+  function getUnreadWhenOpened (convId) {
+    if (unreadWhenOpened.has(convId)) return unreadWhenOpened.get(convId)
+    return readZaloUnread().get(convId) || null
+  }
+
+  // Start time of the unread messages: Zalo counts unread messages from others, so the start is just
+  // before the count-th latest message from someone else (sent before `before`). A conversation
+  // marked unread with no count starts after the user's own last message. Never further back than
+  // the lookback setting.
+  async function getUnreadStart (convId, { count, marked }, before = Date.now()) {
+    const floor = before - getLookback()
+    const latest = await getLatestMessages(convId, Math.max(count, 1) + 200)
+    const fromOthers = latest.filter((m) => Number(m.sendDttm) <= before && m.fromUid !== '0' && m.msgType !== -4 && describeContent(m))
+    let start
+    if (count > 0) {
+      const first = fromOthers[Math.max(0, fromOthers.length - count)]
+      start = first ? Number(first.sendDttm) - 1 : floor
+    } else {
+      const mine = latest.filter((m) => m.fromUid === '0' && Number(m.sendDttm) <= before)
+      start = mine.length ? Number(mine[mine.length - 1].sendDttm) : floor
+      if (!marked) start = before
+    }
+    return Math.max(start, floor)
+  }
+
+  // Marks conversations read in Zalo itself, like its own "Đánh dấu đã đọc" menu.
+  // This syncs to the user's other devices.
+  function markReadInZalo (convIds) {
+    const convs = convIds.map((id) => getConvInfoManager().getConvByIdSync(id) || { userId: id })
+    getUnreadManager().onClearUnreadConversations(convs)
+    for (const id of convIds) recentUnread.delete(id)
   }
 
   // ---------- Zalo internals ----------
@@ -382,6 +518,7 @@
 
   // Zalo's services live in a DI container, keyed by their class
   function resolveService (knownId, name) {
+    if (!isZaloReady()) throw new Error('Zalo chưa khởi động xong.')
     const container = required(findExportByKey('jDHv', 'ModuleContainer'), 'ModuleContainer')
     return required(container.resolve(required(findExportByKey(knownId, name), name)), name)
   }
@@ -758,7 +895,7 @@
     return chunks
   }
 
-  // ---------- Claude Code bridge ----------
+  // ---------- AI bridge ----------
 
   // The user's own display name in Zalo, if Zalo exposes it
   function getMyName () {
@@ -770,25 +907,32 @@
     }
   }
 
-  // Runs `claude -p` through the main process. Returns { promise, cancel }.
-  // now / myName can be passed in (tests); by default they come from the clock and Zalo.
-  function runClaude ({ systemPrompt, instruction, input, model, effort, now = Date.now(), myName = getMyName() }, onText = () => {}) {
+  // Runs the AI chosen in the settings (Claude Code or Gemini) through the main process.
+  // Returns { promise, cancel }. provider / model / effort / now / myName can be passed in (tests,
+  // the settings' connection check); by default they come from the settings, the clock and Zalo.
+  function runAI ({ systemPrompt, instruction, input, provider, model, effort, now = Date.now(), myName = getMyName() }, onText = () => {}) {
     const bridge = window.$zenlo
     if (!bridge) {
       return {
-        promise: Promise.reject(new Error('Chưa có cầu nối tới Claude Code. Hãy cài lại Zenlo rồi mở lại Zalo.')),
+        promise: Promise.reject(new Error('Chưa có cầu nối của Zenlo. Hãy cài lại Zenlo rồi mở lại Zalo.')),
         cancel: () => {}
       }
+    }
+    const settings = getAISettings()
+    const request = {
+      provider: provider || settings.provider,
+      model: model || settings.model,
+      effort: effort || settings.effort
     }
 
     let id = null
     const promise = new Promise((resolve, reject) => {
       const fullSystemPrompt = `${systemPrompt}\n${TRANSCRIPT_RULES}\n${buildContext(now, myName)}`
-      id = bridge.run({ instruction, input, model, effort, systemPrompt: fullSystemPrompt }, (event) => {
+      id = bridge.run({ ...request, instruction, input, systemPrompt: fullSystemPrompt }, (event) => {
         if (event.type === 'text') {
           onText(event.text)
         } else if (event.type === 'done') {
-          if (event.isError) reject(new Error(event.result || 'Claude Code báo lỗi.'))
+          if (event.isError) reject(new Error(event.result || 'AI báo lỗi.'))
           else resolve(event.result)
         } else if (event.type === 'error') {
           reject(new Error(event.message))
@@ -815,12 +959,22 @@
     fn()
   }
 
+  // Zalo's unread state is sampled often, so a conversation's count is known just before opening it
+  setInterval(trackUnread, 500)
+  onDomChange(trackUnread)
+
   window.ZenloCore = {
     MINUTE,
+    DAY,
     MAX_RANGE,
     STORAGE_KEYS,
+    PROVIDERS,
     MODELS,
     EFFORTS,
+    GEMINI_MODELS,
+    GEMINI_EFFORTS,
+    LOOKBACK_DAYS,
+    LENGTHS,
     log,
 
     formatTime,
@@ -830,12 +984,19 @@
 
     getSetting,
     setSetting,
-    getModelSettings,
+    getAISettings,
+    getAILabel,
+    getLength,
+    setLength,
+    getLookback,
     loadLastSummary,
     saveLastSummary,
-    getReadWatermark,
-    advanceReadWatermark,
+    clearSavedResults,
+
+    readZaloUnread,
+    getUnreadWhenOpened,
     getUnreadStart,
+    markReadInZalo,
 
     getConvName,
     getConversationPreviews,
@@ -851,9 +1012,12 @@
     buildTranscript,
     prepareTranscript,
     splitIntoChunks,
+    SUMMARY_PROMPT,
     CITATION_RULE,
+    buildSummaryInstruction,
+    buildPartInstruction,
 
-    runClaude,
+    runAI,
     onDomChange
   }
 })()

@@ -1,7 +1,7 @@
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
-  AI Summary (preload): exposes a small IPC bridge to the renderer as `window.$zenlo`.
+  Preload: exposes a small IPC bridge to the renderer as `window.$zenlo`.
 */
 
 const { contextBridge, ipcRenderer } = require('electron')
@@ -35,6 +35,10 @@ function exposeBridge () {
     cancel: (id) => {
       listeners.delete(id)
       ipcRenderer.send('zenlo:summary:cancel', id)
-    }
+    },
+    // { geminiKey, claudePath, encryption }
+    getSettings: () => ipcRenderer.invoke('zenlo:settings:get'),
+    // The key is encrypted by the main process; an empty key deletes it
+    setGeminiKey: (key) => ipcRenderer.invoke('zenlo:settings:setGeminiKey', key)
   })
 }
