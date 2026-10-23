@@ -24,27 +24,14 @@
     { label: 'Từ lần trước', since: true }
   ]
 
+  // Deliberately short. A fixed section template made models fill every bucket and invent content
+  // (a plain reply became a "decision", a request became a promise); a free summary was more faithful.
+  // The data-only rule and the transcript format come from ZenloCore's TRANSCRIPT_RULES.
   const SYSTEM_PROMPT = [
-    'Bạn tóm tắt cuộc trò chuyện Zalo cho người dùng Zenlo ("Tôi" trong bản chép). Trong bản tóm tắt, gọi người dùng là "bạn"; gọi người khác theo tên hiển thị.',
-    'Mục tiêu: đọc xong là nắm được chuyện gì đã xảy ra và bạn cần làm gì, không phải đọc lại tin nhắn.',
-    'Viết tiếng Việt, đúng với nội dung, không suy đoán; chỗ nào không rõ thì ghi "(chưa rõ)".',
-    'Đổi mọi mốc thời gian tương đối ("mai", "thứ 6", "tối nay", "tuần sau") thành ngày cụ thể dd/mm, tính từ ngày của tin nhắn chứa nó. Hạn nào đã qua so với bây giờ thì ghi thêm "(đã qua)".',
-    'Bỏ qua chào hỏi, tán gẫu, sticker và tin hệ thống, trừ khi chúng mang thông tin quan trọng.',
-    'Độ dài tương xứng nội dung: ít tin thì chỉ vài dòng; không lặp một ý ở nhiều mục.',
-    'Chỉ dùng tiêu đề "## ", gạch đầu dòng "- " và **in đậm**; không dùng bảng, danh sách đánh số hay dấu `code`.',
-    Z.CITATION_RULE
+    'Bạn tóm tắt cuộc trò chuyện Zalo cho người dùng. "Tôi" trong bản chép là người dùng; gọi họ là "bạn". Viết theo cách bạn thấy giúp người đọc nắm nhanh nhất.',
+    'Mở đầu bằng những gì liên quan tới bạn hoặc cần bạn làm (bị nhắc tên, @Tất cả, được nhờ, được hỏi), nếu có.',
+    'Cuối mỗi ý ghi mốc tin nhắn gốc dạng [dd/mm hh:mm].'
   ].join('\n')
-
-  // Sections in order of how much the user needs them; empty ones are dropped
-  const SUMMARY_SECTIONS = [
-    '"## Cần bạn": ai hỏi, nhờ, nhắc hoặc giao việc cho bạn (ai, việc gì, hạn).',
-    '"## Tổng quan": 1–3 câu.',
-    '"## Việc cần làm": mỗi dòng "- Ai: việc (hạn)", gồm việc được giao hoặc hứa làm.',
-    '"## Quyết định": những gì đã chốt.',
-    '"## Ý chính": các ý còn lại, nhóm theo chủ đề.',
-    '"## Tài liệu & liên kết": file, link, ảnh đáng chú ý (tên, ai gửi, ngày).',
-    '"## Câu hỏi còn bỏ ngỏ": câu hỏi chưa ai trả lời.'
-  ].join(' ')
 
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h10"/><path d="M18 3l1.2 2.8L22 7l-2.8 1.2L18 11l-1.2-2.8L14 7l2.8-1.2z"/></svg>'
 
@@ -110,7 +97,7 @@
       })
       if (myId !== estimateId) return
       if (!count) return setEstimate('Không có tin nhắn nào trong khoảng này.')
-      const chars = lines.join('\n').length + SYSTEM_PROMPT.length + SUMMARY_SECTIONS.length
+      const chars = lines.join('\n').length + SYSTEM_PROMPT.length
       const parts = Z.splitIntoChunks(lines).length
       setEstimate(`${count} tin · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token đầu vào` +
         (parts > 1 ? ` · chia ${parts} phần` : ''))
@@ -130,11 +117,12 @@
     panel.querySelector('.js-summary-stop').hidden = !running
   }
 
-  function showResult (text, streaming) {
+  // range: { from, to } of the summarized messages, to date citations written without a day
+  function showResult (text, streaming, range = null) {
     const el = panel.querySelector('.zenlo__result')
     el.hidden = !text
     el.classList.toggle('zenlo__result--streaming', streaming)
-    el.innerHTML = streaming ? `<pre>${escapeHTML(text)}</pre>` : Z.renderMarkdown(text)
+    el.innerHTML = streaming ? `<pre>${escapeHTML(text)}</pre>` : Z.renderMarkdown(text, { range })
     panel.querySelector('.js-summary-copy').hidden = streaming || !text
     panel.dataset.result = text
   }
@@ -231,7 +219,7 @@
     el.querySelector('.zenlo__result').addEventListener('click', (event) => {
       const cite = event.target.closest('.zenlo-cite')
       if (!cite) return
-      Z.jumpToMessage(el.dataset.convId, Number(cite.dataset.time))
+      Z.jumpToMessage(el.dataset.convId, cite.dataset.times.split(',').map(Number))
         .catch((error) => setStatus(`Lỗi: ${error.message || error}`, true))
     })
 
@@ -279,7 +267,7 @@
 
     const last = Z.loadLastSummary(conv.id)
     if (last) {
-      showResult(last.text, false)
+      showResult(last.text, false, { from: last.from, to: last.to })
       setStatus(`Bản tóm tắt gần nhất (${last.count} tin nhắn, ${formatTime(last.from, true)} – ${formatTime(last.to, true)}).`)
     } else {
       showResult('', false)
@@ -341,7 +329,7 @@
             systemPrompt: SYSTEM_PROMPT,
             model,
             effort,
-            instruction: `Đây là phần ${i + 1}/${chunks.length} của cuộc trò chuyện "${convName}"; ghi chú này sẽ được gộp với các phần khác. Ghi lại dạng gạch đầu dòng, kèm ngày cụ thể: việc cần bạn làm, việc cần làm (ai, việc, hạn), quyết định, ý chính, tài liệu và liên kết, câu hỏi còn bỏ ngỏ.`,
+            instruction: `Đây là phần ${i + 1}/${chunks.length} của cuộc trò chuyện Zalo "${convName}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt. Ghi lại đầy đủ những gì đáng chú ý trong phần này, mỗi ý kèm mốc.`,
             input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
           })
           notes.push(`### Phần ${i + 1}\n` + await currentCall.promise)
@@ -358,9 +346,9 @@
         model,
         effort,
         instruction: [
-          `Tóm tắt cuộc trò chuyện Zalo "${convName}" từ ${rangeText} (${messageCount} tin nhắn).`,
+          `Cuộc trò chuyện Zalo "${convName}", ${rangeText}, ${messageCount} tin nhắn.`,
           chunks.length > 1 ? 'Dữ liệu là ghi chú đã tóm tắt từng phần, xếp theo thời gian.' : '',
-          `Viết theo các mục sau, đúng thứ tự, bỏ hẳn mục nào không có nội dung: ${SUMMARY_SECTIONS}`
+          'Tóm tắt giúp mình.'
         ].filter(Boolean).join(' '),
         input
       }, (text) => {
@@ -369,7 +357,7 @@
       })
       const result = await currentCall.promise
 
-      showResult(result, false)
+      showResult(result, false, { from: fromMs, to: toMs })
       setStatus(`Đã tóm tắt ${messageCount} tin nhắn (${rangeText}).${historyNote}`)
       Z.saveLastSummary(convId, { from: fromMs, to: toMs, text: result, count: messageCount, at: Date.now() })
 

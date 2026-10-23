@@ -436,3 +436,43 @@
     text-decoration: underline;
   }
 }
+
+// Markdown that models write without being told the format: numbered lists, tables, code, rules
+.zenlo__result,
+.zenlo-digest__summary {
+  ol {
+    margin: 4px 0;
+    padding-left: 22px;
+  }
+
+  table {
+    margin: 6px 0;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 3px 8px;
+    border: 1px solid var(--border-default, #d6dbe1);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 600;
+  }
+
+  code {
+    padding: 0 3px;
+    border-radius: 3px;
+    background: var(--layer-background-selected, #e5efff);
+    font-size: 12px;
+  }
+
+  hr {
+    margin: 8px 0;
+    border: 0;
+    border-top: 1px solid var(--border-default, #d6dbe1);
+  }
+}

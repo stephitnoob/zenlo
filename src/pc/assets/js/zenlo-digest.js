@@ -205,7 +205,7 @@
             ${item.count} tin${item.done ? '' : ' mới'} · ${formatTime(item.lastTime)}
           </div>
         </div>
-        <div class="zenlo-digest__summary">${item.summary ? Z.renderMarkdown(item.summary) : ''}</div>
+        <div class="zenlo-digest__summary">${item.summary ? Z.renderMarkdown(item.summary, { range: { from: item.start, to: item.lastTime } }) : ''}</div>
         <div class="zenlo-digest__card-actions">
           <button class="zenlo__btn js-digest-open">Mở</button>
           <button class="zenlo__btn js-digest-detail">Tóm tắt chi tiết</button>
@@ -445,7 +445,7 @@
       const cite = event.target.closest('.zenlo-cite')
       if (cite) {
         el.hidden = true
-        Z.jumpToMessage(item.convId, Number(cite.dataset.time)).catch((error) => {
+        Z.jumpToMessage(item.convId, cite.dataset.times.split(',').map(Number)).catch((error) => {
           el.hidden = false
           setStatus(`Lỗi: ${error.message || error}`, true)
         })

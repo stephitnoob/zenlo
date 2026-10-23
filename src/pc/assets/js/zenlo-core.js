@@ -78,9 +78,12 @@
       .replace(/"/g, '&quot;')
   }
 
-  // Source citations the model writes after a point, "[dd/mm hh:mm]"
-  // The model sometimes swaps the order to "[hh:mm dd/mm]" (like the transcript lines), so both are accepted
-  const CITATION = /\[\s*(?:(\d{1,2})\/(\d{1,2})[\s,]+(\d{1,2}):(\d{2})|(\d{1,2}):(\d{2})[\s,]+(\d{1,2})\/(\d{1,2}))\s*\]/g
+  // ---------- Citations ----------
+
+  // Source citations the model writes after a point. The rule asks for "[dd/mm hh:mm]", but models
+  // also write "[hh:mm dd/mm]", "[21:30]", ranges "[21:30–21:51]", "[22/10 16:54 - 17:20]" and lists
+  // "[22/10 18:00, 18:10]", so the code accepts any bracket that holds only dates and times.
+  const CITATION_BLOCK = /\[([\d\s/:,;\-–—]+)\]/g
   const CITATION_RULE = 'Cuối mỗi gạch đầu dòng, ghi mốc của tin nhắn gốc dạng [dd/mm hh:mm], lấy giờ ở đầu dòng của tin đó và ngày của nó (ví dụ [19/10 07:30]); ý gộp từ nhiều tin thì ghi mốc tin quan trọng nhất.'
 
   // The time a citation points to; the year is the latest one that is not in the future
@@ -90,42 +93,127 @@
     return time > now + MAX_RANGE ? new Date(year - 1, month - 1, day, hour, minute).getTime() : time
   }
 
-  // Minimal Markdown: headings, bullet lists, bold, and citations as links (class "zenlo-cite", data-time)
-  function renderMarkdown (text) {
+  // The body of one bracket -> [{ day, month, hour, minute, label }], or null when it is not a citation.
+  // Segments are split by "," or ";". A range keeps only its first time. A segment without a date
+  // takes the date of the segment before it.
+  function parseCitation (body) {
+    const cites = []
+    let date = null
+    for (const segment of body.split(/[,;]/)) {
+      const label = segment.trim().replace(/\s+/g, ' ')
+      if (!label) continue
+      const d = label.match(/(\d{1,2})\/(\d{1,2})/)
+      if (d) date = { day: Number(d[1]), month: Number(d[2]) }
+      const t = label.match(/(\d{1,2}):(\d{2})/)
+      if (!t) {
+        if (d) continue
+        return null
+      }
+      const hour = Number(t[1])
+      const minute = Number(t[2])
+      if (hour > 23 || minute > 59) return null
+      if (date && (date.day < 1 || date.day > 31 || date.month < 1 || date.month > 12)) return null
+      cites.push({ ...(date || {}), hour, minute, label })
+    }
+    return cites.length ? cites : null
+  }
+
+  // Possible times for a citation, most likely first. Without a date, that time on each day of the
+  // summarized range (latest day first); the jump then uses the first one that has a message.
+  function citationCandidates (cite, range, now = Date.now()) {
+    if (cite.day) return [citationTime(cite.day, cite.month, cite.hour, cite.minute, now)]
+    const from = range ? range.from : now - MAX_RANGE
+    const to = range ? range.to : now
+    const candidates = []
+    const last = new Date(to)
+    for (let i = 0; i < 366; i++) {
+      const time = new Date(last.getFullYear(), last.getMonth(), last.getDate() - i, cite.hour, cite.minute).getTime()
+      if (time + 24 * 60 * MINUTE < from) break
+      if (time >= from - MINUTE && time <= to + MINUTE) candidates.push(time)
+    }
+    // Outside the range (e.g. the model cited context): the latest such time that is not after "to"
+    if (!candidates.length) {
+      const time = new Date(last.getFullYear(), last.getMonth(), last.getDate(), cite.hour, cite.minute).getTime()
+      candidates.push(time <= to + MINUTE ? time : time - 24 * 60 * MINUTE)
+    }
+    return candidates
+  }
+
+  function renderCitations (html, range) {
+    return html.replace(CITATION_BLOCK, (match, body) => {
+      const cites = parseCitation(body)
+      if (!cites) return match
+      return cites.map((cite) => {
+        const times = citationCandidates(cite, range)
+        return `<a class="zenlo-cite" data-times="${times.join(',')}" title="Mở tin nhắn gốc">${cite.label}</a>`
+      }).join('')
+    })
+  }
+
+  // ---------- Markdown ----------
+
+  // The Markdown models commonly write: headings, "-"/"*"/"+" and numbered lists, bold, italic,
+  // inline code, simple tables, rules; citations become links (class "zenlo-cite", data-times).
+  // options.range: { from, to } of the summarized messages, to date citations written without a day.
+  function renderMarkdown (text, { range = null } = {}) {
     const lines = escapeHTML(text).split('\n')
     let html = ''
-    let inList = false
-    const inline = (s) => s
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(CITATION, (match, d1, m1, h1, n1, h2, n2, d2, m2) => {
-        const [day, month, hour, minute] = d1 ? [d1, m1, h1, n1] : [d2, m2, h2, n2]
-        const time = citationTime(...[day, month, hour, minute].map(Number))
-        return `<a class="zenlo-cite" data-time="${time}" title="Mở tin nhắn gốc">${pad(hour)}:${minute} ${pad(day)}/${pad(month)}</a>`
-      })
+    let list = null
+    let table = null
+
+    const inline = (s) => renderCitations(s
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*|__(.+?)__/g, (m, a, b) => `<strong>${a || b}</strong>`)
+      .replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\w)/g, '$1<em>$2</em>'), range)
+
+    const closeList = () => {
+      if (list) html += `</${list}>`
+      list = null
+    }
+    const closeTable = () => {
+      if (table) html += `<table>${table.join('')}</table>`
+      table = null
+    }
 
     for (const raw of lines) {
       const line = raw.trim()
-      const bullet = line.match(/^[-*•]\s+(.*)$/)
-      if (bullet) {
-        if (!inList) {
-          html += '<ul>'
-          inList = true
-        }
-        html += `<li>${inline(bullet[1])}</li>`
+
+      if (/^\|.*\|$/.test(line)) {
+        closeList()
+        if (/^\|[\s:|-]+\|$/.test(line)) continue
+        const cells = line.slice(1, -1).split('|').map((cell) => inline(cell.trim()))
+        const tag = table ? 'td' : 'th'
+        table = table || []
+        table.push(`<tr>${cells.map((cell) => `<${tag}>${cell}</${tag}>`).join('')}</tr>`)
         continue
       }
-      if (inList) {
-        html += '</ul>'
-        inList = false
+      closeTable()
+
+      const bullet = line.match(/^[-*•+]\s+(.*)$/)
+      const numbered = line.match(/^\d{1,3}[.)]\s+(.*)$/)
+      if (bullet || numbered) {
+        const kind = bullet ? 'ul' : 'ol'
+        if (list !== kind) {
+          closeList()
+          html += `<${kind}>`
+          list = kind
+        }
+        html += `<li>${inline((bullet || numbered)[1])}</li>`
+        continue
       }
+      closeList()
+
       const heading = line.match(/^#{1,6}\s+(.*)$/)
       if (heading) {
-        html += `<h4>${inline(heading[1])}</h4>`
+        html += `<h4>${inline(heading[1].replace(/\s#+$/, ''))}</h4>`
+      } else if (/^([-*_])\1{2,}$/.test(line)) {
+        html += '<hr>'
       } else if (line) {
         html += `<p>${inline(line)}</p>`
       }
     }
-    if (inList) html += '</ul>'
+    closeList()
+    closeTable()
     return html
   }
 
@@ -396,11 +484,17 @@
     return required(cache.jump, 'chức năng nhảy tới tin nhắn')
   }
 
-  // Opens the conversation and scrolls to its first message in the minute starting at `time`
+  // Opens the conversation and scrolls to its first message in the minute starting at `time`.
+  // `time` can be a list of candidate minutes (a citation without a date): the first one with a message wins.
   async function jumpToMessage (convId, time) {
-    const { messages } = await loadMessagesInRange(convId, time, time + MINUTE - 1)
-    const message = messages.find((m) => describeContent(m))
-    if (!message) throw new Error(`Không tìm thấy tin nhắn lúc ${formatTime(time)} trên máy.`)
+    const candidates = [].concat(time)
+    let message = null
+    for (const start of candidates) {
+      const { messages } = await loadMessagesInRange(convId, start, start + MINUTE - 1)
+      message = messages.find((m) => describeContent(m))
+      if (message) break
+    }
+    if (!message) throw new Error(`Không tìm thấy tin nhắn lúc ${formatTime(candidates[0])} trên máy.`)
 
     const current = getCurrentConversation()
     if (!current || current.id !== convId) {
