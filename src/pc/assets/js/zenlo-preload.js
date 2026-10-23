@@ -36,13 +36,11 @@ function exposeBridge () {
       listeners.delete(id)
       ipcRenderer.send('zenlo:summary:cancel', id)
     },
-    // { geminiKey, claudePath, encryption }
+    // { geminiKeys, maxKeys, claudePath, encryption }
     getSettings: () => ipcRenderer.invoke('zenlo:settings:get'),
-    // The key is encrypted by the main process; an empty key deletes it
-    setGeminiKey: (key) => ipcRenderer.invoke('zenlo:settings:setGeminiKey', key),
-    // { models: [{ id, label, stats: [{ ok, ms, reason, at }] }] }, newest model first
-    geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status'),
-    // One tiny request to every model, then the same as geminiStatus
-    geminiProbe: () => ipcRenderer.invoke('zenlo:gemini:probe')
+    // The keys are encrypted by the main process; an empty list deletes them
+    setGeminiKeys: (keys) => ipcRenderer.invoke('zenlo:settings:setGeminiKeys', keys),
+    // { models: [{ id, label, level, exhausted, resetAt }], keys: [{ masked, exhausted: [{ label, resetAt }] }] }
+    geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status')
   })
 }

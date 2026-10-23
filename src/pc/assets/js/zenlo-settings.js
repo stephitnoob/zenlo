@@ -40,10 +40,9 @@
     overlay.querySelector('.js-settings-gemini').hidden = provider !== 'gemini'
   }
 
-  // What the main process knows: whether Claude Code is installed, the saved Gemini key
+  // What the main process knows: whether Claude Code is installed, the saved Gemini keys
   async function loadMainSettings () {
     const status = overlay.querySelector('.js-settings-claude-status')
-    const keyInput = overlay.querySelector('.js-settings-gemini-key')
     if (!window.$zenlo || !window.$zenlo.getSettings) {
       status.textContent = 'Chưa có cầu nối của Zenlo. Hãy cài lại Zenlo rồi mở lại Zalo.'
       return
@@ -54,78 +53,121 @@
         ? '✓ Đã tìm thấy Claude Code trên máy.'
         : '✗ Chưa tìm thấy Claude Code. Hãy cài Claude Code và đăng nhập bằng tài khoản Claude.'
       status.classList.toggle('zenlo__status--error', !settings.claudePath)
-      keyInput.value = settings.geminiKey || ''
-      overlay.querySelector('.js-settings-gemini-key-status').textContent = settings.geminiKey ? 'Đã lưu key (mã hoá bằng Windows trên máy này).' : ''
+      maxKeys = settings.maxKeys || 5
+      renderKeys(settings.geminiKeys || [])
     } catch (error) {
       status.textContent = `Lỗi: ${error.message || error}`
     }
   }
 
-  // Congestion of one model from its latest results: green (fast), yellow (slow), red (overloaded)
-  function congestion (stats) {
-    if (!stats.length) return { level: 0, text: 'Chưa đo' }
-    const last = stats[stats.length - 1]
-    if (!last.ok) return { level: 3, text: last.reason || 'quá tải' }
-    const seconds = Math.round(last.ms / 100) / 10
-    if (last.ms > 20000) return { level: 2, text: `chậm · ${seconds} giây` }
-    return { level: 1, text: `ổn · ${seconds} giây` }
+  // ---------- Gemini keys ----------
+
+  let maxKeys = 5
+  let keyStatus = []
+
+  const maskKey = (key) => key.length > 8 ? `${key.slice(0, 4)}…${key.slice(-4)}` : '••••'
+  const clock = (ms) => {
+    const d = new Date(ms)
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
   }
 
-  // The models this key can use (newest first) in the "Model" list, with a congestion bar each
-  function renderGeminiModels (status) {
-    const select = overlay.querySelector('.js-settings-gemini-model')
-    const table = overlay.querySelector('.js-settings-gemini-load')
-    const models = (status && status.models) || []
-    const current = Z.getAISettings().model
-    select.innerHTML = `<option value="${GEMINI_AUTO}">Mới nhất</option>` +
-      models.map((m) => `<option value="${escapeHTML(m.id)}">Từ ${escapeHTML(m.label)}</option>`).join('')
-    select.value = models.some((m) => m.id === current) ? current : GEMINI_AUTO
-    table.innerHTML = models.map((m) => {
-      const c = congestion(m.stats)
-      return `<div class="zenlo-settings__load-row">
-        <span class="zenlo-settings__load-name">${escapeHTML(m.label)}</span>
-        <span class="zenlo-settings__bar zenlo-settings__bar--${c.level}" title="${escapeHTML(c.text)}"><i></i><i></i><i></i></span>
-        <span class="zenlo-settings__load-text">${escapeHTML(c.text)}</span>
-      </div>`
-    }).join('') || '<div class="zenlo-settings__note">Dán API key để xem các model dùng được.</div>'
+  // One row per key: hidden like a password, 👁 to show, ✕ to remove, and which models it ran out of
+  function renderKeys (keys) {
+    const list = overlay.querySelector('.js-settings-keys')
+    const rows = keys.length ? keys : ['']
+    list.innerHTML = rows.map((key) => `
+      <div class="zenlo-settings__key">
+        <span class="zenlo__field">
+          <input type="password" class="js-settings-key" value="${escapeHTML(key)}" placeholder="Dán API key vào đây" spellcheck="false" autocomplete="off">
+          <button type="button" class="zenlo__now zenlo-settings__icon-btn js-settings-eye" title="Hiện / ẩn key">${EYE_SVG}</button>
+          <button type="button" class="zenlo__now zenlo-settings__icon-btn js-settings-remove-key" title="Xoá key này">&times;</button>
+        </span>
+        <div class="zenlo-settings__key-status js-settings-key-status"></div>
+      </div>
+    `).join('')
+    overlay.querySelector('.js-settings-add-key').hidden = rows.length >= maxKeys
+    renderKeyStatus()
   }
 
-  async function loadGeminiModels () {
-    if (!window.$zenlo || !window.$zenlo.geminiStatus) return
+  function renderKeyStatus () {
+    overlay.querySelectorAll('.zenlo-settings__key').forEach((row) => {
+      const key = row.querySelector('.js-settings-key').value.trim()
+      const info = key && keyStatus.find((k) => k.masked === maskKey(key))
+      const el = row.querySelector('.js-settings-key-status')
+      if (!info) {
+        el.textContent = ''
+      } else if (!info.exhausted.length) {
+        el.textContent = 'Còn lượt.'
+      } else {
+        const names = info.exhausted.map((m) => m.label.replace(/^Gemini /, '')).join(', ')
+        el.textContent = `Hết lượt trong ngày: ${names} (mở lại lúc ${clock(Math.min(...info.exhausted.map((m) => m.resetAt)))}).`
+      }
+    })
+  }
+
+  async function saveGeminiKeys () {
+    const status = overlay.querySelector('.js-settings-keys-status')
+    const keys = [...overlay.querySelectorAll('.js-settings-key')].map((input) => input.value.trim()).filter(Boolean)
     try {
-      renderGeminiModels(await window.$zenlo.geminiStatus())
-    } catch (error) {
-      overlay.querySelector('.js-settings-gemini-load').textContent = `Lỗi: ${error.message || error}`
-    }
-  }
-
-  // One tiny request to every model at once (uses one request of each model's quota)
-  async function probeGemini () {
-    const button = overlay.querySelector('.js-settings-probe')
-    button.disabled = true
-    button.textContent = 'Đang đo…'
-    try {
-      renderGeminiModels(await window.$zenlo.geminiProbe())
-    } catch (error) {
-      overlay.querySelector('.js-settings-gemini-load').textContent = `Lỗi: ${error.message || error}`
-    } finally {
-      button.disabled = false
-      button.textContent = 'Đo tải'
-    }
-  }
-
-  async function saveGeminiKey () {
-    const keyInput = overlay.querySelector('.js-settings-gemini-key')
-    const status = overlay.querySelector('.js-settings-gemini-key-status')
-    try {
-      await window.$zenlo.setGeminiKey(keyInput.value.trim())
-      status.textContent = keyInput.value.trim() ? 'Đã lưu key (mã hoá bằng Windows trên máy này).' : 'Đã xoá key.'
+      await window.$zenlo.setGeminiKeys(keys)
+      status.textContent = keys.length ? `Đã lưu ${keys.length} key (mã hoá bằng Windows trên máy này).` : 'Đã xoá mọi key.'
       status.classList.remove('zenlo__status--error')
       loadGeminiModels()
     } catch (error) {
       status.textContent = `Lỗi: ${error.message || error}`
       status.classList.add('zenlo__status--error')
     }
+  }
+
+  // ---------- Gemini model list ----------
+
+  // A custom dropdown, since a native one cannot draw the colored bar:
+  // "Từ Gemini 3.8 Flash ▮▮▮", greyed out when every key is out of quota for the day
+  const LEVEL_TEXT = { 1: 'Thoáng', 2: 'Vừa', 3: 'Đông' }
+  let geminiModelList = []
+
+  const bar = (level) => level ? `<span class="zenlo-settings__bar zenlo-settings__bar--${level}" title="Mức đông người dùng (ước lượng): ${LEVEL_TEXT[level]}"><i></i><i></i><i></i></span>` : ''
+
+  function modelOptions () {
+    const usable = geminiModelList.filter((m) => !m.exhausted)
+    const newest = usable[0]
+    return [
+      { value: GEMINI_AUTO, label: newest ? `Mới nhất (${newest.label.replace(/^Gemini /, '')})` : 'Mới nhất', level: newest ? newest.level : 0, disabled: !newest && geminiModelList.length > 0 },
+      ...geminiModelList.map((m) => ({
+        value: m.id,
+        label: `Từ ${m.label}`,
+        level: m.level,
+        disabled: m.exhausted,
+        note: m.exhausted ? `hết lượt, mở lại lúc ${clock(m.resetAt)}` : ''
+      }))
+    ]
+  }
+
+  function renderModelSelect () {
+    const select = overlay.querySelector('.js-gemini-model')
+    const options = modelOptions()
+    const current = Z.getAISettings().model
+    const chosen = options.find((o) => o.value === current) || options[0]
+    select.querySelector('.zenlo-select__value').innerHTML = `<span>${escapeHTML(chosen.label)}</span>${bar(chosen.level)}`
+    select.querySelector('.zenlo-select__list').innerHTML = options.map((o) => `
+      <button type="button" class="zenlo-select__option${o.value === chosen.value ? ' zenlo-select__option--active' : ''}" data-value="${escapeHTML(o.value)}" ${o.disabled ? 'disabled' : ''}>
+        <span class="zenlo-select__label">${escapeHTML(o.label)}${o.note ? ` <small>· ${escapeHTML(o.note)}</small>` : ''}</span>${bar(o.level)}
+      </button>
+    `).join('')
+  }
+
+  async function loadGeminiModels () {
+    if (!window.$zenlo || !window.$zenlo.geminiStatus) return
+    try {
+      const status = await window.$zenlo.geminiStatus()
+      geminiModelList = status.models || []
+      keyStatus = status.keys || []
+    } catch (error) {
+      geminiModelList = []
+      keyStatus = []
+    }
+    renderModelSelect()
+    renderKeyStatus()
   }
 
   // A one-word request, to check that the chosen AI answers. The login, plan and key are the same
@@ -190,25 +232,24 @@
         </div>
 
         <div class="js-settings-gemini">
-          <label class="zenlo-settings__label">API key Gemini
-            <span class="zenlo__field">
-              <input type="password" class="js-settings-gemini-key" placeholder="Dán API key vào đây" spellcheck="false" autocomplete="off">
-              <button type="button" class="zenlo__now zenlo-settings__eye js-settings-eye" title="Hiện / ẩn key">${EYE_SVG}</button>
-            </span>
-          </label>
-          <div class="zenlo__status js-settings-gemini-key-status"></div>
+          <div class="zenlo-settings__label">API key Gemini <small>(tối đa 5)</small></div>
+          <div class="zenlo-settings__keys js-settings-keys"></div>
+          <button type="button" class="zenlo-digest__link zenlo-settings__add js-settings-add-key">+ Thêm API key</button>
+          <div class="zenlo__status js-settings-keys-status"></div>
+          <div class="zenlo-settings__note">Hạn mức tính theo <b>project</b> trên Google Cloud: các key trong cùng một project dùng chung lượt, chỉ key từ project khác mới có thêm lượt. Khi một key hết lượt, Zenlo tự dùng key tiếp theo.</div>
           <div class="zenlo__grid">
-            <label>Model<select class="js-settings-gemini-model"></select></label>
+            <label>Model
+              <div class="zenlo-select js-gemini-model">
+                <button type="button" class="zenlo-select__button"><span class="zenlo-select__value"></span><span class="zenlo-select__arrow">▾</span></button>
+                <div class="zenlo-select__list" hidden></div>
+              </div>
+            </label>
             <label>Effort<select class="js-settings-gemini-effort">${options(GEMINI_EFFORTS, get(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'))}</select></label>
           </div>
-          <div class="zenlo-settings__load-head">
-            <span>Độ tắc nghẽn (lần gọi gần nhất)</span>
-            <button type="button" class="zenlo-digest__link js-settings-probe" title="Gửi một câu rất ngắn tới mọi model (mỗi model tốn 1 lượt của key)">Đo tải</button>
-          </div>
-          <div class="zenlo-settings__load js-settings-gemini-load"></div>
+          <div class="zenlo-settings__note">Thanh màu là mức đông người dùng <b>ước lượng</b>: <span class="zenlo-settings__legend zenlo-settings__legend--3"></span> đông · <span class="zenlo-settings__legend zenlo-settings__legend--2"></span> vừa · <span class="zenlo-settings__legend zenlo-settings__legend--1"></span> thoáng. Model bị mờ là mọi key đã hết lượt trong ngày; lượt được làm mới lúc 0 giờ giờ Thái Bình Dương (khoảng 14–15 giờ chiều ở Việt Nam).</div>
           <div class="zenlo-settings__note zenlo-settings__note--warn">
             <b>Lưu ý dữ liệu:</b> với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm, gồm cả tin nhắn của những người khác trong hội thoại. Key trả phí thì không bị dùng như vậy.
-            Lấy key tại aistudio.google.com/apikey. Khi một model quá tải, hết lượt hoặc chờ quá 40 giây, Zenlo tự chuyển xuống bản cũ hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
+            Lấy key tại aistudio.google.com/apikey. Khi model đang quá tải hoặc không phản hồi sau 15 giây, Zenlo chuyển xuống bản thấp hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
           </div>
         </div>
 
@@ -259,18 +300,55 @@
     }
     bindSelect('.js-settings-claude-model', STORAGE_KEYS.model)
     bindSelect('.js-settings-claude-effort', STORAGE_KEYS.effort)
-    bindSelect('.js-settings-gemini-model', STORAGE_KEYS.geminiModel)
-    el.querySelector('.js-settings-probe').addEventListener('click', probeGemini)
+    // The custom model dropdown
+    const modelSelect = el.querySelector('.js-gemini-model')
+    const modelList = modelSelect.querySelector('.zenlo-select__list')
+    modelSelect.querySelector('.zenlo-select__button').addEventListener('click', () => {
+      modelList.hidden = !modelList.hidden
+    })
+    modelList.addEventListener('click', (event) => {
+      const option = event.target.closest('.zenlo-select__option')
+      if (!option || option.disabled) return
+      Z.setSetting(STORAGE_KEYS.geminiModel, option.dataset.value)
+      modelList.hidden = true
+      renderModelSelect()
+      setTestStatus('')
+    })
+    el.addEventListener('mousedown', (event) => {
+      if (!event.target.closest('.js-gemini-model')) modelList.hidden = true
+    })
+
     bindSelect('.js-settings-gemini-effort', STORAGE_KEYS.geminiEffort)
     bindSelect('.js-settings-lookback', STORAGE_KEYS.lookbackDays)
     el.querySelectorAll('.js-settings-length').forEach((select) => {
       select.addEventListener('change', () => Z.setLength(select.dataset.feature, select.value))
     })
 
-    const keyInput = el.querySelector('.js-settings-gemini-key')
-    keyInput.addEventListener('change', saveGeminiKey)
-    el.querySelector('.js-settings-eye').addEventListener('click', () => {
-      keyInput.type = keyInput.type === 'password' ? 'text' : 'password'
+    // Gemini keys: saved when a field changes or a key is removed
+    const keyList = el.querySelector('.js-settings-keys')
+    keyList.addEventListener('change', (event) => {
+      if (event.target.closest('.js-settings-key')) saveGeminiKeys()
+    })
+    keyList.addEventListener('click', (event) => {
+      const row = event.target.closest('.zenlo-settings__key')
+      if (!row) return
+      const input = row.querySelector('.js-settings-key')
+      if (event.target.closest('.js-settings-eye')) {
+        input.type = input.type === 'password' ? 'text' : 'password'
+      } else if (event.target.closest('.js-settings-remove-key')) {
+        const hadKey = !!input.value.trim()
+        row.remove()
+        if (!keyList.children.length) renderKeys([])
+        el.querySelector('.js-settings-add-key').hidden = keyList.children.length >= maxKeys
+        if (hadKey) saveGeminiKeys()
+      }
+    })
+    el.querySelector('.js-settings-add-key').addEventListener('click', () => {
+      const keys = [...keyList.querySelectorAll('.js-settings-key')].map((input) => input.value.trim())
+      if (keys.length >= maxKeys) return
+      renderKeys([...keys, ''])
+      const inputs = keyList.querySelectorAll('.js-settings-key')
+      inputs[inputs.length - 1].focus()
     })
 
     el.querySelector('.js-settings-test').addEventListener('click', testConnection)
@@ -293,7 +371,6 @@
     overlay.querySelectorAll('.js-settings-length').forEach((select) => {
       select.value = Z.getLength(select.dataset.feature)
     })
-    overlay.querySelector('.js-settings-gemini-key').type = 'password'
     renderProvider()
     loadMainSettings()
     loadGeminiModels()

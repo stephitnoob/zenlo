@@ -9,6 +9,7 @@
 const { app, session, ipcMain, safeStorage } = require('electron')
 const { spawn } = require('child_process')
 const https = require('https')
+const crypto = require('crypto')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
@@ -122,19 +123,21 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
 
 // ---------- Gemini ----------
 
+// Up to 5 API keys, each encrypted with Windows' safeStorage. Quotas belong to Google Cloud projects,
+// so only keys from different projects add quota.
+const MAX_KEYS = 5
 const SECRETS_FILE = () => path.join(app.getPath('userData'), 'zenlo-secrets.json')
+const QUOTA_FILE = () => path.join(app.getPath('userData'), 'zenlo-gemini-quota.json')
 
-const readSecrets = () => {
+const readJSONFile = (file) => {
   try {
-    return JSON.parse(fs.readFileSync(SECRETS_FILE(), 'utf8')) || {}
+    return JSON.parse(fs.readFileSync(file, 'utf8')) || {}
   } catch (error) {
     return {}
   }
 }
 
-const getGeminiKey = () => {
-  const stored = readSecrets().gemini
-  if (!stored) return ''
+const decrypt = (stored) => {
   try {
     return safeStorage.decryptString(Buffer.from(stored, 'base64'))
   } catch (error) {
@@ -142,17 +145,57 @@ const getGeminiKey = () => {
   }
 }
 
-const setGeminiKey = (key) => {
-  const secrets = readSecrets()
-  if (key) {
-    if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows không cho mã hoá dữ liệu, nên Zenlo không lưu key.')
-    secrets.gemini = safeStorage.encryptString(key).toString('base64')
-  } else {
-    delete secrets.gemini
-  }
+const getGeminiKeys = () => {
+  const secrets = readJSONFile(SECRETS_FILE())
+  // Older Zenlo kept a single key in "gemini"
+  const stored = Array.isArray(secrets.geminiKeys) ? secrets.geminiKeys : secrets.gemini ? [secrets.gemini] : []
+  return stored.map(decrypt).filter(Boolean)
+}
+
+const setGeminiKeys = (keys) => {
+  const clean = [...new Set(keys.map((k) => String(k || '').trim()).filter(Boolean))].slice(0, MAX_KEYS)
+  if (clean.length && !safeStorage.isEncryptionAvailable()) throw new Error('Windows không cho mã hoá dữ liệu, nên Zenlo không lưu key.')
+  const secrets = readJSONFile(SECRETS_FILE())
+  delete secrets.gemini
+  secrets.geminiKeys = clean.map((k) => safeStorage.encryptString(k).toString('base64'))
   fs.writeFileSync(SECRETS_FILE(), JSON.stringify(secrets))
   geminiModels = null
 }
+
+// A key is remembered by a short hash, never in plain text
+const keyId = (key) => crypto.createHash('sha256').update(key).digest('hex').slice(0, 12)
+const maskKey = (key) => key.length > 8 ? `${key.slice(0, 4)}…${key.slice(-4)}` : '••••'
+
+// Daily quotas restart at midnight Pacific time (about 14:00–15:00 in Vietnam)
+const nextPacificMidnight = (now = Date.now()) => {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23'
+  }).formatToParts(new Date(now)).map((p) => [p.type, Number(p.value)]))
+  const wallAsUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)
+  const offset = wallAsUTC - Math.floor(now / 1000) * 1000
+  return Date.UTC(parts.year, parts.month - 1, parts.day + 1) - offset
+}
+
+// { keyId: { model: resetAt } } for (key, model) pairs out of daily quota, kept on disk
+const readQuota = () => {
+  const quota = readJSONFile(QUOTA_FILE())
+  const now = Date.now()
+  for (const id of Object.keys(quota)) {
+    for (const model of Object.keys(quota[id])) {
+      if (quota[id][model] <= now) delete quota[id][model]
+    }
+  }
+  return quota
+}
+
+const markExhausted = (key, model) => {
+  const quota = readQuota()
+  const id = keyId(key)
+  quota[id] = { ...(quota[id] || {}), [model]: nextPacificMidnight() }
+  fs.writeFileSync(QUOTA_FILE(), JSON.stringify(quota))
+}
+
+const exhaustedUntil = (quota, key, model) => (quota[keyId(key)] || {})[model] || 0
 
 const geminiLabel = (id) => {
   const match = id.match(/^gemini-([\d.]+)-flash(-lite)?$/)
@@ -180,39 +223,48 @@ const httpsGetJSON = (url, key) => new Promise((resolve, reject) => {
   request.on('error', reject)
 })
 
-// The Flash models this key can use, newest first, then the Flash-Lite ones newest first:
-// e.g. 3.8 → 3.7 → 3.6 → 3.5 Flash → 3.5 → 3.1 Flash-Lite. Cached until the key changes.
+// The Flash models the keys can use, newest first, then the Flash-Lite ones newest first:
+// e.g. 3.8 → 3.7 → 3.6 → 3.5 Flash → 3.5 → 3.1 Flash-Lite. Cached for an hour or until the keys change.
 let geminiModels = null
 const FALLBACK_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest']
 
-const getGeminiModels = async (key) => {
+const getGeminiModels = async (keys) => {
   if (geminiModels && Date.now() - geminiModels.at < 60 * 60 * 1000) return geminiModels.list
   let list = FALLBACK_MODELS
-  try {
-    const data = await httpsGetJSON(`${GEMINI_URL}?pageSize=200`, key)
-    const found = (data.models || [])
-      .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
-      .map((m) => m.name.replace(/^models\//, ''))
-      .map((id) => ({ id, match: id.match(/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/) }))
-      .filter((m) => m.match)
-      .sort((a, b) => (!!a.match[2] - !!b.match[2]) || (Number(b.match[1]) - Number(a.match[1])))
-      .map((m) => m.id)
-    // Older generations (2.x) only when nothing newer is available
-    const current = found.filter((id) => Number(id.match(/^gemini-(\d+)/)[1]) >= 3)
-    if (current.length) list = current
-    else if (found.length) list = found
-  } catch (error) {}
+  for (const key of keys) {
+    try {
+      const data = await httpsGetJSON(`${GEMINI_URL}?pageSize=200`, key)
+      const found = (data.models || [])
+        .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+        .map((m) => m.name.replace(/^models\//, ''))
+        .map((id) => ({ id, match: id.match(/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/) }))
+        .filter((m) => m.match)
+        .sort((a, b) => (!!a.match[2] - !!b.match[2]) || (Number(b.match[1]) - Number(a.match[1])))
+        .map((m) => m.id)
+      // Older generations (2.x) only when nothing newer is available
+      const current = found.filter((id) => Number(id.match(/^gemini-(\d+)/)[1]) >= 3)
+      if (current.length) list = current
+      else if (found.length) list = found
+      break
+    } catch (error) {}
+  }
   geminiModels = { list, at: Date.now() }
   return list
 }
 
-// How each model answered lately, for the congestion bars in the settings
-const geminiStats = new Map()
-const recordStat = (model, result) => {
-  const list = (geminiStats.get(model) || []).filter((s) => Date.now() - s.at < 30 * 60 * 1000)
-  list.push({ ...result, at: Date.now() })
-  geminiStats.set(model, list.slice(-5))
+// How busy each model usually is. Google publishes no load figures: this is a fixed estimate from
+// Zenlo's measurements (Oct 2026): the two newest Flash versions are crowded, the next one is
+// moderate, older Flash and Flash-Lite are quiet. 3 = đông, 2 = vừa, 1 = thoáng.
+const congestionLevel = (model, list) => {
+  const flash = list.filter((id) => /-flash$/.test(id))
+  const rank = flash.indexOf(model)
+  if (rank === 0 || rank === 1) return 3
+  if (rank === 2) return 2
+  return 1
 }
+
+// The reason of a 429: per-day quota (wait for the reset) or per-minute (sent too fast)
+const isDailyQuota = (body) => /PerDay/i.test(body) || (/per day|daily/i.test(body) && !/PerMinute/i.test(body))
 
 const geminiError = (status, body) => {
   let message = ''
@@ -221,14 +273,15 @@ const geminiError = (status, body) => {
   } catch (error) {}
   if (status === 400 && /API key/i.test(message)) return 'API key Gemini không hợp lệ.'
   if (status === 403) return 'API key Gemini không có quyền dùng model này.'
-  if (status === 429) return 'Gemini báo đã hết lượt dùng của key. Hãy thử lại sau ít phút.'
-  if (status === 503 || status === 500) return 'Máy chủ Gemini đang quá tải, hãy thử lại sau.'
+  if (status === 429) return isDailyQuota(body) ? 'Đã hết lượt trong ngày.' : 'Gửi quá nhanh, hết lượt trong phút.'
+  if (status === 503 || status === 500) return 'Máy chủ Gemini đang quá tải.'
   return `Gemini báo lỗi ${status}${message ? ': ' + message : ''}.`
 }
 
-// A model that sends nothing for this long is treated as overloaded (one waited over 90 s for
-// nothing). Thought summaries are requested, so a working model sends something early.
-const FIRST_BYTE_TIMEOUT = 40 * 1000
+// A model that sends nothing for this long is treated as overloaded: Google keeps requests from free
+// keys waiting in a queue instead of answering 503 (one waited over 90 s). Thought summaries are
+// requested, so a working model sends something within a few seconds.
+const FIRST_BYTE_TIMEOUT = 15 * 1000
 const IDLE_TIMEOUT = 60 * 1000
 const RECENT_FAILURE = 5 * 60 * 1000
 
@@ -304,9 +357,16 @@ const streamGemini = (model, key, body, onText, setCancel) => new Promise((resol
   request.end(body)
 })
 
+// Models that failed in the last few minutes, tried last so a busy model does not cost a wait every time
+const recentFailures = new Map()
+
+// Order of attempts, from the chosen model down:
+// - overloaded / no answer within 15 s: the server is busy, another key will not help → next model
+// - out of quota (daily or per minute): that key's project is out → same model with the next key;
+//   when every key is out, next model
 const runGemini = async (send, finish, { id, model, effort, systemPrompt, instruction, input }) => {
-  const key = getGeminiKey()
-  if (!key) return finish({ type: 'error', message: 'Chưa có API key Gemini. Hãy dán key trong Cài đặt Zenlo.' })
+  const keys = getGeminiKeys()
+  if (!keys.length) return finish({ type: 'error', message: 'Chưa có API key Gemini. Hãy dán key trong Cài đặt Zenlo.' })
 
   let cancelled = false
   let cancelRequest = () => {}
@@ -315,17 +375,10 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
     cancelRequest()
   })
 
-  // From the chosen model down to older and lighter ones ("auto" starts at the newest)
-  const all = await getGeminiModels(key)
+  const all = await getGeminiModels(keys)
   const start = all.indexOf(model)
-  // A model that failed in the last few minutes is tried last, so a busy 3.8 does not cost
-  // another 40 s wait on every request
   const chain = start > 0 ? all.slice(start) : all
-  const failedRecently = (model) => {
-    const stats = geminiStats.get(model) || []
-    const last = stats[stats.length - 1]
-    return !!last && !last.ok && Date.now() - last.at < RECENT_FAILURE
-  }
+  const failedRecently = (m) => Date.now() - (recentFailures.get(m) || 0) < RECENT_FAILURE
   const models = [...chain.filter((m) => !failedRecently(m)), ...chain.filter(failedRecently)]
   const body = JSON.stringify({
     systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -335,70 +388,91 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
   })
 
   const skipped = []
-  let lastError = ''
+  const problems = []
+  const badKeys = new Set()
   for (const current of models) {
-    if (cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
-    send({ type: 'status', model: current, label: geminiLabel(current), skipped: skipped.map(geminiLabel) })
-    const t0 = Date.now()
-    let response
-    try {
-      response = await streamGemini(current, key, body, (text) => send({ type: 'text', text }), (fn) => { cancelRequest = fn })
-    } catch (error) {
+    const quota = readQuota()
+    const usable = keys.filter((key) => !badKeys.has(key) && !exhaustedUntil(quota, key, current))
+    if (!usable.length) {
+      problems.push(`${geminiLabel(current)}: mọi key đã hết lượt trong ngày`)
+      skipped.push(current)
+      continue
+    }
+
+    let moveOn = false
+    for (const key of usable) {
       if (cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
-      // Dropped connection: try the next model
-      recordStat(current, { ok: false, reason: 'lỗi kết nối' })
-      lastError = `Không kết nối được Gemini: ${error.message || error}`
-      skipped.push(current)
-      continue
-    }
+      send({ type: 'status', model: current, label: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+      let response
+      try {
+        // Thinking models sometimes finish with no text at all: ask the same model once more
+        for (let attempt = 0; attempt < 2; attempt++) {
+          response = await streamGemini(current, key, body, (text) => send({ type: 'text', text }), (fn) => { cancelRequest = fn })
+          if (response.status !== 200 || response.result || response.blocked || cancelled) break
+        }
+      } catch (error) {
+        if (cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
+        recentFailures.set(current, Date.now())
+        problems.push(`${geminiLabel(current)}: mất kết nối`)
+        moveOn = true
+        break
+      }
 
-    if (response.status === 200) {
-      recordStat(current, { ok: true, ms: Date.now() - t0 })
-      if (!response.result && response.blocked) return finish({ type: 'error', message: `Gemini từ chối nội dung này (${response.blocked}).` })
-      return finish({ type: 'done', isError: false, result: response.result, model: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+      if (response.status === 200) {
+        if (!response.result && response.blocked) return finish({ type: 'error', message: `Gemini từ chối nội dung này (${response.blocked}).` })
+        if (response.result) return finish({ type: 'done', isError: false, result: response.result, model: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+        // Still empty: treat like a busy model
+        recentFailures.set(current, Date.now())
+        problems.push(`${geminiLabel(current)}: trả lời rỗng`)
+        moveOn = true
+        break
+      }
+      if (response.status === 429) {
+        // Out of quota for this key's project: try the same model with the next key
+        if (isDailyQuota(response.body)) markExhausted(key, current)
+        problems.push(`${geminiLabel(current)} (key ${maskKey(key)}): ${geminiError(429, response.body)}`)
+        continue
+      }
+      if ([0, 500, 503].includes(response.status)) {
+        // The model's servers are busy for every key: go down a model
+        recentFailures.set(current, Date.now())
+        problems.push(`${geminiLabel(current)}: quá tải${response.status === 0 ? ' (không phản hồi sau 15 giây)' : ''}`)
+        moveOn = true
+        break
+      }
+      // Invalid key or no access: skip this key from now on
+      badKeys.add(key)
+      problems.push(`key ${maskKey(key)}: ${geminiError(response.status, response.body)}`)
     }
-    // Overloaded, out of quota for this model, or no answer in time: try the next model
-    if ([0, 429, 500, 503].includes(response.status)) {
-      recordStat(current, { ok: false, reason: response.status === 0 ? 'chờ quá lâu' : response.status === 429 ? 'hết lượt' : 'quá tải' })
-      lastError = response.status === 0 ? 'Gemini không trả lời kịp.' : geminiError(response.status, response.body)
-      skipped.push(current)
-      continue
-    }
-    return finish({ type: 'error', message: geminiError(response.status, response.body) })
+    skipped.push(current)
+    if (!moveOn && cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
   }
-  finish({ type: 'error', message: `Mọi model Gemini đều không dùng được lúc này (${lastError}).` })
+  finish({ type: 'error', message: `Không model Gemini nào dùng được lúc này. ${problems.slice(-4).join('; ')}.` })
 }
 
-// The model list with the latest results, for the settings page
+// For the settings page: the models (with the fixed congestion estimate, and whether every key is
+// out of quota for the day) and the keys (masked, with the models they ran out of)
 const geminiStatus = async () => {
-  const key = getGeminiKey()
-  if (!key) return { models: [] }
-  const list = await getGeminiModels(key)
+  const keys = getGeminiKeys()
+  if (!keys.length) return { models: [], keys: [] }
+  const list = await getGeminiModels(keys)
+  const quota = readQuota()
   return {
-    models: list.map((model) => ({ id: model, label: geminiLabel(model), stats: geminiStats.get(model) || [] }))
+    models: list.map((model) => {
+      const resets = keys.map((key) => exhaustedUntil(quota, key, model))
+      return {
+        id: model,
+        label: geminiLabel(model),
+        level: congestionLevel(model, list),
+        exhausted: resets.every(Boolean),
+        resetAt: resets.every(Boolean) ? Math.min(...resets) : 0
+      }
+    }),
+    keys: keys.map((key) => ({
+      masked: maskKey(key),
+      exhausted: list.filter((model) => exhaustedUntil(quota, key, model)).map((model) => ({ label: geminiLabel(model), resetAt: exhaustedUntil(quota, key, model) }))
+    }))
   }
-}
-
-// "Đo tải": one tiny request to every model at once, with low thinking
-const probeGemini = async () => {
-  const key = getGeminiKey()
-  if (!key) throw new Error('Chưa có API key Gemini.')
-  const list = await getGeminiModels(key)
-  const body = JSON.stringify({
-    contents: [{ role: 'user', parts: [{ text: 'Trả lời đúng một chữ: ok' }] }],
-    generationConfig: { thinkingConfig: { thinkingLevel: 'low' } }
-  })
-  await Promise.all(list.map(async (model) => {
-    const t0 = Date.now()
-    try {
-      const response = await streamGemini(model, key, body, () => {}, () => {})
-      if (response.status === 200) recordStat(model, { ok: true, ms: Date.now() - t0 })
-      else recordStat(model, { ok: false, reason: response.status === 0 ? 'chờ quá lâu' : response.status === 429 ? 'hết lượt' : 'quá tải' })
-    } catch (error) {
-      recordStat(model, { ok: false, reason: 'lỗi kết nối' })
-    }
-  }))
-  return geminiStatus()
 }
 
 // ---------- IPC ----------
@@ -435,26 +509,22 @@ ipcMain.on('zenlo:summary:cancel', (event, id) => {
 ipcMain.handle('zenlo:settings:get', (event) => {
   if (!isTrustedSender(event)) return null
   return {
-    geminiKey: getGeminiKey(),
+    geminiKeys: getGeminiKeys(),
+    maxKeys: MAX_KEYS,
     claudePath: findClaudeExecutable(),
     encryption: safeStorage.isEncryptionAvailable()
   }
 })
 
-ipcMain.handle('zenlo:settings:setGeminiKey', (event, key) => {
+ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {
   if (!isTrustedSender(event)) return false
-  setGeminiKey(String(key || '').trim())
+  setGeminiKeys(Array.isArray(keys) ? keys : [])
   return true
 })
 
 ipcMain.handle('zenlo:gemini:status', (event) => {
   if (!isTrustedSender(event)) return null
   return geminiStatus()
-})
-
-ipcMain.handle('zenlo:gemini:probe', (event) => {
-  if (!isTrustedSender(event)) return null
-  return probeGemini()
 })
 
 // ---------- Setup ----------
