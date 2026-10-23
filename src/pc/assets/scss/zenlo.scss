@@ -553,3 +553,58 @@
     gap: 10px;
   }
 }
+
+// Gemini congestion bars in the settings
+.zenlo-settings {
+  &__load-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-secondary, #5a6981);
+    font-size: 13px;
+  }
+
+  &__load {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__load-row {
+    display: grid;
+    grid-template-columns: 150px 44px 1fr;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  &__load-text {
+    color: var(--text-secondary, #5a6981);
+    font-size: 12px;
+  }
+
+  // Three segments: 1 lit = fine (green), 2 = slow (yellow), 3 = overloaded (red), none = not measured
+  &__bar {
+    display: inline-flex;
+    gap: 2px;
+
+    i {
+      width: 12px;
+      height: 6px;
+      border-radius: 2px;
+      background: var(--border, #d6dbe1);
+    }
+
+    &--1 i:nth-child(-n + 1) {
+      background: #0ab066;
+    }
+
+    &--2 i:nth-child(-n + 2) {
+      background: #f5a623;
+    }
+
+    &--3 i {
+      background: #db342e;
+    }
+  }
+}

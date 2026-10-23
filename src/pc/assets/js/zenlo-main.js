@@ -19,9 +19,6 @@ const PRELOAD_PATH = path.join(__dirname, 'zenlo-preload.min.js')
 const CLAUDE_MODELS = ['haiku', 'sonnet', 'opus']
 const CLAUDE_EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
 
-// Aliases, so Zenlo keeps working when Google ships a new version.
-// When the chosen model is overloaded (503), the other one is tried.
-const GEMINI_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest']
 const GEMINI_EFFORTS = ['low', 'medium', 'high']
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/'
 
@@ -154,6 +151,67 @@ const setGeminiKey = (key) => {
     delete secrets.gemini
   }
   fs.writeFileSync(SECRETS_FILE(), JSON.stringify(secrets))
+  geminiModels = null
+}
+
+const geminiLabel = (id) => {
+  const match = id.match(/^gemini-([\d.]+)-flash(-lite)?$/)
+  if (match) return `Gemini ${match[1]} Flash${match[2] ? '-Lite' : ''}`
+  if (id === 'gemini-flash-latest') return 'Gemini Flash'
+  if (id === 'gemini-flash-lite-latest') return 'Gemini Flash-Lite'
+  return id
+}
+
+const httpsGetJSON = (url, key) => new Promise((resolve, reject) => {
+  const request = https.get(url, { headers: { 'x-goog-api-key': key } }, (response) => {
+    let text = ''
+    response.setEncoding('utf8')
+    response.on('data', (chunk) => { text += chunk })
+    response.on('end', () => {
+      if (response.statusCode !== 200) return reject(new Error(geminiError(response.statusCode, text)))
+      try {
+        resolve(JSON.parse(text))
+      } catch (error) {
+        reject(error)
+      }
+    })
+  })
+  request.setTimeout(15000, () => request.destroy(new Error('Hết thời gian chờ danh sách model.')))
+  request.on('error', reject)
+})
+
+// The Flash models this key can use, newest first, then the Flash-Lite ones newest first:
+// e.g. 3.8 → 3.7 → 3.6 → 3.5 Flash → 3.5 → 3.1 Flash-Lite. Cached until the key changes.
+let geminiModels = null
+const FALLBACK_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest']
+
+const getGeminiModels = async (key) => {
+  if (geminiModels && Date.now() - geminiModels.at < 60 * 60 * 1000) return geminiModels.list
+  let list = FALLBACK_MODELS
+  try {
+    const data = await httpsGetJSON(`${GEMINI_URL}?pageSize=200`, key)
+    const found = (data.models || [])
+      .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+      .map((m) => m.name.replace(/^models\//, ''))
+      .map((id) => ({ id, match: id.match(/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/) }))
+      .filter((m) => m.match)
+      .sort((a, b) => (!!a.match[2] - !!b.match[2]) || (Number(b.match[1]) - Number(a.match[1])))
+      .map((m) => m.id)
+    // Older generations (2.x) only when nothing newer is available
+    const current = found.filter((id) => Number(id.match(/^gemini-(\d+)/)[1]) >= 3)
+    if (current.length) list = current
+    else if (found.length) list = found
+  } catch (error) {}
+  geminiModels = { list, at: Date.now() }
+  return list
+}
+
+// How each model answered lately, for the congestion bars in the settings
+const geminiStats = new Map()
+const recordStat = (model, result) => {
+  const list = (geminiStats.get(model) || []).filter((s) => Date.now() - s.at < 30 * 60 * 1000)
+  list.push({ ...result, at: Date.now() })
+  geminiStats.set(model, list.slice(-5))
 }
 
 const geminiError = (status, body) => {
@@ -163,14 +221,36 @@ const geminiError = (status, body) => {
   } catch (error) {}
   if (status === 400 && /API key/i.test(message)) return 'API key Gemini không hợp lệ.'
   if (status === 403) return 'API key Gemini không có quyền dùng model này.'
-  if (status === 429) return 'Gemini báo đã hết lượt dùng (giới hạn của key). Hãy thử lại sau ít phút.'
+  if (status === 429) return 'Gemini báo đã hết lượt dùng của key. Hãy thử lại sau ít phút.'
   if (status === 503 || status === 500) return 'Máy chủ Gemini đang quá tải, hãy thử lại sau.'
   return `Gemini báo lỗi ${status}${message ? ': ' + message : ''}.`
 }
 
+// A model that sends nothing for this long is treated as overloaded (one waited over 90 s for
+// nothing). Thought summaries are requested, so a working model sends something early.
+const FIRST_BYTE_TIMEOUT = 40 * 1000
+const IDLE_TIMEOUT = 60 * 1000
+const RECENT_FAILURE = 5 * 60 * 1000
+
 // One streaming call (server-sent events). Zalo's Electron runs Node 16, which has no fetch.
-// Resolves to { status, body } on an HTTP error, or { status: 200, result, blocked } when done.
+// Resolves to { status, body } on an HTTP error or a timeout (status 0), or { status: 200, result, blocked }.
 const streamGemini = (model, key, body, onText, setCancel) => new Promise((resolve, reject) => {
+  let settled = false
+  const settle = (fn, value) => {
+    if (settled) return
+    settled = true
+    clearTimeout(timer)
+    fn(value)
+  }
+  let timer = null
+  const arm = (ms) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      request.destroy()
+      settle(resolve, { status: 0, body: 'timeout' })
+    }, ms)
+  }
+
   const request = https.request(`${GEMINI_URL}${model}:streamGenerateContent?alt=sse`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key, 'Content-Length': Buffer.byteLength(body) }
@@ -179,7 +259,7 @@ const streamGemini = (model, key, body, onText, setCancel) => new Promise((resol
     if (response.statusCode !== 200) {
       let text = ''
       response.on('data', (chunk) => { text += chunk })
-      response.on('end', () => resolve({ status: response.statusCode, body: text }))
+      response.on('end', () => settle(resolve, { status: response.statusCode, body: text }))
       return
     }
 
@@ -187,6 +267,7 @@ const streamGemini = (model, key, body, onText, setCancel) => new Promise((resol
     let result = ''
     let blocked = ''
     response.on('data', (chunk) => {
+      arm(IDLE_TIMEOUT)
       buffer += chunk
       let newline
       while ((newline = buffer.indexOf('\n')) !== -1) {
@@ -202,18 +283,24 @@ const streamGemini = (model, key, body, onText, setCancel) => new Promise((resol
         if (event.promptFeedback && event.promptFeedback.blockReason) blocked = event.promptFeedback.blockReason
         const parts = (event.candidates && event.candidates[0] && event.candidates[0].content && event.candidates[0].content.parts) || []
         for (const part of parts) {
-          // Thought summaries are not part of the answer
+          // Thought summaries only show that the model is working; they are not part of the answer
           if (part.thought || typeof part.text !== 'string') continue
           result += part.text
           onText(part.text)
         }
       }
     })
-    response.on('end', () => resolve({ status: 200, result, blocked }))
-    response.on('error', reject)
+    response.on('end', () => settle(resolve, { status: 200, result, blocked }))
+    // Destroyed (cancel or timeout) after the answer started: Node 16 emits "aborted"/"close", not "end"
+    response.on('aborted', () => settle(reject, new Error('aborted')))
+    response.on('close', () => settle(reject, new Error('closed')))
   })
-  request.on('error', reject)
-  setCancel(() => request.destroy(new Error('cancelled')))
+  request.on('error', (error) => settle(reject, error))
+  setCancel(() => {
+    request.destroy()
+    settle(reject, new Error('cancelled'))
+  })
+  arm(FIRST_BYTE_TIMEOUT)
   request.end(body)
 })
 
@@ -228,30 +315,90 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
     cancelRequest()
   })
 
-  const first = GEMINI_MODELS.includes(model) ? model : GEMINI_MODELS[0]
-  const models = [first, ...GEMINI_MODELS.filter((m) => m !== first)]
+  // From the chosen model down to older and lighter ones ("auto" starts at the newest)
+  const all = await getGeminiModels(key)
+  const start = all.indexOf(model)
+  // A model that failed in the last few minutes is tried last, so a busy 3.8 does not cost
+  // another 40 s wait on every request
+  const chain = start > 0 ? all.slice(start) : all
+  const failedRecently = (model) => {
+    const stats = geminiStats.get(model) || []
+    const last = stats[stats.length - 1]
+    return !!last && !last.ok && Date.now() - last.at < RECENT_FAILURE
+  }
+  const models = [...chain.filter((m) => !failedRecently(m)), ...chain.filter(failedRecently)]
   const body = JSON.stringify({
     systemInstruction: { parts: [{ text: systemPrompt }] },
     // The question comes after the data, which works best for long inputs
     contents: [{ role: 'user', parts: [{ text: `${input}\n\n${instruction}` }] }],
-    generationConfig: { thinkingConfig: { thinkingLevel: GEMINI_EFFORTS.includes(effort) ? effort : 'high' } }
+    generationConfig: { thinkingConfig: { thinkingLevel: GEMINI_EFFORTS.includes(effort) ? effort : 'high', includeThoughts: true } }
   })
 
-  try {
-    for (let i = 0; i < models.length; i++) {
-      const response = await streamGemini(models[i], key, body, (text) => send({ type: 'text', text }), (fn) => { cancelRequest = fn })
-      if (response.status !== 200) {
-        // Overloaded: try the next model
-        if ((response.status === 503 || response.status === 500) && i < models.length - 1) continue
-        return finish({ type: 'error', message: geminiError(response.status, response.body) })
-      }
-      if (!response.result && response.blocked) return finish({ type: 'error', message: `Gemini từ chối nội dung này (${response.blocked}).` })
-      return finish({ type: 'done', isError: false, result: response.result })
-    }
-  } catch (error) {
+  const skipped = []
+  let lastError = ''
+  for (const current of models) {
     if (cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
-    return finish({ type: 'error', message: `Không kết nối được Gemini: ${error.message || error}` })
+    send({ type: 'status', model: current, label: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+    const t0 = Date.now()
+    let response
+    try {
+      response = await streamGemini(current, key, body, (text) => send({ type: 'text', text }), (fn) => { cancelRequest = fn })
+    } catch (error) {
+      if (cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
+      // Dropped connection: try the next model
+      recordStat(current, { ok: false, reason: 'lỗi kết nối' })
+      lastError = `Không kết nối được Gemini: ${error.message || error}`
+      skipped.push(current)
+      continue
+    }
+
+    if (response.status === 200) {
+      recordStat(current, { ok: true, ms: Date.now() - t0 })
+      if (!response.result && response.blocked) return finish({ type: 'error', message: `Gemini từ chối nội dung này (${response.blocked}).` })
+      return finish({ type: 'done', isError: false, result: response.result, model: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+    }
+    // Overloaded, out of quota for this model, or no answer in time: try the next model
+    if ([0, 429, 500, 503].includes(response.status)) {
+      recordStat(current, { ok: false, reason: response.status === 0 ? 'chờ quá lâu' : response.status === 429 ? 'hết lượt' : 'quá tải' })
+      lastError = response.status === 0 ? 'Gemini không trả lời kịp.' : geminiError(response.status, response.body)
+      skipped.push(current)
+      continue
+    }
+    return finish({ type: 'error', message: geminiError(response.status, response.body) })
   }
+  finish({ type: 'error', message: `Mọi model Gemini đều không dùng được lúc này (${lastError}).` })
+}
+
+// The model list with the latest results, for the settings page
+const geminiStatus = async () => {
+  const key = getGeminiKey()
+  if (!key) return { models: [] }
+  const list = await getGeminiModels(key)
+  return {
+    models: list.map((model) => ({ id: model, label: geminiLabel(model), stats: geminiStats.get(model) || [] }))
+  }
+}
+
+// "Đo tải": one tiny request to every model at once, with low thinking
+const probeGemini = async () => {
+  const key = getGeminiKey()
+  if (!key) throw new Error('Chưa có API key Gemini.')
+  const list = await getGeminiModels(key)
+  const body = JSON.stringify({
+    contents: [{ role: 'user', parts: [{ text: 'Trả lời đúng một chữ: ok' }] }],
+    generationConfig: { thinkingConfig: { thinkingLevel: 'low' } }
+  })
+  await Promise.all(list.map(async (model) => {
+    const t0 = Date.now()
+    try {
+      const response = await streamGemini(model, key, body, () => {}, () => {})
+      if (response.status === 200) recordStat(model, { ok: true, ms: Date.now() - t0 })
+      else recordStat(model, { ok: false, reason: response.status === 0 ? 'chờ quá lâu' : response.status === 429 ? 'hết lượt' : 'quá tải' })
+    } catch (error) {
+      recordStat(model, { ok: false, reason: 'lỗi kết nối' })
+    }
+  }))
+  return geminiStatus()
 }
 
 // ---------- IPC ----------
@@ -298,6 +445,16 @@ ipcMain.handle('zenlo:settings:setGeminiKey', (event, key) => {
   if (!isTrustedSender(event)) return false
   setGeminiKey(String(key || '').trim())
   return true
+})
+
+ipcMain.handle('zenlo:gemini:status', (event) => {
+  if (!isTrustedSender(event)) return null
+  return geminiStatus()
+})
+
+ipcMain.handle('zenlo:gemini:probe', (event) => {
+  if (!isTrustedSender(event)) return null
+  return probeGemini()
 })
 
 // ---------- Setup ----------

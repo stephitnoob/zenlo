@@ -353,6 +353,8 @@
       setStatus(`Đang tóm tắt ${messageCount} tin nhắn (${rangeText}) bằng ${Z.getAILabel()}…${historyNote}`)
 
       let streamed = ''
+      let usedModel = ''
+      const started = Date.now()
       currentCall = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
         instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, length, notes: chunks.length > 1 }),
@@ -360,11 +362,16 @@
       }, (text) => {
         streamed += text
         showResult(streamed, true)
+      }, (modelStatus) => {
+        // Gemini: which model is answering, and which ones were skipped
+        usedModel = Z.describeModelStatus(modelStatus)
+        if (!modelStatus.done) setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
       })
       const result = await currentCall.promise
 
       showResult(result, false, { from: fromMs, to: toMs })
-      setStatus(`Đã tóm tắt ${messageCount} tin nhắn (${rangeText}).${historyNote}`)
+      const seconds = Math.round((Date.now() - started) / 1000)
+      setStatus(`Đã tóm tắt ${messageCount} tin nhắn (${rangeText})${usedModel ? ` bằng ${usedModel}` : ''}, ${seconds} giây.${historyNote}`)
       Z.saveLastSummary(convId, { from: fromMs, to: toMs, text: result, count: messageCount, at: Date.now() })
     } catch (error) {
       setStatus(cancelled ? 'Đã dừng.' : `Lỗi: ${error.message || error}`, !cancelled)

@@ -38,10 +38,16 @@
     { value: 'opus', label: 'Opus' }
   ]
   const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
-  const GEMINI_MODELS = [
-    { value: 'gemini-flash-latest', label: 'Gemini Flash' },
-    { value: 'gemini-flash-lite-latest', label: 'Gemini Flash-Lite' }
-  ]
+  // Gemini models come from Google's list for the user's key (main process). The setting holds a
+  // model id to start from, or "auto" for the newest; an overloaded model falls back to older ones.
+  const GEMINI_AUTO = 'auto'
+
+  function geminiLabel (id) {
+    if (!id || id === GEMINI_AUTO) return 'Gemini mới nhất'
+    const match = String(id).match(/^gemini-([\d.]+)-flash(-lite)?$/)
+    if (match) return `Gemini ${match[1]} Flash${match[2] ? '-Lite' : ''}`
+    return id
+  }
   // Gemini's "thinking level"; "high" was needed for it not to miss what concerns the user
   const GEMINI_EFFORTS = ['low', 'medium', 'high']
   const LOOKBACK_DAYS = ['1', '3', '7']
@@ -308,9 +314,14 @@
   function getAISettings () {
     const provider = getSetting(STORAGE_KEYS.provider, PROVIDERS.map((p) => p.value), 'claude')
     if (provider === 'gemini') {
+      let model = GEMINI_AUTO
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.geminiModel)
+        if (saved && /^gemini-[\w.-]+$/.test(saved)) model = saved
+      } catch (error) {}
       return {
         provider,
-        model: getSetting(STORAGE_KEYS.geminiModel, GEMINI_MODELS.map((m) => m.value), GEMINI_MODELS[0].value),
+        model,
         effort: getSetting(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high')
       }
     }
@@ -321,10 +332,16 @@
     }
   }
 
+  // "Gemini 3.6 Flash (bỏ qua 3.8, 3.7 Flash vì quá tải)" from runAI's onStatus
+  function describeModelStatus ({ model, skipped }) {
+    if (!skipped || !skipped.length) return model
+    return `${model} (bỏ qua ${skipped.map((s) => s.replace(/^Gemini /, '')).join(', ')} vì quá tải hoặc chờ lâu)`
+  }
+
   function getAILabel () {
     const { provider, model, effort } = getAISettings()
-    const list = provider === 'gemini' ? GEMINI_MODELS : MODELS
-    return `${(list.find((m) => m.value === model) || {}).label || model} (${effort})`
+    const label = provider === 'gemini' ? geminiLabel(model) : (MODELS.find((m) => m.value === model) || {}).label || model
+    return `${label} (${effort})`
   }
 
   // feature: "summary" (default medium) or "digest" (default short)
@@ -910,7 +927,9 @@
   // Runs the AI chosen in the settings (Claude Code or Gemini) through the main process.
   // Returns { promise, cancel }. provider / model / effort / now / myName can be passed in (tests,
   // the settings' connection check); by default they come from the settings, the clock and Zalo.
-  function runAI ({ systemPrompt, instruction, input, provider, model, effort, now = Date.now(), myName = getMyName() }, onText = () => {}) {
+  // onStatus({ model, skipped, done }) reports which Gemini model is answering (and which were skipped).
+  // cancel() rejects the promise right away with "Đã dừng.", without waiting for the main process.
+  function runAI ({ systemPrompt, instruction, input, provider, model, effort, now = Date.now(), myName = getMyName() }, onText = () => {}, onStatus = () => {}) {
     const bridge = window.$zenlo
     if (!bridge) {
       return {
@@ -926,12 +945,17 @@
     }
 
     let id = null
+    let stop = () => {}
     const promise = new Promise((resolve, reject) => {
+      stop = () => reject(new Error('Đã dừng.'))
       const fullSystemPrompt = `${systemPrompt}\n${TRANSCRIPT_RULES}\n${buildContext(now, myName)}`
       id = bridge.run({ ...request, instruction, input, systemPrompt: fullSystemPrompt }, (event) => {
         if (event.type === 'text') {
           onText(event.text)
+        } else if (event.type === 'status') {
+          onStatus({ model: event.label, skipped: event.skipped || [], done: false })
         } else if (event.type === 'done') {
+          if (event.model) onStatus({ model: event.model, skipped: event.skipped || [], done: true })
           if (event.isError) reject(new Error(event.result || 'AI báo lỗi.'))
           else resolve(event.result)
         } else if (event.type === 'error') {
@@ -939,7 +963,13 @@
         }
       })
     })
-    return { promise, cancel: () => id && bridge.cancel(id) }
+    return {
+      promise,
+      cancel: () => {
+        if (id) bridge.cancel(id)
+        stop()
+      }
+    }
   }
 
   // ---------- DOM ----------
@@ -971,7 +1001,9 @@
     PROVIDERS,
     MODELS,
     EFFORTS,
-    GEMINI_MODELS,
+    GEMINI_AUTO,
+    geminiLabel,
+    describeModelStatus,
     GEMINI_EFFORTS,
     LOOKBACK_DAYS,
     LENGTHS,

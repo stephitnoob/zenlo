@@ -218,9 +218,11 @@
 
   function cardSummary (item) {
     if (item.status === 'error') return `<div class="zenlo__status zenlo__status--error">Lỗi: ${escapeHTML(item.error)}</div>`
-    if (item.status === 'running' && !item.summary) return '<div class="zenlo__status">Đang tóm tắt…</div>'
+    if (item.status === 'running' && !item.summary) return `<div class="zenlo__status">Đang tóm tắt${item.model ? ` bằng ${escapeHTML(item.model)}` : ''}…</div>`
     if (item.status === 'running') return `<pre>${escapeHTML(item.summary)}</pre>`
-    return item.summary ? Z.renderMarkdown(item.summary, { range: { from: item.start, to: item.lastTime } }) : ''
+    if (!item.summary) return ''
+    const model = item.model ? `<div class="zenlo__status zenlo-digest__model">bằng ${escapeHTML(item.model)}</div>` : ''
+    return Z.renderMarkdown(item.summary, { range: { from: item.start, to: item.lastTime } }) + model
   }
 
   function renderItems () {
@@ -333,6 +335,7 @@
     item.status = 'running'
     item.summary = ''
     item.error = ''
+    item.model = ''
     scheduleRender()
 
     try {
@@ -368,6 +371,9 @@
         input
       }, (text) => {
         item.summary += text
+        scheduleRender()
+      }, (modelStatus) => {
+        item.model = Z.describeModelStatus(modelStatus)
         scheduleRender()
       })
       calls.add(call)

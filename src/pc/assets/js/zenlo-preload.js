@@ -39,6 +39,10 @@ function exposeBridge () {
     // { geminiKey, claudePath, encryption }
     getSettings: () => ipcRenderer.invoke('zenlo:settings:get'),
     // The key is encrypted by the main process; an empty key deletes it
-    setGeminiKey: (key) => ipcRenderer.invoke('zenlo:settings:setGeminiKey', key)
+    setGeminiKey: (key) => ipcRenderer.invoke('zenlo:settings:setGeminiKey', key),
+    // { models: [{ id, label, stats: [{ ok, ms, reason, at }] }] }, newest model first
+    geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status'),
+    // One tiny request to every model, then the same as geminiStatus
+    geminiProbe: () => ipcRenderer.invoke('zenlo:gemini:probe')
   })
 }

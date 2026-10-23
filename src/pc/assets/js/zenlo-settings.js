@@ -8,7 +8,7 @@
 
 (function () {
   const Z = window.ZenloCore
-  const { STORAGE_KEYS, MODELS, EFFORTS, GEMINI_MODELS, GEMINI_EFFORTS, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
+  const { STORAGE_KEYS, MODELS, EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
 
   // Sliders, so it is not confused with Zalo's own settings gear at the bottom of the bar
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>'
@@ -61,6 +61,59 @@
     }
   }
 
+  // Congestion of one model from its latest results: green (fast), yellow (slow), red (overloaded)
+  function congestion (stats) {
+    if (!stats.length) return { level: 0, text: 'Chưa đo' }
+    const last = stats[stats.length - 1]
+    if (!last.ok) return { level: 3, text: last.reason || 'quá tải' }
+    const seconds = Math.round(last.ms / 100) / 10
+    if (last.ms > 20000) return { level: 2, text: `chậm · ${seconds} giây` }
+    return { level: 1, text: `ổn · ${seconds} giây` }
+  }
+
+  // The models this key can use (newest first) in the "Model" list, with a congestion bar each
+  function renderGeminiModels (status) {
+    const select = overlay.querySelector('.js-settings-gemini-model')
+    const table = overlay.querySelector('.js-settings-gemini-load')
+    const models = (status && status.models) || []
+    const current = Z.getAISettings().model
+    select.innerHTML = `<option value="${GEMINI_AUTO}">Mới nhất</option>` +
+      models.map((m) => `<option value="${escapeHTML(m.id)}">Từ ${escapeHTML(m.label)}</option>`).join('')
+    select.value = models.some((m) => m.id === current) ? current : GEMINI_AUTO
+    table.innerHTML = models.map((m) => {
+      const c = congestion(m.stats)
+      return `<div class="zenlo-settings__load-row">
+        <span class="zenlo-settings__load-name">${escapeHTML(m.label)}</span>
+        <span class="zenlo-settings__bar zenlo-settings__bar--${c.level}" title="${escapeHTML(c.text)}"><i></i><i></i><i></i></span>
+        <span class="zenlo-settings__load-text">${escapeHTML(c.text)}</span>
+      </div>`
+    }).join('') || '<div class="zenlo-settings__note">Dán API key để xem các model dùng được.</div>'
+  }
+
+  async function loadGeminiModels () {
+    if (!window.$zenlo || !window.$zenlo.geminiStatus) return
+    try {
+      renderGeminiModels(await window.$zenlo.geminiStatus())
+    } catch (error) {
+      overlay.querySelector('.js-settings-gemini-load').textContent = `Lỗi: ${error.message || error}`
+    }
+  }
+
+  // One tiny request to every model at once (uses one request of each model's quota)
+  async function probeGemini () {
+    const button = overlay.querySelector('.js-settings-probe')
+    button.disabled = true
+    button.textContent = 'Đang đo…'
+    try {
+      renderGeminiModels(await window.$zenlo.geminiProbe())
+    } catch (error) {
+      overlay.querySelector('.js-settings-gemini-load').textContent = `Lỗi: ${error.message || error}`
+    } finally {
+      button.disabled = false
+      button.textContent = 'Đo tải'
+    }
+  }
+
   async function saveGeminiKey () {
     const keyInput = overlay.querySelector('.js-settings-gemini-key')
     const status = overlay.querySelector('.js-settings-gemini-key-status')
@@ -68,25 +121,43 @@
       await window.$zenlo.setGeminiKey(keyInput.value.trim())
       status.textContent = keyInput.value.trim() ? 'Đã lưu key (mã hoá bằng Windows trên máy này).' : 'Đã xoá key.'
       status.classList.remove('zenlo__status--error')
+      loadGeminiModels()
     } catch (error) {
       status.textContent = `Lỗi: ${error.message || error}`
       status.classList.add('zenlo__status--error')
     }
   }
 
-  // A one-word request, to check that the chosen AI answers
+  // A one-word request, to check that the chosen AI answers. The login, plan and key are the same
+  // for every model, so it uses the fastest settings: Haiku for Claude, low thinking for Gemini.
   async function testConnection () {
     const button = overlay.querySelector('.js-settings-test')
+    const { provider } = Z.getAISettings()
+    const started = Date.now()
+    let model = provider === 'claude' ? 'Claude Haiku' : 'Gemini'
+    const tick = () => setTestStatus(`Đang thử ${model}… ${Math.round((Date.now() - started) / 1000)} giây`)
     button.disabled = true
-    setTestStatus(`Đang thử ${Z.getAILabel()}…`)
+    tick()
+    const timer = setInterval(tick, 1000)
     try {
-      const call = Z.runAI({ systemPrompt: 'Chỉ trả lời đúng một chữ: ok', instruction: 'Trả lời "ok".', input: '' })
+      const call = Z.runAI({
+        systemPrompt: 'Chỉ trả lời đúng một chữ: ok',
+        instruction: 'Trả lời "ok".',
+        input: '',
+        model: provider === 'claude' ? 'haiku' : undefined,
+        effort: 'low'
+      }, () => {}, (status) => {
+        model = Z.describeModelStatus(status)
+      })
       const answer = String(await call.promise).trim()
-      setTestStatus(answer ? `✓ Kết nối được: ${Z.getAILabel()} đã trả lời.` : 'AI không trả lời gì.', !answer)
+      const seconds = Math.round((Date.now() - started) / 1000)
+      setTestStatus(answer ? `✓ Kết nối được: ${model} trả lời sau ${seconds} giây.` : 'AI không trả lời gì.', !answer)
     } catch (error) {
       setTestStatus(`Lỗi: ${error.message || error}`, true)
     } finally {
+      clearInterval(timer)
       button.disabled = false
+      if (provider === 'gemini') loadGeminiModels()
     }
   }
 
@@ -127,12 +198,17 @@
           </label>
           <div class="zenlo__status js-settings-gemini-key-status"></div>
           <div class="zenlo__grid">
-            <label>Model<select class="js-settings-gemini-model">${options(GEMINI_MODELS, get(STORAGE_KEYS.geminiModel, GEMINI_MODELS, GEMINI_MODELS[0].value))}</select></label>
+            <label>Model<select class="js-settings-gemini-model"></select></label>
             <label>Effort<select class="js-settings-gemini-effort">${options(GEMINI_EFFORTS, get(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'))}</select></label>
           </div>
+          <div class="zenlo-settings__load-head">
+            <span>Độ tắc nghẽn (lần gọi gần nhất)</span>
+            <button type="button" class="zenlo-digest__link js-settings-probe" title="Gửi một câu rất ngắn tới mọi model (mỗi model tốn 1 lượt của key)">Đo tải</button>
+          </div>
+          <div class="zenlo-settings__load js-settings-gemini-load"></div>
           <div class="zenlo-settings__note zenlo-settings__note--warn">
             <b>Lưu ý dữ liệu:</b> với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm, gồm cả tin nhắn của những người khác trong hội thoại. Key trả phí thì không bị dùng như vậy.
-            Lấy key tại aistudio.google.com/apikey. Khi model đang quá tải, Zenlo tự chuyển sang model còn lại.
+            Lấy key tại aistudio.google.com/apikey. Khi một model quá tải, hết lượt hoặc chờ quá 40 giây, Zenlo tự chuyển xuống bản cũ hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
           </div>
         </div>
 
@@ -171,6 +247,7 @@
       radio.addEventListener('change', () => {
         Z.setSetting(STORAGE_KEYS.provider, radio.value)
         renderProvider()
+        if (radio.value === 'gemini') loadGeminiModels()
         setTestStatus('')
       })
     })
@@ -183,6 +260,7 @@
     bindSelect('.js-settings-claude-model', STORAGE_KEYS.model)
     bindSelect('.js-settings-claude-effort', STORAGE_KEYS.effort)
     bindSelect('.js-settings-gemini-model', STORAGE_KEYS.geminiModel)
+    el.querySelector('.js-settings-probe').addEventListener('click', probeGemini)
     bindSelect('.js-settings-gemini-effort', STORAGE_KEYS.geminiEffort)
     bindSelect('.js-settings-lookback', STORAGE_KEYS.lookbackDays)
     el.querySelectorAll('.js-settings-length').forEach((select) => {
@@ -217,6 +295,7 @@
     overlay.querySelector('.js-settings-gemini-key').type = 'password'
     renderProvider()
     loadMainSettings()
+    loadGeminiModels()
   }
 
   // A tab in Zalo's left bar, below "Bản tin"
