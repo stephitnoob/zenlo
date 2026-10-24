@@ -52,4 +52,4 @@ Mọi thứ chỉ nằm trên máy bạn:
 
 ## Liên hệ
 
-Câu hỏi về quyền riêng tư: <email góp ý>.
+Câu hỏi về quyền riêng tư: tungtd@outlook.com.

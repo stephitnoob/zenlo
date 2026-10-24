@@ -22,7 +22,7 @@
     site: 'https://stephitnoob.github.io/zenlo/',
     source: 'https://github.com/stephitnoob/zenlo',
     privacy: 'https://stephitnoob.github.io/zenlo/privacy.html',
-    feedback: '',
+    feedback: 'mailto:tungtd@outlook.com?subject=G%C3%B3p%20%C3%BD%20Zenlo',
     geminiKey: 'https://aistudio.google.com/apikey'
   }
 

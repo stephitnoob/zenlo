@@ -4,7 +4,7 @@ Zenlo đọc tin nhắn riêng tư, nên mọi lỗ hổng đều được xử 
 
 ## Báo lỗ hổng
 
-Gửi email tới **<email góp ý>** với tiêu đề bắt đầu bằng `[Bảo mật]`. Đừng đăng lỗ hổng công khai (issue, mạng xã hội) trước khi có bản sửa.
+Gửi email tới **tungtd@outlook.com** với tiêu đề bắt đầu bằng `[Bảo mật]`. Đừng đăng lỗ hổng công khai (issue, mạng xã hội) trước khi có bản sửa.
 
 Nên kèm:
 
