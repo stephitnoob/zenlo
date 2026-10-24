@@ -166,7 +166,7 @@
         <li>
           <span class="steps__n mono">3</span>
           <h3>Mở Zalo, bấm nút Zenlo</h3>
-          <p>Nút tím ở thanh bên trái. Lần đầu, dán một API key Gemini miễn phí; Zenlo hướng dẫn từng bước.</p>
+          <p>Nút tím ở thanh bên trái. Lần đầu, dán một API key Gemini miễn phí; <a class="link" href="#lay-key">xem cách lấy key</a> (1 phút).</p>
         </li>
       </ol>
 
@@ -185,7 +185,55 @@
     </div>
   </section>
 
-  <section id="zalo-cap-nhat" class="section section--alt">
+  <section id="lay-key" class="section section--alt">
+    <div class="wrap">
+      <h2>Lấy API key Gemini (miễn phí, 1 phút)</h2>
+      <p class="lead">Zenlo dùng Gemini của Google để tóm tắt. Bạn chỉ cần một tài khoản Google; <b>không cần thẻ thanh toán</b>.</p>
+      <ol class="redo redo--four">
+        <li>
+          <span class="steps__n mono">1</span>
+          <h3>Mở Google AI Studio</h3>
+          <p class="dim">Vào <a class="link mono" href="https://aistudio.google.com/apikey" rel="noopener" target="_blank">aistudio.google.com/apikey</a> và đăng nhập tài khoản Google.</p>
+          <div class="mock" aria-hidden="true">
+            <div class="mock__url mono">aistudio.google.com/apikey</div>
+            <div class="mock__page"><b>API Keys</b><span class="dim">Google AI Studio</span></div>
+          </div>
+        </li>
+        <li>
+          <span class="steps__n mono">2</span>
+          <h3>Bấm "Create API key"</h3>
+          <p class="dim">Giao diện tiếng Việt ghi "Tạo khóa API". Nếu được hỏi chọn dự án, chọn tạo dự án mới.</p>
+          <div class="mock" aria-hidden="true">
+            <div class="mock__btn">+ Create API key</div>
+          </div>
+        </li>
+        <li>
+          <span class="steps__n mono">3</span>
+          <h3>Sao chép key</h3>
+          <p class="dim">Key là một chuỗi bắt đầu bằng <span class="mono">AIza</span>. Bấm nút sao chép bên cạnh.</p>
+          <div class="mock" aria-hidden="true">
+            <div class="mock__key mono">AIza••••••••••••••k3Qf <span class="mock__copy">⧉</span></div>
+          </div>
+        </li>
+        <li>
+          <span class="steps__n mono">4</span>
+          <h3>Dán vào Zenlo</h3>
+          <p class="dim">Trong Zalo: bấm nút Zenlo tím → bánh răng (Cài đặt) → dán vào ô "API key Gemini" → <b>Kiểm tra kết nối</b>.</p>
+          <div class="mock" aria-hidden="true">
+            <div class="mock__field mono">••••••••••••••••••</div>
+            <div class="mock__ok mono">✓ Kết nối được</div>
+          </div>
+        </li>
+      </ol>
+      <ul class="checks checks--compact">
+        <li><b>Giữ key như mật khẩu:</b> đừng gửi cho ai. Zenlo lưu key trên máy bạn, được Windows mã hoá.</li>
+        <li><b>Key miễn phí có giới hạn lượt mỗi ngày.</b> Khi một model hết lượt hoặc quá tải, Zenlo tự chuyển sang model khác. Bạn có thể thêm tới 5 key.</li>
+        <li><b>Nói thật:</b> với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Hội thoại nhạy cảm thì cân nhắc, hoặc dùng key trả phí.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="zalo-cap-nhat" class="section">
     <div class="wrap">
       <h2>Zalo vừa cập nhật, nút Zenlo biến mất?</h2>
       <p class="lead">Bình thường thôi: bản Zalo mới thay hết ứng dụng cũ, nên cần cài Zenlo lại. Mất khoảng 10 giây, không cần tải lại, và mọi thứ của bạn vẫn còn.</p>
@@ -225,7 +273,7 @@
     </div>
   </section>
 
-  <section id="hoi-dap" class="section">
+  <section id="hoi-dap" class="section section--alt">
     <div class="wrap faq">
       <h2>Hỏi đáp</h2>
       <details>
@@ -235,6 +283,10 @@
       <details>
         <summary>Dùng Zenlo có bị khoá tài khoản Zalo không?</summary>
         <p>Zenlo chỉ đọc dữ liệu Zalo đã lưu trên máy bạn và không gửi gì lên máy chủ Zalo, nên chưa có trường hợp nào bị khoá. Tuy vậy, Zenlo sửa ứng dụng Zalo trên máy, và việc dùng ứng dụng đã sửa có thể trái điều khoản của Zalo. Hãy cân nhắc, và bạn có thể gỡ Zenlo bất cứ lúc nào.</p>
+      </details>
+      <details>
+        <summary>Lấy API key Gemini thế nào, có mất tiền không?</summary>
+        <p>Không mất tiền và không cần thẻ: đăng nhập Google ở aistudio.google.com/apikey, bấm "Create API key", sao chép rồi dán vào Cài đặt của Zenlo. <a class="link" href="#lay-key">Xem hướng dẫn có hình</a>.</p>
       </details>
       <details>
         <summary>Zenlo có mất phí không?</summary>
