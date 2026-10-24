@@ -35,7 +35,7 @@
   <h2>Tóm tắt</h2>
   <ul>
     <li><b>Zenlo không có máy chủ.</b> Tác giả Zenlo không nhận, không lưu và không thấy được tin nhắn, tài khoản hay bất kỳ dữ liệu nào của bạn.</li>
-    <li><b>Không tài khoản, không quảng cáo, không theo dõi.</b> Zenlo không gửi số liệu sử dụng đi đâu cả. Trang web này cũng không dùng cookie hay công cụ theo dõi.</li>
+    <li><b>Không tài khoản, không quảng cáo, không theo dõi.</b> Ứng dụng Zenlo không gửi số liệu sử dụng đi đâu cả. Trang web này chỉ đếm lượt xem ẩn danh, không dùng cookie (xem <a class="link" href="#trang-web">bên dưới</a>).</li>
     <li><b>Tin nhắn chỉ được gửi tới dịch vụ AI do chính bạn chọn</b>, và chỉ khi bạn bấm Tóm tắt hoặc Tạo bản tin.</li>
   </ul>
 
@@ -77,6 +77,15 @@
     <li>Gỡ Zenlo bằng <code>Zenlo-Setup.exe</code> (chọn "2. Gỡ Zenlo"), rồi xoá thư mục <code>%APPDATA%\Zenlo</code> nếu muốn xoá sạch.</li>
   </ul>
 
+  <h2 id="trang-web">Trang web này</h2>
+  <p>Trang web của Zenlo đếm lượt xem bằng <a class="link" href="https://www.goatcounter.com/" rel="noopener">GoatCounter</a>, một dịch vụ thống kê mã nguồn mở, để tác giả biết có bao nhiêu người ghé xem và bao nhiêu người bấm Tải về.</p>
+  <ul>
+    <li><b>Được gửi đi:</b> địa chỉ trang đang xem, tiêu đề trang, trang web dẫn bạn tới đây (nếu có), và việc bạn bấm nút Tải về.</li>
+    <li><b>GoatCounter suy ra</b> loại trình duyệt, hệ điều hành và quốc gia, rồi chỉ giữ các con số tổng hợp. Địa chỉ IP không được lưu lại.</li>
+    <li><b>Không có:</b> cookie, mã định danh người dùng, quảng cáo, hay dữ liệu nào được lưu trong trình duyệt của bạn.</li>
+  </ul>
+  <p>Việc đếm này chỉ có trên trang web, không có trong ứng dụng Zenlo. Bạn có thể tự kiểm tra: toàn bộ mã đếm nằm trong file <a class="link" href="stats.js">stats.js</a>, khoảng 30 dòng.</p>
+
   <h2>Liên hệ</h2>
   <p>Câu hỏi về quyền riêng tư, báo lỗi hay lỗ hổng bảo mật: <a class="link js-feedback" href="#">gửi email cho tác giả</a>.</p>
 </article>
@@ -96,5 +105,6 @@
 </footer>
 
 <script src="app.js"></script>
+<script src="stats.js"></script>
 </body>
 </html>
