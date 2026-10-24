@@ -27,12 +27,31 @@ function unpackAssets () {
   return dir
 }
 
+// One reader for the whole session: a new one per question would swallow lines typed ahead
+let reader = null
+const pendingLines = []
+let waiting = null
+
 function ask (question) {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-  return new Promise((resolve) => rl.question(question, (answer) => {
-    rl.close()
-    resolve(answer.trim())
-  }))
+  if (!reader) {
+    reader = readline.createInterface({ input: process.stdin, output: process.stdout })
+    reader.on('line', (line) => {
+      if (waiting) {
+        const resolve = waiting
+        waiting = null
+        resolve(line.trim())
+      } else {
+        pendingLines.push(line.trim())
+      }
+    })
+    // Input closed (window closed or piped input ran out): answer "quit"
+    reader.on('close', () => {
+      if (waiting) waiting('3')
+    })
+  }
+  process.stdout.write(question)
+  if (pendingLines.length) return Promise.resolve(pendingLines.shift())
+  return new Promise((resolve) => { waiting = resolve })
 }
 
 function header () {
@@ -58,7 +77,10 @@ async function main () {
     console.log('  3. Thoát')
     console.log('')
     const choice = await ask('Chọn 1, 2 hoặc 3 rồi bấm Enter: ')
-    if (choice === '3' || choice === '') return
+    if (choice === '3' || choice === '') {
+      if (reader) reader.close()
+      return
+    }
 
     if (choice === '1' || choice === '2') {
       const confirm = await ask('Zalo sẽ được tắt trong lúc cài đặt. Tiếp tục? (c/k): ')
