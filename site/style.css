@@ -898,3 +898,80 @@ h3 {
     animation: none;
   }
 }
+
+/* Getting a Gemini key: four illustrated steps */
+
+.redo--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.redo--four p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.redo--four .mock {
+  min-height: 0;
+  margin-top: auto;
+}
+
+.mock__url {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--dim);
+  font-size: 11px;
+}
+
+.mock__page {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.mock__btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #8ab4f8;
+  color: #0b1a33;
+  font-weight: 600;
+}
+
+.mock__key,
+.mock__field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.mock__copy {
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.mock__ok {
+  margin-top: 8px;
+  color: #4ade80;
+  font-size: 12px;
+}
+
+.checks--compact {
+  margin: 8px 0 0;
+}
+
+@media (max-width: 1080px) {
+  .redo--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .redo--four {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
