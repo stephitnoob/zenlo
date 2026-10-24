@@ -19,7 +19,13 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 - **Dữ liệu của Zenlo** (cài đặt, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm một bản sao lưu cùng key và hạn mức trong `%APPDATA%Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
 - **Cài vào Zalo** bằng cách giải nén `app.asar`, thêm Zenlo, giữ bản gốc ở `app.asar.bak`.
 
-## Yêu cầu
+## Tải về
+
+Người dùng: tải `Zenlo-Setup.exe` từ trang web hoặc mục Releases của kho mã này, mở file và chọn "1. Cài Zenlo". Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
+
+Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md)
+
+## Yêu cầu (để phát triển)
 
 - Zalo PC trên Windows
 - Node.js 18 trở lên
@@ -40,6 +46,7 @@ npm run zalo:install
 | `npm run dev` | Tự build lại mỗi khi sửa code |
 | `npm run zalo:status` | Xem Zenlo đang được cài thế nào |
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
+| `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài cho người không có Node.js) kèm SHA-256 |
 
 Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệnh cài.
 
@@ -51,10 +58,13 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 | `src/main/` | Tiến trình chính của Zalo: `main.js` chạy `claude -p` hoặc gọi Gemini, lưu key mã hoá; `preload.js` là cầu nối `window.$zenlo` |
 | `src/styles/` | Giao diện (SCSS) |
 | `scripts/build.mjs` | Build bằng esbuild và sass |
-| `installer/` | Cài / gỡ vào Zalo PC |
+| `installer/` | Cài / gỡ vào Zalo PC; `setup.js` là bộ cài `Zenlo-Setup.exe` |
+| `scripts/build-setup.mjs` | Đóng gói bộ cài thành một file `.exe` (Node single executable application) |
+| `site/` | Trang web giới thiệu và tải về (GitHub Pages) |
+| `.github/workflows/` | Build và phát hành tự động, đưa trang web lên |
 
 ## Bản quyền
 
-Copyright (c) 2026 stephit. All rights reserved. Xem [LICENSE](LICENSE).
+Copyright (c) 2026 stephit. Mã nguồn được công khai để ai cũng kiểm tra được Zenlo làm gì, theo [Zenlo Source-Available License](LICENSE): được xem, kiểm tra và tự build để đối chiếu; không được sửa đổi, phát hành lại hay dùng thương mại. Không nhận pull request; góp ý và báo lỗi qua email ghi ở trang web.
 
 Zenlo được stephit phát triển cùng Claude (Anthropic). Đây là dự án cá nhân, không liên kết với Zalo hay VNG.

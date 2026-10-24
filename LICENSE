@@ -1,5 +1,99 @@
+Zenlo Source-Available License, version 1.0
+
 Copyright (c) 2026 stephit. All rights reserved.
 
-Zenlo is private software. No permission is granted to copy, modify, distribute
-or use this software, in whole or in part, without the written permission of
-the copyright holder.
+Bản tiếng Việt ở phía dưới. If the two versions differ, the English version applies.
+
+------------------------------------------------------------------------------
+ENGLISH
+------------------------------------------------------------------------------
+
+The source code of Zenlo is published so that anyone can check what it does.
+Publishing it does not give it away. The copyright holder keeps all rights not
+granted below.
+
+1. What you may do
+   a. Read, study and review the source code, alone or with tools (including AI
+      tools), to check how Zenlo works and whether it is safe.
+   b. Build the source code on your own computer to check that it matches an
+      official release.
+   c. Install and use official releases of Zenlo, downloaded from the official
+      website or the official repository, for your own personal, non-commercial
+      purposes.
+   d. Report problems and suggest features through the channels listed in the
+      official repository.
+
+2. What you may not do
+   a. Modify the software, or create works based on it, other than for the
+      private review allowed in section 1.
+   b. Distribute, publish, sell, rent or share the software or any modified
+      version of it, in source or built form. Linking to the official website
+      or repository is allowed.
+   c. Use the software, or any part of it, for commercial purposes or as part
+      of a product or service offered to others.
+   d. Use the name "Zenlo" or its logo for other software, or in a way that
+      suggests a modified version is official.
+   e. Remove or change this license or the copyright notices.
+
+3. Contributions
+   Changes to Zenlo are made only by the copyright holder. Pull requests are
+   not accepted. Feature requests and bug reports are welcome.
+
+4. Termination
+   If you break these terms, your permissions under this license end
+   immediately.
+
+5. No warranty
+   Zenlo is provided "as is", without any warranty of any kind. Zenlo is not
+   affiliated with or endorsed by Zalo or VNG. Using a modified Zalo client may
+   be against Zalo's terms; you use Zenlo at your own risk.
+
+6. Limitation of liability
+   To the extent allowed by law, the copyright holder is not liable for any
+   damage, loss of data or other harm arising from the use of, or inability to
+   use, Zenlo.
+
+------------------------------------------------------------------------------
+TIẾNG VIỆT
+------------------------------------------------------------------------------
+
+Mã nguồn của Zenlo được công khai để ai cũng kiểm tra được Zenlo làm gì.
+Công khai mã nguồn không có nghĩa là cho đi. Tác giả giữ mọi quyền không được
+nêu dưới đây.
+
+1. Bạn được phép
+   a. Đọc, tìm hiểu và kiểm tra mã nguồn, tự làm hoặc dùng công cụ (kể cả công
+      cụ AI), để xem Zenlo hoạt động thế nào và có an toàn không.
+   b. Tự build mã nguồn trên máy mình để đối chiếu với bản phát hành chính thức.
+   c. Cài và dùng bản phát hành chính thức của Zenlo, tải từ trang web hoặc kho
+      mã chính thức, cho mục đích cá nhân, phi thương mại.
+   d. Báo lỗi và góp ý tính năng qua các kênh ghi trong kho mã chính thức.
+
+2. Bạn không được
+   a. Sửa đổi phần mềm hay tạo sản phẩm dựa trên nó, ngoài việc kiểm tra riêng
+      nêu ở mục 1.
+   b. Phân phối, đăng tải, bán, cho thuê hay chia sẻ phần mềm hoặc bất kỳ bản
+      sửa đổi nào, dù ở dạng mã nguồn hay bản build. Được phép dẫn link tới trang
+      web hoặc kho mã chính thức.
+   c. Dùng phần mềm, hay bất kỳ phần nào của nó, cho mục đích thương mại hoặc
+      trong sản phẩm, dịch vụ cung cấp cho người khác.
+   d. Dùng tên "Zenlo" hoặc logo của Zenlo cho phần mềm khác, hay theo cách khiến
+      người khác tưởng một bản sửa đổi là bản chính thức.
+   e. Xoá hoặc sửa giấy phép này và các dòng ghi bản quyền.
+
+3. Đóng góp
+   Chỉ tác giả mới sửa đổi Zenlo. Không nhận pull request. Rất hoan nghênh báo
+   lỗi và góp ý tính năng.
+
+4. Chấm dứt
+   Nếu vi phạm các điều khoản này, mọi quyền bạn có theo giấy phép này chấm dứt
+   ngay lập tức.
+
+5. Không bảo hành
+   Zenlo được cung cấp "nguyên trạng", không kèm bất kỳ bảo hành nào. Zenlo không
+   liên kết với và không được Zalo hay VNG bảo trợ. Dùng một bản Zalo đã được sửa
+   có thể trái điều khoản của Zalo; bạn tự chịu rủi ro khi dùng Zenlo.
+
+6. Giới hạn trách nhiệm
+   Trong phạm vi pháp luật cho phép, tác giả không chịu trách nhiệm về thiệt hại,
+   mất dữ liệu hay tổn hại nào phát sinh từ việc dùng hoặc không dùng được Zenlo.

@@ -1,0 +1,55 @@
+# Builds Zenlo-Setup.exe on GitHub's own machines when a version tag (v0.1.0, …) is pushed,
+# checks it, attests where it was built from, and publishes it with its SHA-256.
+# Anyone can then check that a download was built from this repository:
+#   gh attestation verify Zenlo-Setup.exe --repo <owner>/<repo>
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write       # create the release
+  id-token: write       # sign the build provenance
+  attestations: write   # store the build provenance
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npx standard
+
+      - name: Build Zenlo-Setup.exe
+        run: npm run build:setup
+
+      - name: Check the embedded files
+        run: build/setup/Zenlo-Setup.exe --check
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: build/setup/Zenlo-Setup.exe
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          hash=$(cut -d' ' -f1 build/setup/SHA256.txt)
+          gh release create "$GITHUB_REF_NAME" build/setup/Zenlo-Setup.exe build/setup/SHA256.txt \
+            --title "Zenlo $GITHUB_REF_NAME" \
+            --notes "SHA-256 của Zenlo-Setup.exe: \`$hash\`
+
+          Kiểm tra file tải về: \`Get-FileHash .\\Zenlo-Setup.exe -Algorithm SHA256\`
+          Kiểm tra nguồn gốc build: \`gh attestation verify .\\Zenlo-Setup.exe --repo $GITHUB_REPOSITORY\`"

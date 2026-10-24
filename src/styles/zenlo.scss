@@ -974,3 +974,47 @@ html.zenlo-dark {
     text-decoration: underline;
   }
 }
+
+// First-run line above the tabs, and the key guide in the settings
+.zenlo-drawer__notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0 12px 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--zenlo-accent-line);
+  border-radius: 8px;
+  background: var(--zenlo-accent-soft);
+  font-size: 13px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.zenlo-settings__guide {
+  padding: 10px 12px;
+  border: 1px solid var(--zenlo-accent-line);
+  border-radius: 10px;
+  background: var(--zenlo-accent-soft);
+  font-size: 13px;
+
+  ol {
+    margin: 6px 0 0;
+    padding-left: 20px;
+  }
+
+  li {
+    margin: 3px 0;
+  }
+}
+
+.zenlo-settings__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+
+  &:empty {
+    display: none;
+  }
+}

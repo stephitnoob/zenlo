@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quyền riêng tư – Zenlo</title>
+<meta name="description" content="Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.">
+<meta name="theme-color" content="#0f0d17">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="index.html"><img src="logo.svg" alt="" width="28" height="28"><span>zenlo</span></a>
+    <span class="nav__links"></span>
+    <a class="btn btn--small" href="index.html#cai-dat">Tải về</a>
+  </div>
+</header>
+
+<main class="wrap doc">
+  <h1>Chính sách quyền riêng tư</h1>
+  <p class="mono dim">Cập nhật: 24/10/2026</p>
+  <p>Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.</p>
+
+  <h2>Tóm tắt</h2>
+  <ul>
+    <li><b>Zenlo không có máy chủ.</b> Tác giả Zenlo không nhận, không lưu và không thấy được tin nhắn, tài khoản hay bất kỳ dữ liệu nào của bạn.</li>
+    <li><b>Không tài khoản, không quảng cáo, không theo dõi.</b> Zenlo không gửi số liệu sử dụng đi đâu cả. Trang web này cũng không dùng cookie hay công cụ theo dõi.</li>
+    <li><b>Tin nhắn chỉ được gửi tới dịch vụ AI do chính bạn chọn</b>, và chỉ khi bạn bấm Tóm tắt hoặc Tạo bản tin.</li>
+  </ul>
+
+  <h2>Zenlo đọc gì</h2>
+  <p>Khi bạn bấm <b>Tóm tắt</b> hoặc <b>Tạo bản tin</b>, Zenlo đọc từ dữ liệu Zalo đã lưu trên máy bạn:</p>
+  <ul>
+    <li>nội dung các tin nhắn trong khoảng thời gian bạn chọn (hoặc các tin chưa đọc), tên hiển thị của người gửi, thời gian gửi;</li>
+    <li>số người thả cảm xúc cho từng tin, và tin nào nhắc tới bạn;</li>
+    <li>tên Zalo của bạn, để AI biết tin nào đang nói với bạn;</li>
+    <li>số tin chưa đọc mà Zalo ghi nhận.</li>
+  </ul>
+  <p>Zenlo không đọc nội dung ảnh, video, tệp đính kèm hay tin nhắn thoại; chỉ đọc tên tệp và chú thích ảnh nếu có. Việc đọc này không làm Zalo gửi trạng thái "Đã xem" cho ai.</p>
+
+  <h2>Zenlo gửi gì, gửi đi đâu</h2>
+  <p>Zenlo chỉ gửi phần tin nhắn cần tóm tắt, kèm lời yêu cầu tóm tắt, tới <b>một</b> trong hai dịch vụ AI mà bạn chọn trong Cài đặt:</p>
+  <table>
+    <thead><tr><th>Dịch vụ</th><th>Cách Zenlo gửi</th><th>Dữ liệu được dùng thế nào</th></tr></thead>
+    <tbody>
+      <tr><td><b>Claude</b> (Anthropic)</td><td>Qua Claude Code đã cài và đăng nhập trên máy bạn, dùng gói Claude Pro/Max của bạn</td><td>Theo chính sách của Anthropic cho tài khoản Claude của bạn</td></tr>
+      <tr><td><b>Gemini</b> (Google)</td><td>Gửi thẳng tới <span class="mono">generativelanguage.googleapis.com</span> bằng API key của bạn</td><td><b>Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm</b>, gồm cả tin nhắn của những người khác trong hội thoại. Với key trả phí thì không</td></tr>
+    </tbody>
+  </table>
+  <p>Kết nối luôn được mã hoá (HTTPS). Zenlo không gửi dữ liệu tới bất kỳ địa chỉ nào khác. Vì tin nhắn trong nhóm có cả nội dung của người khác, hãy cân nhắc trước khi gửi những hội thoại nhạy cảm tới dịch vụ AI.</p>
+
+  <h2>Zenlo lưu gì, ở đâu</h2>
+  <table>
+    <thead><tr><th>Dữ liệu</th><th>Nơi lưu (chỉ trên máy bạn)</th></tr></thead>
+    <tbody>
+      <tr><td>Cài đặt, bản tóm tắt gần nhất của từng hội thoại, kết quả Bản tin, thứ tự và ô tick trong Bản tin</td><td>Bộ nhớ của Zalo trên máy (<span class="mono">%APPDATA%\ZaloData</span>)</td></tr>
+      <tr><td>Bản sao lưu của mục trên</td><td><span class="mono">%APPDATA%\Zenlo\storage-backup.json</span></td></tr>
+      <tr><td>API key Gemini</td><td><span class="mono">%APPDATA%\Zenlo\secrets.json</span>, <b>được Windows mã hoá</b> (chỉ tài khoản Windows của bạn giải mã được)</td></tr>
+      <tr><td>Ghi nhận model nào hết lượt trong ngày</td><td><span class="mono">%APPDATA%\Zenlo\gemini-quota.json</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Xoá dữ liệu</h2>
+  <ul>
+    <li>Trong Zenlo: <b>Cài đặt → Xoá bản tóm tắt đã lưu</b>, và xoá từng API key bằng nút ✕.</li>
+    <li>Gỡ Zenlo bằng <span class="mono">Zenlo-Setup.exe</span> (chọn "2. Gỡ Zenlo"), rồi xoá thư mục <span class="mono">%APPDATA%\Zenlo</span> nếu muốn xoá sạch.</li>
+  </ul>
+
+  <h2>Liên hệ</h2>
+  <p>Câu hỏi về quyền riêng tư, báo lỗi hay lỗ hổng bảo mật: <a class="link js-feedback" href="#">gửi email cho tác giả</a>.</p>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <p class="dim">© 2026 stephit. Zenlo không liên kết với và không được Zalo hay VNG bảo trợ.</p>
+    <nav class="footer__links" aria-label="Liên kết">
+      <a href="index.html">Trang chủ</a>
+      <a class="js-source" href="#">Mã nguồn</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // Same links as the home page (see app.js), without the release lookup
+  (function () {
+    var REPO = ''
+    var FEEDBACK_EMAIL = ''
+    document.querySelectorAll('.js-feedback').forEach(function (a) {
+      if (FEEDBACK_EMAIL) a.href = 'mailto:' + FEEDBACK_EMAIL
+      else a.replaceWith(document.createTextNode('email ghi trên trang mã nguồn của Zenlo'))
+    })
+    document.querySelectorAll('.js-source').forEach(function (a) {
+      if (REPO) a.href = 'https://github.com/' + REPO
+      else a.remove()
+    })
+  })()
+</script>
+</body>
+</html>

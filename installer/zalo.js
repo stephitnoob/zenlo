@@ -49,13 +49,15 @@ function findResourcesDir () {
 }
 
 function stopZalo () {
+  // The full path, so a "taskkill" planted somewhere on PATH is never run instead
+  const taskkill = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'taskkill.exe')
   try {
-    execFileSync('taskkill', ['/F', '/T', '/IM', 'Zalo.exe'], { stdio: 'ignore' })
+    execFileSync(taskkill, ['/F', '/T', '/IM', 'Zalo.exe'], { stdio: 'ignore' })
   } catch (error) {
     // Zalo was not running
   }
   // Give Windows a moment to release the files
-  execFileSync('powershell', ['-NoProfile', '-Command', 'Start-Sleep -Milliseconds 1500'], { stdio: 'ignore' })
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1500)
 }
 
 const isFile = (p) => fs.existsSync(p) && fs.statSync(p).isFile()
@@ -99,20 +101,22 @@ function patchBootstrap (appDir) {
 
 // Normal mode copies Zenlo's files into Zalo. Dev mode links to the build folder instead,
 // so a rebuild plus Ctrl+Shift+R in Zalo is enough to see a change.
-function addZenloFiles (appDir, dev) {
-  if (!fs.existsSync(path.join(DIST, 'zenlo-main.js'))) {
+// source: the folder with Zenlo's built files (dist/ by default; the setup program unpacks its own copy)
+function addZenloFiles (appDir, dev, source) {
+  if (!fs.existsSync(path.join(source, 'zenlo-main.js'))) {
     throw new Error('Chưa build Zenlo. Hãy chạy "npm run build" trước.')
   }
   const target = path.join(appDir, 'pc-dist', ZENLO_FOLDER)
-  if (dev) fs.symlinkSync(DIST, target, 'junction')
-  else fs.cpSync(DIST, target, { recursive: true })
+  if (dev) fs.symlinkSync(source, target, 'junction')
+  else fs.cpSync(source, target, { recursive: true })
 }
 
-function install ({ dev = false } = {}) {
+function install ({ dev = false, source = DIST } = {}) {
   const resourcesDir = findResourcesDir()
   const app = path.join(resourcesDir, 'app.asar')
   const backup = path.join(resourcesDir, 'app.asar.bak')
-  const work = path.join(os.tmpdir(), 'zenlo-install')
+  // A fresh folder with a random name, so nothing prepared in the temp folder can be slipped in
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'zenlo-install-'))
 
   log(`Zalo: ${resourcesDir}`)
   log('Đang tắt Zalo…')
@@ -122,23 +126,29 @@ function install ({ dev = false } = {}) {
   if (!isFile(app)) throw new Error('Không tìm thấy app.asar gốc của Zalo.')
 
   log('Đang giải nén Zalo…')
-  fs.rmSync(work, { recursive: true, force: true })
   const appDir = path.join(work, 'app')
   asar.extractAll(app, appDir)
 
   log(dev ? 'Đang liên kết Zenlo (chế độ phát triển)…' : 'Đang chép Zenlo…')
-  addZenloFiles(appDir, dev)
+  addZenloFiles(appDir, dev, source)
   patchPage(appDir)
   patchBootstrap(appDir)
 
   fs.renameSync(app, backup)
   try {
-    fs.renameSync(appDir, app)
+    try {
+      fs.renameSync(appDir, app)
+    } catch (error) {
+      // Different drives: copy instead (keeping the dev-mode link as a link)
+      fs.cpSync(appDir, app, { recursive: true, verbatimSymlinks: true })
+    }
   } catch (error) {
-    // Different drives: copy instead (keeping the dev-mode link as a link)
-    fs.cpSync(appDir, app, { recursive: true, verbatimSymlinks: true })
+    // Never leave Zalo without its app: put the original back
+    restoreOriginal(resourcesDir)
+    throw new Error(`Không chép được Zenlo vào Zalo (${error.message}). Zalo đã được đưa về bản gốc.`)
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true })
   }
-  fs.rmSync(work, { recursive: true, force: true })
 
   const marker = path.join(resourcesDir, DEV_MARKER)
   if (dev) fs.writeFileSync(marker, 'Zenlo dev mode: Ctrl+Shift+R reloads Zalo\n')
@@ -158,12 +168,20 @@ function uninstall () {
   log('Đã gỡ Zenlo, Zalo đã về bản gốc. Mở lại Zalo.')
 }
 
-function status () {
+function getStatus () {
   const resourcesDir = findResourcesDir()
-  const installed = isFile(path.join(resourcesDir, 'app.asar.bak'))
-  const dev = fs.existsSync(path.join(resourcesDir, DEV_MARKER))
+  return {
+    resourcesDir,
+    version: path.basename(path.dirname(resourcesDir)).replace(/^Zalo-/, ''),
+    installed: isFile(path.join(resourcesDir, 'app.asar.bak')),
+    dev: fs.existsSync(path.join(resourcesDir, DEV_MARKER))
+  }
+}
+
+function status () {
+  const { resourcesDir, installed, dev } = getStatus()
   log(`Zalo: ${resourcesDir}`)
   log(installed ? `Zenlo: đã cài${dev ? ' (chế độ phát triển)' : ''}` : 'Zenlo: chưa cài')
 }
 
-module.exports = { install, uninstall, status }
+module.exports = { install, uninstall, status, getStatus }

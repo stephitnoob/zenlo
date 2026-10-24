@@ -84,6 +84,8 @@
       </div>
     `).join('')
     overlay.querySelector('.js-settings-add-key').hidden = rows.length >= maxKeys
+    // First time: show how to get a key
+    overlay.querySelector('.js-settings-guide').hidden = keys.some(Boolean)
     renderKeyStatus()
   }
 
@@ -110,7 +112,9 @@
       await window.$zenlo.setGeminiKeys(keys)
       status.textContent = keys.length ? `Đã lưu ${keys.length} key (mã hoá bằng Windows trên máy này).` : 'Đã xoá mọi key.'
       status.classList.remove('zenlo__status--error')
+      overlay.querySelector('.js-settings-guide').hidden = keys.length > 0
       loadGeminiModels()
+      Z.drawer.refreshNotice()
     } catch (error) {
       status.textContent = `Lỗi: ${error.message || error}`
       status.classList.add('zenlo__status--error')
@@ -224,6 +228,14 @@
         </div>
 
         <div class="js-settings-gemini">
+          <div class="zenlo-settings__guide js-settings-guide" hidden>
+            <b>Lấy API key Gemini miễn phí (khoảng 1 phút)</b>
+            <ol>
+              <li>Mở <button type="button" class="zenlo__inline-link js-open-aistudio">Google AI Studio</button> và đăng nhập tài khoản Google.</li>
+              <li>Bấm <b>Create API key</b>, rồi sao chép key vừa tạo.</li>
+              <li>Dán key vào ô bên dưới. Xong.</li>
+            </ol>
+          </div>
           <div class="zenlo-settings__label">API key Gemini <small>(tối đa 5)</small></div>
           <div class="zenlo-settings__keys js-settings-keys"></div>
           <button type="button" class="zenlo-digest__link zenlo-settings__add js-settings-add-key">+ Thêm API key</button>
@@ -285,6 +297,16 @@
         <div class="zenlo__status js-settings-reset-status"></div>
       </section>
 
+      <section class="zenlo-settings__section">
+        <div class="zenlo-settings__heading">Về Zenlo</div>
+        <div class="zenlo-settings__note">Zenlo không có máy chủ và không thu thập dữ liệu. Tin nhắn chỉ được gửi tới dịch vụ AI bạn chọn ở trên, khi bạn bấm Tóm tắt hoặc Tạo bản tin.</div>
+        <div class="zenlo-settings__links">
+          ${[['site', 'Trang chủ'], ['privacy', 'Quyền riêng tư'], ['source', 'Mã nguồn'], ['feedback', 'Góp ý & báo lỗi']]
+            .filter(([key]) => Z.LINKS[key])
+            .map(([key, label]) => `<button type="button" class="zenlo__inline-link" data-link="${key}">${label}</button>`).join('')}
+        </div>
+      </section>
+
       <div class="zenlo-settings__footer">Zenlo · © stephit</div>
     `
 
@@ -292,6 +314,7 @@
       radio.addEventListener('change', () => {
         Z.setSetting(STORAGE_KEYS.provider, radio.value)
         renderProvider()
+        Z.drawer.refreshNotice()
         if (radio.value === 'gemini') loadGeminiModels()
         setTestStatus('')
       })
@@ -358,6 +381,10 @@
     })
 
     el.querySelector('.js-settings-test').addEventListener('click', testConnection)
+    el.querySelector('.js-open-aistudio').addEventListener('click', () => Z.openLink(Z.LINKS.geminiKey))
+    el.querySelectorAll('[data-link]').forEach((button) => {
+      button.addEventListener('click', () => Z.openLink(Z.LINKS[button.dataset.link]))
+    })
     el.querySelector('.js-settings-clear').addEventListener('click', () => {
       if (!window.confirm('Xoá mọi bản tóm tắt và bản tin đã lưu?')) return
       const removed = Z.clearSavedResults()

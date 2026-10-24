@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "author": "stephit",
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "node scripts/build.mjs --watch",
@@ -12,10 +12,13 @@
     "zalo:install": "npm run build && node installer install",
     "zalo:dev": "npm run build && node installer dev",
     "zalo:status": "node installer status",
-    "zalo:uninstall": "node installer uninstall"
+    "zalo:uninstall": "node installer uninstall",
+    "build:setup": "npm run build && node scripts/build-setup.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
+    "postject": "^1.0.0-alpha.6",
+    "rcedit": "^5.0.2",
     "sass": "^1.106.1",
     "standard": "^17.1.2"
   },

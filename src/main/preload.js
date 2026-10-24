@@ -44,6 +44,8 @@ function exposeBridge () {
     geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status'),
     // Backup of Zenlo's localStorage in %APPDATA%\Zenlo
     saveStorage: (data) => ipcRenderer.send('zenlo:storage:save', data),
-    loadStorage: () => ipcRenderer.invoke('zenlo:storage:load')
+    loadStorage: () => ipcRenderer.invoke('zenlo:storage:load'),
+    // Opens an allowed link (AI Studio, Zenlo's site, e-mail) in the default browser
+    openExternal: (url) => ipcRenderer.invoke('zenlo:open-external', url)
   })
 }

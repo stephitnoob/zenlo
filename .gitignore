@@ -5,3 +5,7 @@ node_modules/
 build/
 dist/
 .env*
+
+# Personal: Claude Code memory and local settings, never published
+CLAUDE.md
+.claude/

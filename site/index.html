@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zenlo – Đọc hết tin nhắn Zalo trong vài giây</title>
+<meta name="description" content="Zenlo tóm tắt hội thoại và nhóm chat ngay trong Zalo PC: ai nhắc bạn, việc gì cần làm, hạn khi nào. Miễn phí, không cần tài khoản, tin nhắn không qua máy chủ nào của Zenlo.">
+<meta property="og:title" content="Zenlo – Đọc hết tin nhắn Zalo trong vài giây">
+<meta property="og:description" content="Tóm tắt hội thoại và nhóm chat ngay trong Zalo PC. Miễn phí, riêng tư, mã nguồn công khai.">
+<meta name="theme-color" content="#0f0d17">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="#top" aria-label="Zenlo, về đầu trang">
+      <img src="logo.svg" alt="" width="28" height="28">
+      <span>zenlo</span>
+    </a>
+    <nav class="nav__links" aria-label="Mục lục">
+      <a href="#tinh-nang">Tính năng</a>
+      <a href="#rieng-tu">Riêng tư</a>
+      <a href="#cai-dat">Cài đặt</a>
+      <a href="#hoi-dap">Hỏi đáp</a>
+    </nav>
+    <a class="btn btn--small js-download" href="#cai-dat">Tải về</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero__inner">
+      <div class="hero__text">
+        <p class="eyebrow">Tiện ích cho Zalo PC · Windows</p>
+        <h1>Đọc hết tin nhắn Zalo<br><span class="accent">trong vài giây.</span></h1>
+        <p class="lead">Nhóm lớp 300 tin chưa đọc? Zenlo tóm tắt ngay trong Zalo: <b>ai nhắc bạn, việc gì cần làm, hạn khi nào</b>. Bấm vào mốc giờ là tới đúng tin gốc.</p>
+        <div class="cta">
+          <a class="btn btn--big js-download" href="#cai-dat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span class="js-download-label">Tải Zenlo cho Windows</span>
+          </a>
+          <span class="cta__meta mono js-release-meta">Miễn phí · Windows 10/11</span>
+        </div>
+        <ul class="badges" aria-label="Cam kết">
+          <li>Miễn phí</li>
+          <li>Không cần tài khoản</li>
+          <li>Mã nguồn công khai</li>
+          <li>Không qua máy chủ Zenlo</li>
+        </ul>
+      </div>
+
+      <div class="hero__shot" aria-label="Minh hoạ: Zenlo tóm tắt một nhóm chat ngay cạnh khung chat Zalo">
+        <div class="window">
+          <div class="window__chat">
+            <div class="window__title">Lớp 12A1 <span class="mono dim">· 32 thành viên</span></div>
+            <div class="bubble"><b>An</b> Chốt thứ 6 đi picnic nha, mỗi người 100k cho Hà trước tối thứ 4</div>
+            <div class="bubble"><b>Chi</b> @Minh ơi xác nhận vụ lấy áo đi</div>
+            <div class="bubble bubble--me">ok để t xem</div>
+            <div class="bubble"><b>Hà</b> @All ai chưa chuyển 100k thì chuyển nha</div>
+            <div class="bubble bubble--faint"></div>
+            <div class="bubble bubble--faint short"></div>
+          </div>
+          <div class="window__zenlo">
+            <div class="zl-head"><img src="logo.svg" alt="" width="18" height="18"> zenlo</div>
+            <div class="zl-tabs"><span class="on">Tóm tắt</span><span>Bản tin</span></div>
+            <div class="zl-status mono"><i></i>gemini-3.6-flash · 9.8s · 14 tin</div>
+            <div class="zl-label">Liên quan tới bạn</div>
+            <div class="zl-card">Chi nhờ bạn xác nhận lấy áo lớp. <span class="cite mono">08:20 18/10</span></div>
+            <div class="zl-card">Hà nhắc cả nhóm: chuyển 100k picnic trước tối 21/10. <span class="cite mono">21:00 18/10</span></div>
+            <div class="zl-label dim">Còn lại</div>
+            <p>– Picnic thứ 6 (23/10), chưa chốt địa điểm. <span class="cite mono">08:03 18/10</span></p>
+            <p>– Thứ 2 kiểm tra 15 phút chương 3. <span class="cite mono">20:30 17/10</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tinh-nang" class="section">
+    <div class="wrap">
+      <h2>Bớt cuộn, bớt sót việc</h2>
+      <div class="grid">
+        <article class="card">
+          <div class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h10M4 12h7M4 18h10"/><path d="M18 3l1.2 2.8L22 7l-2.8 1.2L18 11l-1.2-2.8L14 7l2.8-1.2z"/></svg>
+          </div>
+          <h3>Tóm tắt một hội thoại</h3>
+          <p>Chọn "Từ tin chưa đọc", 1 giờ, 24 giờ… hoặc tự nhập khoảng thời gian. Chọn độ dài Ngắn, Vừa hay Dài. Phần liên quan tới bạn luôn được đưa lên đầu.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/></svg>
+          </div>
+          <h3>Bản tin mọi cuộc chưa đọc</h3>
+          <p>Một bấm là có tóm tắt ngắn của tất cả hội thoại chưa đọc. Tick chọn cuộc nào cần đọc, kéo thả để xếp ưu tiên; Zenlo nhớ lựa chọn của bạn.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+          </div>
+          <h3>Mốc giờ dẫn về tin gốc</h3>
+          <p>Mỗi ý trong bản tóm tắt có mốc giờ. Bấm vào là Zalo cuộn tới đúng tin nhắn đó, để kiểm tra lại khi cần.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><path d="M4 4l16 16"/></svg>
+          </div>
+          <h3>Đọc mà không "Đã xem"</h3>
+          <p>Tạo bản tin không đánh dấu đã đọc, nên không ai thấy "Đã xem". Khi đọc xong, bấm "Đã đọc" để đồng bộ với Zalo trên điện thoại.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="rieng-tu" class="section section--alt">
+    <div class="wrap privacy">
+      <div>
+        <h2>Tin nhắn của bạn đi đâu?</h2>
+        <p class="lead">Chỉ tới dịch vụ AI <b>do chính bạn chọn</b>, và chỉ khi bạn bấm Tóm tắt. Zenlo không có máy chủ, nên tác giả Zenlo không bao giờ thấy được tin nhắn của bạn.</p>
+        <ul class="checks">
+          <li><b>Không máy chủ, không tài khoản, không theo dõi.</b> Zenlo chạy hoàn toàn trên máy bạn.</li>
+          <li><b>Mã hoá trên đường truyền.</b> Kết nối tới AI luôn qua HTTPS; Zenlo kiểm tra chứng chỉ và chỉ gửi tới đúng địa chỉ của Google hoặc Anthropic.</li>
+          <li><b>API key được Windows mã hoá</b>, chỉ tài khoản Windows của bạn mở được.</li>
+          <li><b>Mã nguồn công khai</b> để bất kỳ ai cũng kiểm tra được Zenlo làm gì.</li>
+          <li><b>Nói thật:</b> nếu dùng key Gemini miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Dùng key trả phí hoặc Claude nếu hội thoại nhạy cảm.</li>
+        </ul>
+        <a class="link" href="privacy.html">Đọc chính sách quyền riêng tư đầy đủ →</a>
+      </div>
+      <figure class="flow" aria-label="Sơ đồ: tin nhắn đi từ máy bạn thẳng tới AI bạn chọn, không qua máy chủ Zenlo">
+        <div class="flow__box">
+          <span class="flow__tag mono">máy của bạn</span>
+          <b>Zalo PC + Zenlo</b>
+          <span class="dim">đọc tin nhắn đã lưu trên máy</span>
+        </div>
+        <div class="flow__arrow mono">HTTPS · chỉ khi bạn bấm ↓</div>
+        <div class="flow__box flow__box--ai">
+          <span class="flow__tag mono">AI bạn chọn</span>
+          <b>Gemini <span class="dim">hoặc</span> Claude</b>
+          <span class="dim">bằng key / tài khoản của bạn</span>
+        </div>
+        <div class="flow__none">
+          <s>Máy chủ Zenlo</s>
+          <span class="mono">không tồn tại</span>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <section id="cai-dat" class="section">
+    <div class="wrap">
+      <h2>Cài trong 1 phút</h2>
+      <ol class="steps">
+        <li>
+          <span class="steps__n mono">1</span>
+          <h3>Tải về</h3>
+          <p>Tải <span class="mono">Zenlo-Setup.exe</span> và mở file.</p>
+        </li>
+        <li>
+          <span class="steps__n mono">2</span>
+          <h3>Chọn "1. Cài Zenlo"</h3>
+          <p>Zalo sẽ tự tắt trong lúc cài. Khi Zalo cập nhật phiên bản mới, chạy lại bước này; cài đặt và lịch sử vẫn được giữ.</p>
+        </li>
+        <li>
+          <span class="steps__n mono">3</span>
+          <h3>Mở Zalo, bấm nút Zenlo</h3>
+          <p>Nút tím ở thanh bên trái. Lần đầu, dán một API key Gemini miễn phí; Zenlo hướng dẫn từng bước.</p>
+        </li>
+      </ol>
+
+      <div class="download">
+        <a class="btn btn--big js-download" href="#cai-dat">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span class="js-download-label">Tải Zenlo cho Windows</span>
+        </a>
+        <dl class="verify mono">
+          <div><dt>Phiên bản</dt><dd class="js-version">–</dd></div>
+          <div><dt>Dung lượng</dt><dd class="js-size">–</dd></div>
+          <div><dt>SHA-256</dt><dd class="js-sha">–</dd></div>
+        </dl>
+        <p class="note">Windows có thể hiện "Windows protected your PC" vì Zenlo chưa có chữ ký số trả phí. Bấm <b>More info → Run anyway</b>. Để chắc chắn file không bị ai sửa, so SHA-256 ở trên với kết quả của lệnh <span class="mono">Get-FileHash .\Zenlo-Setup.exe</span>, hoặc <a class="link js-virustotal" href="https://www.virustotal.com/">kiểm tra trên VirusTotal</a>. Chỉ tải Zenlo từ trang này hoặc kho mã chính thức.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="hoi-dap" class="section section--alt">
+    <div class="wrap faq">
+      <h2>Hỏi đáp</h2>
+      <details>
+        <summary>Zenlo có an toàn không?</summary>
+        <p>Zenlo không có máy chủ và không thu thập dữ liệu. Tin nhắn chỉ được gửi tới dịch vụ AI bạn chọn, qua kết nối mã hoá. Mã nguồn công khai, và mỗi bản phát hành được build tự động trên GitHub kèm chứng thực nguồn gốc, nên ai cũng kiểm chứng được file tải về đúng là build từ mã nguồn đó.</p>
+      </details>
+      <details>
+        <summary>Dùng Zenlo có bị khoá tài khoản Zalo không?</summary>
+        <p>Zenlo chỉ đọc dữ liệu Zalo đã lưu trên máy bạn và không gửi gì lên máy chủ Zalo, nên chưa có trường hợp nào bị khoá. Tuy vậy, Zenlo sửa ứng dụng Zalo trên máy, và việc dùng ứng dụng đã sửa có thể trái điều khoản của Zalo. Hãy cân nhắc, và bạn có thể gỡ Zenlo bất cứ lúc nào.</p>
+      </details>
+      <details>
+        <summary>Zenlo có mất phí không?</summary>
+        <p>Zenlo miễn phí. Phần AI dùng key Gemini của bạn (có gói miễn phí), hoặc gói Claude Pro/Max nếu bạn đã có.</p>
+      </details>
+      <details>
+        <summary>Google hay Anthropic có đọc tin nhắn của tôi không?</summary>
+        <p>Phần tin nhắn cần tóm tắt được gửi tới AI bạn chọn để nó viết bản tóm tắt. Với key Gemini miễn phí, Google có thể dùng nội dung này để cải thiện sản phẩm; với key trả phí thì không. Tin nhắn trong nhóm có cả nội dung của người khác, nên hãy cân nhắc với hội thoại nhạy cảm.</p>
+      </details>
+      <details>
+        <summary>Zalo cập nhật thì sao?</summary>
+        <p>Mỗi lần Zalo cập nhật, Zenlo tạm biến mất. Mở lại <span class="mono">Zenlo-Setup.exe</span> và chọn "1. Cài Zenlo". Cài đặt, bản tóm tắt và Bản tin của bạn vẫn còn nguyên.</p>
+      </details>
+      <details>
+        <summary>Gỡ Zenlo thế nào?</summary>
+        <p>Mở <span class="mono">Zenlo-Setup.exe</span>, chọn "2. Gỡ Zenlo". Zalo trở về đúng bản gốc. Muốn xoá sạch dữ liệu của Zenlo thì xoá thêm thư mục <span class="mono">%APPDATA%\Zenlo</span>.</p>
+      </details>
+      <details>
+        <summary>Có bản cho Mac hay điện thoại không?</summary>
+        <p>Hiện Zenlo chỉ có cho Zalo PC trên Windows.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div>
+      <a class="brand" href="#top"><img src="logo.svg" alt="" width="22" height="22"><span>zenlo</span></a>
+      <p class="dim">© 2026 stephit. Zenlo không liên kết với và không được Zalo hay VNG bảo trợ.</p>
+    </div>
+    <nav class="footer__links" aria-label="Liên kết">
+      <a href="privacy.html">Quyền riêng tư</a>
+      <a class="js-source" href="#">Mã nguồn</a>
+      <a class="js-feedback" href="#">Góp ý & báo lỗi</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

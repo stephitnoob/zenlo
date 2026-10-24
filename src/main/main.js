@@ -6,7 +6,7 @@
   - Gemini: the Gemini API with the user's own API key, kept encrypted with Windows' safeStorage
 */
 
-const { app, session, ipcMain, safeStorage } = require('electron')
+const { app, session, ipcMain, safeStorage, shell } = require('electron')
 const { spawn } = require('child_process')
 const https = require('https')
 const crypto = require('crypto')
@@ -21,7 +21,10 @@ const CLAUDE_MODELS = ['haiku', 'sonnet', 'opus']
 const CLAUDE_EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
 
 const GEMINI_EFFORTS = ['low', 'medium', 'high']
+// The only host Zenlo sends messages to for Gemini. Certificates are always checked, whatever
+// NODE_TLS_REJECT_UNAUTHORIZED says, and the key goes in a header, never in the URL.
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/'
+const GEMINI_TLS = { rejectUnauthorized: true, minVersion: 'TLSv1.2' }
 
 const running = new Map()
 
@@ -36,11 +39,24 @@ const findClaudeExecutable = () => {
   return candidates.find((p) => fs.existsSync(p)) || null
 }
 
-// Claude Code must use the Claude subscription login, not API billing
+// Variables that could send the messages somewhere else, switch to another billing or provider,
+// weaken TLS, or load code into Claude Code. Zalo's environment is inherited, so they are removed
+// whatever set them.
+const UNSAFE_ENV = [
+  // Claude Code must use the Claude subscription login, not API billing
+  'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN',
+  // Another endpoint or provider for the same messages
+  'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_VERTEX_BASE_URL',
+  'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_CUSTOM_HEADERS',
+  // TLS and code injection into a Node-based program
+  'NODE_TLS_REJECT_UNAUTHORIZED', 'NODE_EXTRA_CA_CERTS', 'NODE_OPTIONS', 'SSLKEYLOGFILE'
+]
+
 const getChildEnv = () => {
   const env = { ...process.env }
-  delete env.ANTHROPIC_API_KEY
-  delete env.ANTHROPIC_AUTH_TOKEN
+  for (const name of Object.keys(env)) {
+    if (UNSAFE_ENV.includes(name.toUpperCase())) delete env[name]
+  }
   // Keep the user's own CLAUDE.md and memory files out of the summary context
   env.CLAUDE_CODE_DISABLE_CLAUDE_MDS = '1'
   return env
@@ -227,7 +243,7 @@ const geminiLabel = (id) => {
 }
 
 const httpsGetJSON = (url, key) => new Promise((resolve, reject) => {
-  const request = https.get(url, { headers: { 'x-goog-api-key': key } }, (response) => {
+  const request = https.get(url, { ...GEMINI_TLS, headers: { 'x-goog-api-key': key } }, (response) => {
     let text = ''
     response.setEncoding('utf8')
     response.on('data', (chunk) => { text += chunk })
@@ -327,7 +343,8 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
     }, ms)
   }
 
-  const request = https.request(`${GEMINI_URL}${model}:streamGenerateContent?alt=sse`, {
+  const request = https.request(`${GEMINI_URL}${encodeURIComponent(model)}:streamGenerateContent?alt=sse`, {
+    ...GEMINI_TLS,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key, 'Content-Length': Buffer.byteLength(body) }
   }, (response) => {
@@ -529,6 +546,29 @@ ipcMain.on('zenlo:summary:cancel', (event, id) => {
   if (!isTrustedSender(event)) return
   const cancel = running.get(id)
   if (cancel) cancel()
+})
+
+// Links Zenlo may open in the default browser: Google AI Studio (Gemini keys), Claude Code's
+// page, Zenlo's website and repository, and e-mail. Anything else is refused.
+const EXTERNAL_HOSTS = ['aistudio.google.com', 'ai.google.dev', 'claude.com', 'www.claude.com', 'docs.claude.com', 'github.com']
+const EXTERNAL_HOST_SUFFIXES = ['.github.io', '.pages.dev']
+
+const isAllowedExternal = (url) => {
+  let parsed
+  try {
+    parsed = new URL(url)
+  } catch (error) {
+    return false
+  }
+  if (parsed.protocol === 'mailto:') return true
+  if (parsed.protocol !== 'https:') return false
+  return EXTERNAL_HOSTS.includes(parsed.hostname) || EXTERNAL_HOST_SUFFIXES.some((suffix) => parsed.hostname.endsWith(suffix))
+}
+
+ipcMain.handle('zenlo:open-external', (event, url) => {
+  if (!isTrustedSender(event) || !isAllowedExternal(String(url))) return false
+  shell.openExternal(String(url))
+  return true
 })
 
 ipcMain.handle('zenlo:settings:get', (event) => {

@@ -39,6 +39,10 @@
         <span class="zenlo-drawer__spacer"></span>
         <button type="button" role="tab" class="zenlo-drawer__tab zenlo-drawer__tab--icon" data-tab="settings" title="Cài đặt Zenlo" aria-label="Cài đặt Zenlo">${GEAR_SVG}</button>
       </div>
+      <div class="zenlo-drawer__notice" hidden>
+        <span class="js-drawer-notice-text"></span>
+        <button type="button" class="zenlo__inline-link js-drawer-notice-action">Mở Cài đặt</button>
+      </div>
       <div class="zenlo-drawer__body">
         <div class="zenlo-drawer__pane" data-pane="summary"></div>
         <div class="zenlo-drawer__pane" data-pane="digest"></div>
@@ -46,6 +50,7 @@
       </div>
     `
     el.querySelector('.js-drawer-close').addEventListener('click', close)
+    el.querySelector('.js-drawer-notice-action').addEventListener('click', () => open('settings'))
     el.querySelector('.zenlo-drawer__tabs').addEventListener('click', (event) => {
       const tab = event.target.closest('[data-tab]')
       if (tab) open(tab.dataset.tab)
@@ -83,6 +88,7 @@
     render()
     drawer.hidden = false
     updateTheme()
+    refreshNotice()
     if (showHandlers[tab]) showHandlers[tab]()
   }
 
@@ -108,6 +114,26 @@
   // Called each time the drawer shows that tab
   function onShow (tab, fn) {
     showHandlers[tab] = fn
+  }
+
+  // ---------- First run ----------
+
+  // A line above the tabs while the chosen AI cannot be used yet (no Gemini key, no Claude Code)
+  async function refreshNotice () {
+    if (!drawer || !window.$zenlo || !window.$zenlo.getSettings) return
+    const notice = drawer.querySelector('.zenlo-drawer__notice')
+    let text = ''
+    try {
+      const settings = await window.$zenlo.getSettings()
+      const { provider } = Z.getAISettings()
+      if (provider === 'gemini' && !settings.geminiKeys.length) {
+        text = 'Zenlo cần một API key Gemini (miễn phí) để tóm tắt. Lấy key mất khoảng 1 phút.'
+      } else if (provider === 'claude' && !settings.claudePath) {
+        text = 'Chưa tìm thấy Claude Code trên máy. Hãy cài Claude Code, hoặc chuyển sang Gemini.'
+      }
+    } catch (error) {}
+    notice.querySelector('.js-drawer-notice-text').textContent = text
+    notice.hidden = !text || current === 'settings'
   }
 
   // ---------- Theme ----------
@@ -168,5 +194,5 @@
     if (isOpen()) updateTheme()
   }, 2000)
 
-  Z.drawer = { open, close, toggle, isOpen, pane, onShow, current: () => current }
+  Z.drawer = { open, close, toggle, isOpen, pane, onShow, refreshNotice, current: () => current }
 })()

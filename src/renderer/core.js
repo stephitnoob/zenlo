@@ -17,6 +17,19 @@
   // Rough size for one AI request; longer inputs are split
   const CHUNK_CHARS = 300000
 
+  // Zenlo's public links; an empty one is not shown. Filled in when the site and repository exist.
+  const LINKS = {
+    site: '',
+    source: '',
+    privacy: '',
+    feedback: '',
+    geminiKey: 'https://aistudio.google.com/apikey'
+  }
+
+  function openLink (url) {
+    if (url && window.$zenlo && window.$zenlo.openExternal) window.$zenlo.openExternal(url)
+  }
+
   const STORAGE_KEYS = {
     provider: '@Zenlo:PROVIDER',
     model: '@Zenlo:MODEL',
@@ -317,7 +330,8 @@
 
   // The AI the user chose in Zenlo's settings, with its model and effort
   function getAISettings () {
-    const provider = getSetting(STORAGE_KEYS.provider, PROVIDERS.map((p) => p.value), 'claude')
+    // Gemini by default: most people have no Claude Pro/Max plan with Claude Code installed
+    const provider = getSetting(STORAGE_KEYS.provider, PROVIDERS.map((p) => p.value), 'gemini')
     if (provider === 'gemini') {
       let model = GEMINI_AUTO
       try {
@@ -883,6 +897,12 @@
   // Messages from the same sender are joined on one line while each follows the previous within this gap
   const JOIN_GAP = 10 * MINUTE
 
+  // A message (or a display name) must not close the data tags and pass itself off as Zenlo's own
+  // request: "</transcript>" and the like are turned into look-alikes the model cannot mistake.
+  function neutralizeTags (text) {
+    return String(text).replace(/<(\/?)(transcript|notes)\b/gi, '‹$1$2')
+  }
+
   // Compact transcript to save tokens without losing content:
   // - a "[Thứ …, dd/mm/yyyy]" line once per day; every line starts with the time of its first message,
   //   so the model can cite "[dd/mm hh:mm]" and Zenlo can jump back to that message
@@ -930,10 +950,10 @@
       if (newDay) lines.push(`[${formatDay(time)}]`)
 
       if (sender === lastSender && !newDay && time - lastTime <= JOIN_GAP) {
-        lines[lines.length - 1] += ` | ${text}`
+        lines[lines.length - 1] += ` | ${neutralizeTags(text)}`
       } else {
         const d = new Date(time)
-        lines.push(`${pad(d.getHours())}:${pad(d.getMinutes())} ${sender}: ${text}`)
+        lines.push(`${pad(d.getHours())}:${pad(d.getMinutes())} ${neutralizeTags(sender)}: ${neutralizeTags(text)}`)
         lastSender = sender
       }
       lastTime = time
@@ -1128,6 +1148,7 @@
 
     describeContent,
     buildTranscript,
+    neutralizeTags,
     prepareTranscript,
     splitIntoChunks,
     SUMMARY_PROMPT,
@@ -1136,6 +1157,8 @@
     buildPartInstruction,
 
     runAI,
-    onDomChange
+    onDomChange,
+    LINKS,
+    openLink
   }
 })()
