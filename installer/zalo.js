@@ -18,11 +18,11 @@ const asar = require('@electron/asar')
 const ZALO_ROOT = path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Zalo')
 const ZENLO_FOLDER = 'zenlo' // inside Zalo's pc-dist
 const DEV_MARKER = 'zenlo-dev' // in Zalo's resources folder while dev mode is on
-const ASSETS = path.join(__dirname, 'assets')
+const DIST = path.join(__dirname, '..', 'dist') // built by npm run build
 
-const PAGE_STYLES = ['zenlo.min.css']
-// zenlo-styles first (Zalo strips unknown stylesheets at runtime, it puts them back), then the core
-const PAGE_SCRIPTS = ['zenlo-styles', 'zenlo-core', 'zenlo', 'zenlo-digest', 'zenlo-settings']
+// One stylesheet and one script (all of Zenlo's page code, bundled)
+const PAGE_STYLE = 'zenlo.css'
+const PAGE_SCRIPT = 'zenlo.js'
 
 const log = (...args) => console.log(...args)
 
@@ -80,10 +80,8 @@ function insertBefore (text, marker, addition, file) {
 function patchPage (appDir) {
   const file = path.join(appDir, 'pc-dist', 'index.html')
   let html = fs.readFileSync(file, 'utf8')
-  const links = PAGE_STYLES.map((name) => `<link rel="stylesheet" href="${ZENLO_FOLDER}/css/${name}">`).join('')
-  const scripts = PAGE_SCRIPTS.map((name) => `<script src="${ZENLO_FOLDER}/js/${name}.min.js"></script>`).join('')
-  html = insertBefore(html, '</head>', links, 'index.html')
-  html = insertBefore(html, '</body>', scripts, 'index.html')
+  html = insertBefore(html, '</head>', `<link rel="stylesheet" href="${ZENLO_FOLDER}/${PAGE_STYLE}">`, 'index.html')
+  html = insertBefore(html, '</body>', `<script src="${ZENLO_FOLDER}/${PAGE_SCRIPT}"></script>`, 'index.html')
   fs.writeFileSync(file, html)
 }
 
@@ -95,19 +93,19 @@ function patchBootstrap (appDir) {
   const source = fs.readFileSync(file, 'utf8')
   const at = source.indexOf(anchor)
   if (at < 0) throw new Error('Không tìm thấy điểm nạp trong bootstrap.js. Có thể Zalo đã đổi cấu trúc.')
-  const hook = `\n    try { require('./pc-dist/${ZENLO_FOLDER}/js/zenlo-main.min'); } catch (error) { console.error('[zenlo]', error); }`
+  const hook = `\n    try { require('./pc-dist/${ZENLO_FOLDER}/zenlo-main'); } catch (error) { console.error('[zenlo]', error); }`
   fs.writeFileSync(file, source.slice(0, at + anchor.length) + hook + source.slice(at + anchor.length))
 }
 
 // Normal mode copies Zenlo's files into Zalo. Dev mode links to the build folder instead,
 // so a rebuild plus Ctrl+Shift+R in Zalo is enough to see a change.
 function addZenloFiles (appDir, dev) {
-  if (!fs.existsSync(path.join(ASSETS, 'js', 'zenlo-main.min.js'))) {
+  if (!fs.existsSync(path.join(DIST, 'zenlo-main.js'))) {
     throw new Error('Chưa build Zenlo. Hãy chạy "npm run build" trước.')
   }
   const target = path.join(appDir, 'pc-dist', ZENLO_FOLDER)
-  if (dev) fs.symlinkSync(ASSETS, target, 'junction')
-  else fs.cpSync(ASSETS, target, { recursive: true })
+  if (dev) fs.symlinkSync(DIST, target, 'junction')
+  else fs.cpSync(DIST, target, { recursive: true })
 }
 
 function install ({ dev = false } = {}) {

@@ -26,14 +26,14 @@ Trình quản lí hội thoại cho **Zalo PC** (Windows), dùng AI (Claude ho�
 
 ```bash
 npm install
-npm run build
 npm run zalo:install
 ```
 
 | Lệnh | Việc |
 |---|---|
-| `npm run zalo:install` | Cài Zenlo (chép file vào Zalo) |
-| `npm run zalo:dev` | Cài ở chế độ phát triển: Zalo dùng thẳng thư mục `build`, sửa xong chỉ cần build rồi bấm **Ctrl+Shift+R** trong Zalo |
+| `npm run build` | Build Zenlo vào `dist/` |
+| `npm run zalo:install` | Build rồi cài Zenlo vào Zalo (chép file) |
+| `npm run zalo:dev` | Build rồi cài ở chế độ phát triển: Zalo dùng thẳng thư mục `dist/`, sửa xong chỉ cần build rồi bấm **Ctrl+Shift+R** trong Zalo |
 | `npm run dev` | Tự build lại mỗi khi sửa code |
 | `npm run zalo:status` | Xem Zenlo đang được cài thế nào |
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
@@ -44,15 +44,11 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 
 | Đường dẫn | Vai trò |
 |---|---|
-| `src/pc/assets/js/zenlo-core.js` | Phần dùng chung: dữ liệu và trạng thái chưa đọc của Zalo, bản chép hội thoại, prompt tóm tắt, gọi AI |
-| `src/pc/assets/js/zenlo.js` | Panel tóm tắt hội thoại |
-| `src/pc/assets/js/zenlo-digest.js` | Bản tin |
-| `src/pc/assets/js/zenlo-settings.js` | Cài đặt Zenlo |
-| `src/pc/assets/js/zenlo-styles.js` | Gắn lại CSS khi Zalo xoá |
-| `src/pc/assets/js/zenlo-main.js` | Tiến trình chính: chạy `claude -p` hoặc gọi Gemini, lưu key mã hoá, phím tải lại ở chế độ phát triển |
-| `src/pc/assets/js/zenlo-preload.js` | Cầu nối `window.$zenlo` giữa giao diện và tiến trình chính |
-| `src/pc/assets/scss/zenlo.scss` | Giao diện |
-| `src/pc/zalo-patch.js`, `src/pc/index.js` | Bộ cài / gỡ vào Zalo PC |
+| `src/renderer/` | Chạy trong trang Zalo, gom thành `dist/zenlo.js`: `core.js` (dữ liệu và trạng thái chưa đọc của Zalo, bản chép hội thoại, prompt, gọi AI), `summary.js` (Tóm tắt), `digest.js` (Bản tin), `settings.js` (Cài đặt), `styles.js` (gắn lại CSS khi Zalo xoá) |
+| `src/main/` | Tiến trình chính của Zalo: `main.js` chạy `claude -p` hoặc gọi Gemini, lưu key mã hoá; `preload.js` là cầu nối `window.$zenlo` |
+| `src/styles/` | Giao diện (SCSS) |
+| `scripts/build.mjs` | Build bằng esbuild và sass |
+| `installer/` | Cài / gỡ vào Zalo PC |
 
 ## Bản quyền
 

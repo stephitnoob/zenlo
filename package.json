@@ -1,28 +1,23 @@
 {
   "name": "zenlo",
-  "description": "Zenlo – trình quản lí hội thoại Zalo PC, tóm tắt hội thoại bằng Claude",
+  "description": "Zenlo – trình quản lí hội thoại Zalo PC, tóm tắt hội thoại bằng AI",
   "version": "0.1.0",
   "private": true,
   "author": "stephit",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "gulp build",
-    "dev": "gulp dev",
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
     "lint": "standard",
-    "zalo:install": "node build/pc install",
-    "zalo:dev": "node build/pc dev",
-    "zalo:status": "node build/pc status",
-    "zalo:uninstall": "node build/pc uninstall"
+    "zalo:install": "npm run build && node installer install",
+    "zalo:dev": "npm run build && node installer dev",
+    "zalo:status": "node installer status",
+    "zalo:uninstall": "node installer uninstall"
   },
   "devDependencies": {
-    "del": "^6.0.0",
-    "gulp": "^4.0.2",
-    "gulp-minify": "^3.1.0",
-    "gulp-rename": "^2.0.0",
-    "gulp-sass": "^5.1.0",
-    "merge-stream": "^2.0.0",
-    "sass": "^1.74.1",
-    "standard": "^16.0.4"
+    "esbuild": "^0.28.2",
+    "sass": "^1.106.1",
+    "standard": "^17.1.2"
   },
   "dependencies": {
     "@electron/asar": "3.3.1"
@@ -33,6 +28,9 @@
       "localStorage",
       "MutationObserver",
       "requestAnimationFrame"
+    ],
+    "ignore": [
+      "dist/"
     ]
   },
   "engines": {

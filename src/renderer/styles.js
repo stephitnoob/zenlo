@@ -7,7 +7,7 @@
 
 (function () {
   const STYLESHEETS = [
-    'zenlo/css/zenlo.min.css'
+    'zenlo/zenlo.css'
   ]
 
   function ensureStylesheets () {

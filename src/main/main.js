@@ -15,7 +15,7 @@ const fs = require('fs')
 const os = require('os')
 
 const PARTITION_NAME = 'persist:zalo'
-const PRELOAD_PATH = path.join(__dirname, 'zenlo-preload.min.js')
+const PRELOAD_PATH = path.join(__dirname, 'zenlo-preload.js')
 
 const CLAUDE_MODELS = ['haiku', 'sonnet', 'opus']
 const CLAUDE_EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
@@ -536,7 +536,7 @@ const addPreload = (targetSession) => {
   }
 }
 
-// Dev mode (installed with "node build/pc dev"): Ctrl+Shift+R reloads a Zalo window,
+// Dev mode (installed with "npm run zalo:dev"): Ctrl+Shift+R reloads a Zalo window,
 // so a rebuilt Zenlo shows up without restarting Zalo
 const DEV_MODE = fs.existsSync(path.join(process.resourcesPath || '', 'zenlo-dev'))
 
