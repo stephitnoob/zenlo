@@ -1,6 +1,7 @@
 /*
   Zenlo – website. Light and dark (follows the computer, or the sun/moon button), electric violet
-  accent, monospace for data. System fonts only: the site loads nothing from anyone else.
+  accent, monospace for data. System fonts only: the site loads no fonts or scripts from anyone else
+  (stats.js only sends GoatCounter a count).
 */
 
 :root {
