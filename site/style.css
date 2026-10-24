@@ -943,20 +943,61 @@ button {
 /* ---------- From the author ---------- */
 
 .note {
-  max-width: 640px;
+  max-width: 660px;
   margin: 0 auto;
-  font-size: 19px;
+}
+
+.note__quote {
+  position: relative;
+  margin: 0;
+  padding: 4px 0 4px 28px;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+  font-size: 20px;
+  font-style: italic;
   line-height: 1.7;
 }
 
-.note p {
+/* A large opening quote mark hanging above the bar */
+.note__quote::before {
+  content: "\201C";
+  position: absolute;
+  top: -46px;
+  left: 14px;
+  color: var(--accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 84px;
+  line-height: 1;
+  opacity: 0.35;
+}
+
+.note__quote p {
   margin: 0 0 14px;
 }
 
+.note__quote p:last-child {
+  margin-bottom: 0;
+}
+
 .note__sign {
+  margin-top: 16px;
+  padding-left: 31px;
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 15px;
+  font-size: 14px;
+}
+
+.aside {
+  max-width: 660px;
+  margin: 56px auto 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 15.5px;
+}
+
+.aside p {
+  margin: 0 0 8px;
 }
 
 /* ---------- Footer ---------- */
