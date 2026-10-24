@@ -3,330 +3,327 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zenlo – Đọc hết tin nhắn Zalo trong vài giây</title>
-<meta name="description" content="Zenlo tóm tắt hội thoại và nhóm chat ngay trong Zalo PC: ai nhắc bạn, việc gì cần làm, hạn khi nào. Miễn phí, không cần tài khoản, tin nhắn không qua máy chủ nào của Zenlo.">
-<meta property="og:title" content="Zenlo – Đọc hết tin nhắn Zalo trong vài giây">
-<meta property="og:description" content="Tóm tắt hội thoại và nhóm chat ngay trong Zalo PC. Miễn phí, riêng tư, mã nguồn công khai.">
-<meta name="theme-color" content="#0f0d17">
+<title>Zenlo – tóm tắt tin nhắn ngay trong Zalo PC</title>
+<meta name="description" content="Zenlo tóm tắt hội thoại và nhóm chat ngay trong Zalo PC trên Windows: ai nhắc bạn, việc gì cần làm, hạn khi nào. Miễn phí.">
+<meta property="og:title" content="Zenlo – tóm tắt tin nhắn ngay trong Zalo PC">
+<meta property="og:description" content="Ba trăm tin chưa đọc, đọc trong mười giây. Tiện ích miễn phí cho Zalo PC trên Windows.">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
 </head>
 <body>
 
-<header class="nav">
-  <div class="wrap nav__inner">
-    <a class="brand" href="#top" aria-label="Zenlo, về đầu trang">
-      <img src="logo.svg" alt="" width="28" height="28">
+<header class="top">
+  <div class="wrap top__inner">
+    <a class="brand" href="./" aria-label="Zenlo, trang chủ">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
       <span>zenlo</span>
     </a>
-    <nav class="nav__links" aria-label="Mục lục">
-      <a href="#tinh-nang">Tính năng</a>
-      <a href="#rieng-tu">Riêng tư</a>
-      <a href="#cai-dat">Cài đặt</a>
-      <a href="#hoi-dap">Hỏi đáp</a>
-    </nav>
+    <a class="top__link" href="huong-dan.html">Hướng dẫn</a>
+    <a class="top__link top__link--hide" href="#cai-dat">Cài đặt</a>
+    <button class="icon-btn js-theme" type="button">
+      <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
     <a class="btn btn--small js-download" href="#cai-dat">Tải về</a>
   </div>
 </header>
 
-<main id="top">
+<main>
 
   <section class="hero">
-    <div class="wrap hero__inner">
-      <div class="hero__text">
-        <p class="eyebrow">Tiện ích cho Zalo PC · Windows</p>
-        <h1>Đọc hết tin nhắn Zalo<br><span class="accent">trong vài giây.</span></h1>
-        <p class="lead">Nhóm lớp 300 tin chưa đọc? Zenlo tóm tắt ngay trong Zalo: <b>ai nhắc bạn, việc gì cần làm, hạn khi nào</b>. Bấm vào mốc giờ là tới đúng tin gốc.</p>
-        <div class="cta">
-          <a class="btn btn--big js-download" href="#cai-dat">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
-            <span class="js-download-label">Tải Zenlo cho Windows</span>
-          </a>
-          <span class="cta__meta mono js-release-meta">Miễn phí · Windows 10/11</span>
-        </div>
-        <ul class="badges" aria-label="Cam kết">
-          <li>Miễn phí</li>
-          <li>Không cần tài khoản</li>
-          <li>Mã nguồn công khai</li>
-          <li>Không qua máy chủ Zenlo</li>
-        </ul>
-      </div>
-
-      <div class="hero__shot" aria-label="Minh hoạ: Zenlo tóm tắt một nhóm chat ngay cạnh khung chat Zalo">
-        <div class="window">
-          <div class="window__chat">
-            <div class="window__title">Lớp 12A1 <span class="mono dim">· 32 thành viên</span></div>
-            <div class="bubble"><b>An</b> Chốt thứ 6 đi picnic nha, mỗi người 100k cho Hà trước tối thứ 4</div>
-            <div class="bubble"><b>Chi</b> @Minh ơi xác nhận vụ lấy áo đi</div>
-            <div class="bubble bubble--me">ok để t xem</div>
-            <div class="bubble"><b>Hà</b> @All ai chưa chuyển 100k thì chuyển nha</div>
-            <div class="bubble bubble--faint"></div>
-            <div class="bubble bubble--faint short"></div>
-          </div>
-          <div class="window__zenlo">
-            <div class="zl-head"><img src="logo.svg" alt="" width="18" height="18"> zenlo</div>
-            <div class="zl-tabs"><span class="on">Tóm tắt</span><span>Bản tin</span></div>
-            <div class="zl-status mono"><i></i>gemini-3.6-flash · 9.8s · 14 tin</div>
-            <div class="zl-label">Liên quan tới bạn</div>
-            <div class="zl-card">Chi nhờ bạn xác nhận lấy áo lớp. <span class="cite mono">08:20 18/10</span></div>
-            <div class="zl-card">Hà nhắc cả nhóm: chuyển 100k picnic trước tối 21/10. <span class="cite mono">21:00 18/10</span></div>
-            <div class="zl-label dim">Còn lại</div>
-            <p>– Picnic thứ 6 (23/10), chưa chốt địa điểm. <span class="cite mono">08:03 18/10</span></p>
-            <p>– Thứ 2 kiểm tra 15 phút chương 3. <span class="cite mono">20:30 17/10</span></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="tinh-nang" class="section">
     <div class="wrap">
-      <h2>Bớt cuộn, bớt sót việc</h2>
-      <div class="grid">
-        <article class="card">
-          <div class="card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h10M4 12h7M4 18h10"/><path d="M18 3l1.2 2.8L22 7l-2.8 1.2L18 11l-1.2-2.8L14 7l2.8-1.2z"/></svg>
-          </div>
-          <h3>Tóm tắt một hội thoại</h3>
-          <p>Chọn "Từ tin chưa đọc", 1 giờ, 24 giờ… hoặc tự nhập khoảng thời gian. Chọn độ dài Ngắn, Vừa hay Dài. Phần liên quan tới bạn luôn được đưa lên đầu.</p>
-        </article>
-        <article class="card">
-          <div class="card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/></svg>
-          </div>
-          <h3>Bản tin mọi cuộc chưa đọc</h3>
-          <p>Một bấm là có tóm tắt ngắn của tất cả hội thoại chưa đọc. Tick chọn cuộc nào cần đọc, kéo thả để xếp ưu tiên; Zenlo nhớ lựa chọn của bạn.</p>
-        </article>
-        <article class="card">
-          <div class="card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
-          </div>
-          <h3>Mốc giờ dẫn về tin gốc</h3>
-          <p>Mỗi ý trong bản tóm tắt có mốc giờ. Bấm vào là Zalo cuộn tới đúng tin nhắn đó, để kiểm tra lại khi cần.</p>
-        </article>
-        <article class="card">
-          <div class="card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><path d="M4 4l16 16"/></svg>
-          </div>
-          <h3>Đọc mà không "Đã xem"</h3>
-          <p>Tạo bản tin không đánh dấu đã đọc, nên không ai thấy "Đã xem". Khi đọc xong, bấm "Đã đọc" để đồng bộ với Zalo trên điện thoại.</p>
-        </article>
-      </div>
+      <h1>Ba trăm tin chưa đọc,<br>đọc trong mười giây.</h1>
+      <p>Zenlo tóm tắt hội thoại ngay cạnh khung chat của Zalo PC. Thử bấm ở bên dưới.</p>
     </div>
   </section>
 
-  <section id="rieng-tu" class="section section--alt">
-    <div class="wrap privacy">
-      <div>
-        <h2>Tin nhắn của bạn đi đâu?</h2>
-        <p class="lead">Chỉ tới dịch vụ AI <b>do chính bạn chọn</b>, và chỉ khi bạn bấm Tóm tắt. Zenlo không có máy chủ, nên tác giả Zenlo không bao giờ thấy được tin nhắn của bạn.</p>
-        <ul class="checks">
-          <li><b>Không máy chủ, không tài khoản, không theo dõi.</b> Zenlo chạy hoàn toàn trên máy bạn.</li>
-          <li><b>Mã hoá trên đường truyền.</b> Kết nối tới AI luôn qua HTTPS; Zenlo kiểm tra chứng chỉ và chỉ gửi tới đúng địa chỉ của Google hoặc Anthropic.</li>
-          <li><b>API key được Windows mã hoá</b>, chỉ tài khoản Windows của bạn mở được.</li>
-          <li><b>Mã nguồn công khai</b> để bất kỳ ai cũng kiểm tra được Zenlo làm gì.</li>
-          <li><b>Nói thật:</b> nếu dùng key Gemini miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Dùng key trả phí hoặc Claude nếu hội thoại nhạy cảm.</li>
-        </ul>
-        <a class="link" href="privacy.html">Đọc chính sách quyền riêng tư đầy đủ →</a>
-      </div>
-      <figure class="flow" aria-label="Sơ đồ: tin nhắn đi từ máy bạn thẳng tới AI bạn chọn, không qua máy chủ Zenlo">
-        <div class="flow__box">
-          <span class="flow__tag mono">máy của bạn</span>
-          <b>Zalo PC + Zenlo</b>
-          <span class="dim">đọc tin nhắn đã lưu trên máy</span>
-        </div>
-        <div class="flow__arrow mono">HTTPS · chỉ khi bạn bấm ↓</div>
-        <div class="flow__box flow__box--ai">
-          <span class="flow__tag mono">AI bạn chọn</span>
-          <b>Gemini <span class="dim">hoặc</span> Claude</b>
-          <span class="dim">bằng key / tài khoản của bạn</span>
-        </div>
-        <div class="flow__none">
-          <s>Máy chủ Zenlo</s>
-          <span class="mono">không tồn tại</span>
-        </div>
-      </figure>
-    </div>
-  </section>
-
-  <section id="cai-dat" class="section">
+  <!-- 1. One long group chat -->
+  <section class="chapter chapter--first" id="tom-tat">
     <div class="wrap">
-      <h2>Cài trong 1 phút</h2>
+      <div class="chapter__head">
+        <span class="chapter__step">01 · Tóm tắt</span>
+        <h2>Một nhóm chat dài, đọc trong vài giây.</h2>
+        <p>Phần liên quan tới bạn luôn nằm trên cùng.</p>
+      </div>
+
+      <div class="zw" id="demo-summary">
+        <div class="zw__chat">
+          <div class="zw__title">
+            <span class="zw__avatar" aria-hidden="true"></span>
+            <div><b>Lớp 12A1</b><small>32 thành viên · 14 tin chưa đọc</small></div>
+          </div>
+          <div class="zw__msgs js-msgs">
+            <div class="zw__day">Thứ Hai, 19/10</div>
+            <div class="msg" data-t="07:52"><b>An <span>07:52</span></b>Thứ 6 này lớp đi picnic không mọi người</div>
+            <div class="msg" data-t="07:55"><b>Bình <span>07:55</span></b>đi đi, thi xong rồi mà</div>
+            <div class="msg" data-t="07:56"><b>Dũng <span>07:56</span></b>+1</div>
+            <div class="msg" data-t="08:03"><b>An <span>08:03</span></b>Chốt thứ 6 (23/10) nha. Địa điểm để mình với Hà tìm</div>
+            <div class="msg" data-t="08:10"><b>Hà <span>08:10</span></b>Mỗi bạn góp 100k, chuyển cho mình trước tối thứ 4 nha</div>
+            <div class="msg" data-t="08:20"><b>Chi <span>08:20</span></b>@Minh ơi xác nhận số áo lớp giùm mình, bên in cần trước thứ 5</div>
+            <div class="msg" data-t="09:02"><b>Bình <span>09:02</span></b>ai có đề cương Lý không</div>
+            <div class="msg" data-t="09:05"><b>Dũng <span>09:05</span></b>📄 De_cuong_Ly_HK1.pdf</div>
+            <div class="msg" data-t="12:30"><b>Giang <span>12:30</span></b>[Sticker]</div>
+            <div class="msg" data-t="20:15"><b>Cô Lan <span>20:15</span></b>Mai kiểm tra 15 phút Toán chương 3, các em ôn kỹ phần cấp số nhân</div>
+            <div class="msg" data-t="20:17"><b>Bình <span>20:17</span></b>😭</div>
+            <div class="msg" data-t="20:40"><b>Hà <span>20:40</span></b>@All ai chưa chuyển 100k thì chuyển nha, mới có 12 bạn</div>
+            <div class="msg" data-t="21:05"><b>An <span>21:05</span></b>Hà ơi có cần đặt cọc chỗ không</div>
+            <div class="msg" data-t="21:08"><b>Hà <span>21:08</span></b>có, mai mình đặt</div>
+          </div>
+          <div class="zw__composer">Nhập tin nhắn tới Lớp 12A1</div>
+        </div>
+
+        <div class="zp">
+          <div class="zp__head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+            zenlo
+          </div>
+          <div class="zp__tabs"><span class="on">Tóm tắt</span><span>Bản tin</span></div>
+          <div class="zp__body">
+            <div class="zp__row">
+              <span class="zp__range">Từ tin chưa đọc · 07:52 → bây giờ</span>
+            </div>
+            <div class="zp__row">
+              <button class="zp__btn zp__btn--pulse js-run" type="button">Tóm tắt</button>
+              <span class="zp__hint js-hint">← thử bấm</span>
+            </div>
+            <div class="sum js-out" aria-live="polite"></div>
+            <div class="netlog js-netlog">→ gửi 14 tin tới <b>generativelanguage.googleapis.com</b><br>&nbsp;&nbsp;bằng key Gemini của bạn · gemini-3.6-flash · 6.2 giây</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Many chats at once -->
+  <section class="chapter" id="ban-tin">
+    <div class="wrap">
+      <div class="chapter__head">
+        <span class="chapter__step">02 · Bản tin</span>
+        <h2>Nhiều cuộc trò chuyện cùng lúc.</h2>
+        <p>Mọi hội thoại chưa đọc trên một trang. Bỏ tick cái không cần, kéo cái quan trọng lên đầu.</p>
+      </div>
+
+      <div class="digest" id="demo-digest">
+        <div class="digest__bar">
+          <button class="zp__btn js-run" type="button">Tạo bản tin</button>
+          <span class="digest__count js-count"></span>
+        </div>
+        <div class="js-cards">
+          <div class="dcard" draggable="true" data-id="lop">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Lớp 12A1">
+            <span class="dcard__name">Lớp 12A1</span>
+            <span class="dcard__meta"><span class="tag">@ bạn</span>14 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
+          <div class="dcard" draggable="true" data-id="tin">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Đội tuyển Tin">
+            <span class="dcard__name">Đội tuyển Tin</span>
+            <span class="dcard__meta">23 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
+          <div class="dcard" draggable="true" data-id="me">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Mẹ">
+            <span class="dcard__name">Mẹ</span>
+            <span class="dcard__meta">2 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
+          <div class="dcard" draggable="true" data-id="clb">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn CLB Robotics">
+            <span class="dcard__name">CLB Robotics</span>
+            <span class="dcard__meta">51 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
+          <div class="dcard" draggable="true" data-id="shop" data-off="true">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" aria-label="Chọn Shop Giày ABC">
+            <span class="dcard__name">Shop Giày ABC</span>
+            <span class="dcard__meta">6 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Back to the source -->
+  <section class="chapter" id="moc-gio">
+    <div class="wrap">
+      <div class="chapter__head">
+        <span class="chapter__step">03 · Mốc giờ</span>
+        <h2>Cần kiểm tra lại? Bấm vào mốc giờ.</h2>
+        <p>AI có lúc hiểu sai. Mỗi ý có mốc của tin gốc, bấm vào là Zalo cuộn tới đúng tin đó.</p>
+      </div>
+
+      <div class="zw zw--compact" id="demo-cite">
+        <div class="zw__chat">
+          <div class="zw__title">
+            <span class="zw__avatar" aria-hidden="true" style="background:#6b4fa3"></span>
+            <div><b>Đội tuyển Tin</b><small>9 thành viên</small></div>
+          </div>
+          <div class="zw__msgs js-msgs">
+            <div class="zw__day">Thứ Ba, 20/10</div>
+            <div class="msg" data-t="18:02"><b>Thầy Hùng <span>18:02</span></b>Thứ 7 này thi thử, 7h30 có mặt ở phòng máy 2</div>
+            <div class="msg" data-t="18:05"><b>Khoa <span>18:05</span></b>dạ</div>
+            <div class="msg" data-t="18:06"><b>Linh <span>18:06</span></b>thi mấy bài vậy thầy</div>
+            <div class="msg" data-t="18:10"><b>Thầy Hùng <span>18:10</span></b>3 bài, 180 phút, đề kiểu VOI</div>
+            <div class="msg" data-t="18:31"><b>Khoa <span>18:31</span></b>có ai giải bài dãy con hôm qua chưa</div>
+            <div class="msg" data-t="18:40"><b>Linh <span>18:40</span></b>mình làm O(n log n) mà vẫn TLE test 14</div>
+            <div class="msg" data-t="18:44"><b>Khoa <span>18:44</span></b>đọc nhanh lên, cin chậm lắm</div>
+            <div class="msg" data-t="19:20"><b>Phong <span>19:20</span></b>ai đi chung xe thứ 7 không</div>
+            <div class="msg" data-t="19:22"><b>Linh <span>19:22</span></b>mình đi với</div>
+            <div class="msg" data-t="21:47"><b>Thầy Hùng <span>21:47</span></b>Nhớ mang thẻ học sinh, không có thẻ không vào phòng</div>
+            <div class="msg" data-t="21:50"><b>Khoa <span>21:50</span></b>dạ thầy</div>
+            <div class="msg" data-t="22:15"><b>Phong <span>22:15</span></b>ok</div>
+          </div>
+          <div class="zw__composer">Nhập tin nhắn tới Đội tuyển Tin</div>
+        </div>
+
+        <div class="zp">
+          <div class="zp__head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+            zenlo
+          </div>
+          <div class="zp__tabs"><span class="on">Tóm tắt</span><span>Bản tin</span></div>
+          <div class="zp__body">
+            <div class="sum">
+              <h4>Liên quan tới bạn</h4>
+              <ul>
+                <li>Thi thử thứ 7 (24/10), 7h30 ở phòng máy 2: 3 bài, 180 phút. <button class="cite" type="button" data-t="18:02">20/10 18:02</button></li>
+                <li>Phải mang thẻ học sinh, không có thì không được vào phòng. <button class="cite" type="button" data-t="21:47">20/10 21:47</button></li>
+              </ul>
+              <h4>Còn lại</h4>
+              <ul>
+                <li>Linh bị TLE test 14 bài dãy con; Khoa gợi ý đọc dữ liệu nhanh hơn. <button class="cite" type="button" data-t="18:40">20/10 18:40</button></li>
+                <li>Phong và Linh đi chung xe thứ 7. <button class="cite" type="button" data-t="19:20">20/10 19:20</button></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Your way -->
+  <section class="chapter" id="tuy-chinh">
+    <div class="wrap">
+      <div class="chapter__head">
+        <span class="chapter__step">04 · Tuỳ chỉnh</span>
+        <h2>Theo cách của bạn.</h2>
+        <p>Đọc lướt hay đọc kỹ. Và tự chọn AI nào được đọc tin nhắn của bạn.</p>
+      </div>
+
+      <div class="yours" id="demo-yours">
+        <div class="panel">
+          <p class="panel__label">Độ dài</p>
+          <div class="seg js-length" role="group" aria-label="Độ dài bản tóm tắt">
+            <button type="button" data-len="short" aria-pressed="false">Ngắn</button>
+            <button type="button" data-len="medium" aria-pressed="true">Vừa</button>
+            <button type="button" data-len="long" aria-pressed="false">Dài</button>
+          </div>
+          <div class="sum js-length-out" aria-live="polite"></div>
+        </div>
+
+        <div class="panel">
+          <p class="panel__label">AI tóm tắt</p>
+          <div class="choice js-ai" role="group" aria-label="Chọn AI">
+            <button type="button" data-ai="gemini" aria-pressed="true">Gemini</button>
+            <button type="button" data-ai="claude" aria-pressed="false">Claude</button>
+          </div>
+          <div class="field js-ai-field"></div>
+          <div class="netlog js-ai-log"></div>
+          <p class="panel__label js-ai-note" style="margin-top:12px"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Install -->
+  <section class="chapter" id="cai-dat">
+    <div class="wrap">
+      <div class="chapter__head">
+        <span class="chapter__step">05 · Cài đặt</span>
+        <h2>Cài trong một phút.</h2>
+        <p>Windows 10 hoặc 11, đã có Zalo PC.</p>
+      </div>
+
       <ol class="steps">
         <li>
-          <span class="steps__n mono">1</span>
-          <h3>Tải về</h3>
-          <p>Tải <span class="mono">Zenlo-Setup.exe</span> và mở file.</p>
+          <span class="steps__n">1</span>
+          <h3>Tải và mở file</h3>
+          <div class="vis" aria-hidden="true">
+            <div class="vis__file">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+              <div><b>Zenlo-Setup.exe</b><small class="js-size-small">Windows</small></div>
+            </div>
+          </div>
         </li>
         <li>
-          <span class="steps__n mono">2</span>
-          <h3>Chọn "1. Cài Zenlo"</h3>
-          <p>Zalo sẽ tự tắt trong lúc cài. Bộ cài cũng tạo lối tắt <b>"Zenlo - Cài đặt"</b> trong Start, để cài lại nhanh khi Zalo cập nhật.</p>
+          <span class="steps__n">2</span>
+          <h3>Gõ 1, bấm Enter</h3>
+          <div class="vis" aria-hidden="true">
+            <div class="vis__term">1. Cài Zenlo<br>2. Gỡ Zenlo<br>3. Thoát<br>Chọn: <em>1</em></div>
+          </div>
         </li>
         <li>
-          <span class="steps__n mono">3</span>
-          <h3>Mở Zalo, bấm nút Zenlo</h3>
-          <p>Nút tím ở thanh bên trái. Lần đầu, dán một API key Gemini miễn phí; <a class="link" href="#lay-key">xem cách lấy key</a> (1 phút).</p>
+          <span class="steps__n">3</span>
+          <h3>Mở Zalo, bấm nút tím</h3>
+          <div class="vis" aria-hidden="true">
+            <div class="vis__bar">
+              <div class="vis__rail">
+                <i></i><i></i>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+                <i></i>
+              </div>
+              <span class="muted">Lần đầu: dán key Gemini miễn phí. <a class="link" href="huong-dan.html#lay-key">Cách lấy</a></span>
+            </div>
+          </div>
         </li>
       </ol>
 
       <div class="download">
-        <a class="btn btn--big js-download" href="#cai-dat">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+        <a class="btn js-download" href="#cai-dat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
           <span class="js-download-label">Tải Zenlo cho Windows</span>
         </a>
-        <dl class="verify mono">
-          <div><dt>Phiên bản</dt><dd class="js-version">–</dd></div>
-          <div><dt>Dung lượng</dt><dd class="js-size">–</dd></div>
-          <div><dt>SHA-256</dt><dd class="js-sha">–</dd></div>
-        </dl>
-        <p class="note">Windows có thể hiện "Windows protected your PC" vì Zenlo chưa có chữ ký số trả phí. Bấm <b>More info → Run anyway</b>. Để chắc chắn file không bị ai sửa, so SHA-256 ở trên với kết quả của lệnh <span class="mono">Get-FileHash .\Zenlo-Setup.exe</span>, hoặc <a class="link js-virustotal" href="https://www.virustotal.com/">kiểm tra trên VirusTotal</a>. Chỉ tải Zenlo từ trang này hoặc kho mã chính thức.</p>
+        <div class="download__facts">
+          <span class="js-version">–</span> · <span class="js-size">–</span> · miễn phí<br>
+          SHA-256 <span class="js-sha">–</span>
+        </div>
       </div>
+      <p class="small">Windows có thể báo "Windows protected your PC" vì Zenlo chưa mua chữ ký số; bấm <b>More info → Run anyway</b>. Zalo cập nhật làm nút Zenlo biến mất? Mở Start, gõ "Zenlo", chọn <b>Zenlo - Cài đặt</b>. <a class="link" href="huong-dan.html#zalo-cap-nhat">Chi tiết</a></p>
     </div>
   </section>
 
-  <section id="lay-key" class="section section--alt">
+  <section class="chapter">
     <div class="wrap">
-      <h2>Lấy API key Gemini (miễn phí, 1 phút)</h2>
-      <p class="lead">Zenlo dùng Gemini của Google để tóm tắt. Bạn chỉ cần một tài khoản Google; <b>không cần thẻ thanh toán</b>.</p>
-      <ol class="redo redo--four">
-        <li>
-          <span class="steps__n mono">1</span>
-          <h3>Mở Google AI Studio</h3>
-          <p class="dim">Vào <a class="link mono" href="https://aistudio.google.com/apikey" rel="noopener" target="_blank">aistudio.google.com/apikey</a> và đăng nhập tài khoản Google.</p>
-          <div class="mock" aria-hidden="true">
-            <div class="mock__url mono">aistudio.google.com/apikey</div>
-            <div class="mock__page"><b>API Keys</b><span class="dim">Google AI Studio</span></div>
-          </div>
-        </li>
-        <li>
-          <span class="steps__n mono">2</span>
-          <h3>Bấm "Create API key"</h3>
-          <p class="dim">Giao diện tiếng Việt ghi "Tạo khóa API". Nếu được hỏi chọn dự án, chọn tạo dự án mới.</p>
-          <div class="mock" aria-hidden="true">
-            <div class="mock__btn">+ Create API key</div>
-          </div>
-        </li>
-        <li>
-          <span class="steps__n mono">3</span>
-          <h3>Sao chép key</h3>
-          <p class="dim">Key là một chuỗi bắt đầu bằng <span class="mono">AIza</span>. Bấm nút sao chép bên cạnh.</p>
-          <div class="mock" aria-hidden="true">
-            <div class="mock__key mono">AIza••••••••••••••k3Qf <span class="mock__copy">⧉</span></div>
-          </div>
-        </li>
-        <li>
-          <span class="steps__n mono">4</span>
-          <h3>Dán vào Zenlo</h3>
-          <p class="dim">Trong Zalo: bấm nút Zenlo tím → bánh răng (Cài đặt) → dán vào ô "API key Gemini" → <b>Kiểm tra kết nối</b>.</p>
-          <div class="mock" aria-hidden="true">
-            <div class="mock__field mono">••••••••••••••••••</div>
-            <div class="mock__ok mono">✓ Kết nối được</div>
-          </div>
-        </li>
-      </ol>
-      <ul class="checks checks--compact">
-        <li><b>Giữ key như mật khẩu:</b> đừng gửi cho ai. Zenlo lưu key trên máy bạn, được Windows mã hoá.</li>
-        <li><b>Key miễn phí có giới hạn lượt mỗi ngày.</b> Khi một model hết lượt hoặc quá tải, Zenlo tự chuyển sang model khác. Bạn có thể thêm tới 5 key.</li>
-        <li><b>Nói thật:</b> với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Hội thoại nhạy cảm thì cân nhắc, hoặc dùng key trả phí.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section id="zalo-cap-nhat" class="section">
-    <div class="wrap">
-      <h2>Zalo vừa cập nhật, nút Zenlo biến mất?</h2>
-      <p class="lead">Bình thường thôi: bản Zalo mới thay hết ứng dụng cũ, nên cần cài Zenlo lại. Mất khoảng 10 giây, không cần tải lại, và mọi thứ của bạn vẫn còn.</p>
-      <ol class="redo">
-        <li>
-          <span class="steps__n mono">1</span>
-          <h3>Mở Start, gõ "Zenlo"</h3>
-          <div class="mock mock--start" aria-hidden="true">
-            <div class="mock__search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg> Zenlo</div>
-            <div class="mock__result"><img src="logo.svg" alt="" width="22" height="22"><span><b>Zenlo - Cài đặt</b><small>Ứng dụng</small></span></div>
-          </div>
-        </li>
-        <li>
-          <span class="steps__n mono">2</span>
-          <h3>Chọn "1. Cài Zenlo"</h3>
-          <div class="mock mock--console mono" aria-hidden="true">
-            <div>Zalo PC: <span class="accent">26.11.2</span></div>
-            <div>Zenlo:&nbsp;&nbsp; chưa cài</div>
-            <div class="mock__gap"></div>
-            <div class="accent">1. Cài Zenlo</div>
-            <div class="dim">2. Gỡ Zenlo</div>
-            <div class="dim">3. Thoát</div>
-            <div class="mock__gap"></div>
-            <div>Chọn: 1 <span class="mock__cursor"></span></div>
-          </div>
-        </li>
-        <li>
-          <span class="steps__n mono">3</span>
-          <h3>Mở lại Zalo</h3>
-          <div class="mock mock--done" aria-hidden="true">
-            <div class="mock__bar"><span></span><span></span><img src="logo.svg" alt="" width="22" height="22"><span></span></div>
-            <p>Nút Zenlo tím đã trở lại ở thanh bên trái.</p>
-          </div>
-        </li>
-      </ol>
-      <p class="note">Đã xoá lối tắt hoặc máy khác? Tải lại <span class="mono">Zenlo-Setup.exe</span> ở trên, kết quả y như vậy.</p>
-    </div>
-  </section>
-
-  <section id="hoi-dap" class="section section--alt">
-    <div class="wrap faq">
-      <h2>Hỏi đáp</h2>
-      <details>
-        <summary>Zenlo có an toàn không?</summary>
-        <p>Zenlo không có máy chủ và không thu thập dữ liệu. Tin nhắn chỉ được gửi tới dịch vụ AI bạn chọn, qua kết nối mã hoá. Mã nguồn công khai, và mỗi bản phát hành được build tự động trên GitHub kèm chứng thực nguồn gốc, nên ai cũng kiểm chứng được file tải về đúng là build từ mã nguồn đó.</p>
-      </details>
-      <details>
-        <summary>Dùng Zenlo có bị khoá tài khoản Zalo không?</summary>
-        <p>Zenlo chỉ đọc dữ liệu Zalo đã lưu trên máy bạn và không gửi gì lên máy chủ Zalo, nên chưa có trường hợp nào bị khoá. Tuy vậy, Zenlo sửa ứng dụng Zalo trên máy, và việc dùng ứng dụng đã sửa có thể trái điều khoản của Zalo. Hãy cân nhắc, và bạn có thể gỡ Zenlo bất cứ lúc nào.</p>
-      </details>
-      <details>
-        <summary>Lấy API key Gemini thế nào, có mất tiền không?</summary>
-        <p>Không mất tiền và không cần thẻ: đăng nhập Google ở aistudio.google.com/apikey, bấm "Create API key", sao chép rồi dán vào Cài đặt của Zenlo. <a class="link" href="#lay-key">Xem hướng dẫn có hình</a>.</p>
-      </details>
-      <details>
-        <summary>Zenlo có mất phí không?</summary>
-        <p>Zenlo miễn phí. Phần AI dùng key Gemini của bạn (có gói miễn phí), hoặc gói Claude Pro/Max nếu bạn đã có.</p>
-      </details>
-      <details>
-        <summary>Google hay Anthropic có đọc tin nhắn của tôi không?</summary>
-        <p>Phần tin nhắn cần tóm tắt được gửi tới AI bạn chọn để nó viết bản tóm tắt. Với key Gemini miễn phí, Google có thể dùng nội dung này để cải thiện sản phẩm; với key trả phí thì không. Tin nhắn trong nhóm có cả nội dung của người khác, nên hãy cân nhắc với hội thoại nhạy cảm.</p>
-      </details>
-      <details>
-        <summary>Zalo cập nhật thì sao?</summary>
-        <p>Mỗi lần Zalo cập nhật, nút Zenlo tạm biến mất. Mở Start, gõ "Zenlo", chọn <b>"Zenlo - Cài đặt"</b> rồi chọn "1. Cài Zenlo". Không cần tải lại; cài đặt, bản tóm tắt và Bản tin vẫn còn nguyên. <a class="link" href="#zalo-cap-nhat">Xem hướng dẫn có hình</a>.</p>
-      </details>
-      <details>
-        <summary>Gỡ Zenlo thế nào?</summary>
-        <p>Mở <span class="mono">Zenlo-Setup.exe</span>, chọn "2. Gỡ Zenlo". Zalo trở về đúng bản gốc. Muốn xoá sạch dữ liệu của Zenlo thì xoá thêm thư mục <span class="mono">%APPDATA%\Zenlo</span>.</p>
-      </details>
-      <details>
-        <summary>Có bản cho Mac hay điện thoại không?</summary>
-        <p>Hiện Zenlo chỉ có cho Zalo PC trên Windows.</p>
-      </details>
+      <div class="note">
+        <p>Mình làm Zenlo vì nhóm lớp mỗi tối vài trăm tin, mà việc cần biết thì chỉ dăm ba dòng.</p>
+        <p>Zenlo không có máy chủ, nên mình không có chỗ nào để nhận tin nhắn của bạn, kể cả nếu muốn. Mã nguồn để công khai cho ai muốn đọc. Có gì chưa ổn thì <a class="link js-feedback" href="#">gửi mình một e-mail</a>.</p>
+        <p class="note__sign">— stephit</p>
+      </div>
     </div>
   </section>
 
 </main>
 
-<footer class="footer">
-  <div class="wrap footer__inner">
-    <div>
-      <a class="brand" href="#top"><img src="logo.svg" alt="" width="22" height="22"><span>zenlo</span></a>
-      <p class="dim">© 2026 stephit. Zenlo không liên kết với và không được Zalo hay VNG bảo trợ.</p>
-    </div>
-    <nav class="footer__links" aria-label="Liên kết">
+<footer class="foot">
+  <div class="wrap foot__inner">
+    <span>© 2026 stephit · không liên kết với Zalo hay VNG</span>
+    <nav aria-label="Liên kết">
+      <a href="huong-dan.html">Hướng dẫn</a>
       <a href="privacy.html">Quyền riêng tư</a>
-      <a class="js-source" href="#">Mã nguồn</a>
-      <a class="js-feedback" href="#">Góp ý & báo lỗi</a>
+      <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
+      <a class="js-feedback" href="#">Góp ý</a>
     </nav>
   </div>
 </footer>
 
 <script src="app.js"></script>
+<script src="demo.js"></script>
 </body>
 </html>

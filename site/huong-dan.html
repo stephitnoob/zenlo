@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn sử dụng – Zenlo</title>
+<meta name="description" content="Cách cài, cách dùng Tóm tắt, Bản tin và từng mục trong Cài đặt của Zenlo, cùng cách xử lý khi gặp sự cố.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top__inner">
+    <a class="brand" href="./" aria-label="Zenlo, trang chủ">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+      <span>zenlo</span>
+    </a>
+    <a class="top__link" href="./">Trang chủ</a>
+    <button class="icon-btn js-theme" type="button">
+      <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <a class="btn btn--small js-download" href="./#cai-dat">Tải về</a>
+  </div>
+</header>
+
+<div class="wrap guide">
+  <nav class="toc" aria-label="Mục lục">
+    <input class="toc__search js-toc-search" type="search" placeholder="Tìm trong hướng dẫn" aria-label="Tìm trong hướng dẫn">
+    <ol class="js-toc"></ol>
+    <p class="toc__empty js-toc-empty" hidden>Không thấy mục nào khớp.</p>
+  </nav>
+
+  <article class="doc">
+    <div class="toc-mobile">
+      <select class="js-toc-mobile" aria-label="Đi tới mục"></select>
+    </div>
+
+    <h1>Hướng dẫn sử dụng</h1>
+    <p class="lede">Zenlo có hai việc chính: <b>Tóm tắt</b> một hội thoại, và <b>Bản tin</b> gom mọi hội thoại chưa đọc lại một chỗ. Trang này nói cách dùng từng thứ, khi nào nên dùng, và từng mục trong Cài đặt.</p>
+
+    <section class="part" id="bat-dau">
+      <h2>Bắt đầu</h2>
+
+      <section id="cai-zenlo">
+        <h3>Cài Zenlo</h3>
+        <p>Cần Windows 10 hoặc 11 và Zalo PC đã cài sẵn.</p>
+        <ol>
+          <li>Tải <code>Zenlo-Setup.exe</code> ở <a class="link" href="./#cai-dat">trang chủ</a> rồi mở file.</li>
+          <li>Nếu Windows hiện <b>Windows protected your PC</b>, bấm <b>More info</b> rồi <b>Run anyway</b>. Thông báo này hiện vì Zenlo chưa mua chữ ký số, không phải vì phát hiện virus.</li>
+          <li>Gõ <code>1</code> rồi Enter để cài, gõ <code>c</code> rồi Enter để đồng ý tắt Zalo trong lúc cài.</li>
+          <li>Mở lại Zalo. Thanh bên trái có thêm nút Zenlo màu tím.</li>
+        </ol>
+        <p>Bộ cài cũng để lại một lối tắt <b>Zenlo - Cài đặt</b> trong Start, dùng khi <a class="link" href="#zalo-cap-nhat">Zalo cập nhật</a>.</p>
+        <div class="tip">Muốn chắc file tải về đúng là file đã phát hành: mở PowerShell ở thư mục chứa file, chạy <code>Get-FileHash .\Zenlo-Setup.exe</code>, so dãy số với dòng SHA-256 ở trang chủ.</div>
+      </section>
+
+      <section id="lay-key">
+        <h3>Lấy API key Gemini</h3>
+        <p>Zenlo cần một AI để đọc và tóm tắt. Mặc định là Gemini của Google, có gói miễn phí, chỉ cần tài khoản Google, không cần thẻ.</p>
+        <ol>
+          <li>Mở <a class="link" href="https://aistudio.google.com/apikey" rel="noopener" target="_blank">aistudio.google.com/apikey</a> và đăng nhập Google.</li>
+          <li>Bấm <b>Create API key</b> (tiếng Việt: <b>Tạo khóa API</b>). Nếu được hỏi chọn dự án, chọn tạo dự án mới.</li>
+          <li>Sao chép key vừa tạo. Key bắt đầu bằng <code>AIza</code>.</li>
+          <li>Trong Zalo: bấm nút Zenlo tím → bánh răng → dán vào ô <b>API key Gemini</b> → <b>Kiểm tra kết nối</b>.</li>
+        </ol>
+        <div class="tip">Giữ key như mật khẩu, đừng gửi cho ai. Zenlo lưu key trên máy bạn, được Windows mã hoá bằng tài khoản Windows của bạn.</div>
+        <p>Với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Hội thoại nhạy cảm thì cân nhắc, dùng key trả phí, hoặc <a class="link" href="#claude">dùng Claude</a>.</p>
+      </section>
+
+      <section id="mo-zenlo">
+        <h3>Mở và đóng Zenlo</h3>
+        <ul>
+          <li><b>Nút tím ở thanh bên trái</b> mở tab <b>Bản tin</b>. Số nhỏ trên nút là số lần bạn được nhắc tên (@) mà chưa đọc.</li>
+          <li><b>Nút Tóm tắt ở thanh trên cùng khung chat</b> mở tab <b>Tóm tắt</b> cho hội thoại đang mở.</li>
+          <li><b>Bánh răng</b> trong khung Zenlo mở Cài đặt.</li>
+          <li>Đóng: bấm <b>×</b>, bấm lại đúng nút đã mở, hoặc nhấn <span class="kbd">Esc</span>.</li>
+        </ul>
+        <p>Khung Zenlo nằm cột phải cùng của Zalo, không che khung chat, nên vừa đọc bản tóm tắt vừa xem tin gốc được.</p>
+      </section>
+    </section>
+
+    <section class="part" id="tom-tat">
+      <h2>Tóm tắt một hội thoại</h2>
+
+      <section id="tom-tat-khi-nao">
+        <h3>Dùng khi nào</h3>
+        <ul>
+          <li>Một nhóm vừa nói vài chục, vài trăm tin và bạn chỉ cần biết có gì liên quan tới mình.</li>
+          <li>Quay lại một cuộc trò chuyện sau vài ngày, cần nhớ lại đã chốt những gì.</li>
+          <li>Trước khi trả lời, muốn chắc mình không bỏ sót câu hỏi hay lời nhờ nào.</li>
+        </ul>
+        <p>Bản tóm tắt luôn mở đầu bằng phần <b>liên quan tới bạn</b>: ai nhắc tên bạn, ai hỏi bạn, việc giao cho bạn, hạn chót. Phần này được giữ đủ dù bạn chọn độ dài Ngắn.</p>
+      </section>
+
+      <section id="tom-tat-khoang">
+        <h3>Chọn khoảng tin</h3>
+        <p>Mở hội thoại ở danh sách bên trái của Zalo, mở tab Tóm tắt, rồi chọn một nút:</p>
+        <table>
+          <tr><th>Nút</th><th>Lấy tin</th></tr>
+          <tr><td>30 phút … 24 giờ</td><td>Trong khoảng thời gian đó tính tới bây giờ.</td></tr>
+          <tr><td>Từ tin chưa đọc</td><td>Từ tin chưa đọc đầu tiên lúc bạn mở hội thoại, theo đúng số tin chưa đọc Zalo ghi nhận.</td></tr>
+          <tr><td>Từ lần trước</td><td>Từ chỗ lần tóm tắt trước của hội thoại này dừng lại. Hợp với nhóm bạn theo dõi đều đặn.</td></tr>
+        </table>
+        <p>Muốn khoảng khác thì sửa ô <b>Từ</b> và <b>Đến</b> theo dạng <code>dd/mm/yyyy hh:mm</code>. Chữ <b>Hiện tại</b> cạnh ô Đến đặt nó về lúc này.</p>
+        <p>Dưới các nút có dòng ước lượng, ví dụ <code>120 tin · ước tính ~3.400 token đầu vào</code>. Con số này đếm trên máy, chưa gửi gì đi.</p>
+        <p>Bấm <b>Tóm tắt</b>. Chữ hiện dần khi AI viết; bấm <b>Dừng</b> để ngắt, <b>Sao chép</b> để lấy cả bản tóm tắt.</p>
+        <div class="tip">"Từ tin chưa đọc" cần Zenlo đang chạy lúc bạn mở hội thoại, vì Zalo xoá số tin chưa đọc ngay khi mở. Nếu Zenlo báo không ghi nhận tin chưa đọc nào, dùng các nút theo giờ.</div>
+      </section>
+
+      <section id="tom-tat-do-dai">
+        <h3>Ngắn, Vừa, Dài</h3>
+        <ul>
+          <li><b>Ngắn</b>: khoảng 3 ý, mỗi ý một câu. Để liếc qua.</li>
+          <li><b>Vừa</b>: đủ các ý đáng chú ý, viết gọn. Mặc định của Tóm tắt.</li>
+          <li><b>Dài</b>: đủ chi tiết, ai nói gì. Khi cần nắm kỹ một cuộc bàn bạc.</li>
+        </ul>
+        <p>Đổi ngay trong khung Tóm tắt; mức mặc định đặt trong <a class="link" href="#mac-dinh">Cài đặt</a>.</p>
+      </section>
+
+      <section id="moc-gio">
+        <h3>Mốc giờ</h3>
+        <p>Cuối mỗi ý có một mốc như <code>19/10 08:20</code>. Bấm vào, Zalo cuộn tới đúng tin nhắn đó và làm nổi nó lên.</p>
+        <p>AI có lúc hiểu sai hoặc nhầm người. Với việc quan trọng như tiền, hạn nộp, lịch hẹn, bấm mốc giờ để đọc lại tin gốc trước khi làm theo.</p>
+        <p>Bản tóm tắt gần nhất của mỗi hội thoại được lưu trên máy, mở lại vẫn thấy.</p>
+      </section>
+    </section>
+
+    <section class="part" id="ban-tin">
+      <h2>Bản tin</h2>
+
+      <section id="ban-tin-khi-nao">
+        <h3>Dùng khi nào</h3>
+        <p>Sáng dậy hoặc sau một buổi không mở Zalo, có chục hội thoại chưa đọc. Bản tin tóm tắt tất cả trên một trang, để biết cái nào cần trả lời trước, cái nào đọc sau cũng được.</p>
+      </section>
+
+      <section id="ban-tin-cach-lam">
+        <h3>Cách làm</h3>
+        <ol>
+          <li>Bấm nút tím ở thanh bên trái. Zenlo liệt kê các hội thoại có tin chưa đọc.</li>
+          <li>Bỏ tick hội thoại không cần tóm tắt. Tài khoản tự động (thông báo, thẻ, ngân hàng) mặc định bỏ tick.</li>
+          <li>Giữ <b>⋮⋮</b> và kéo để xếp hội thoại quan trọng lên đầu.</li>
+          <li>Bấm <b>Tạo bản tin</b>. Mỗi hội thoại một thẻ, tóm tắt hiện dần.</li>
+        </ol>
+        <p>Zenlo nhớ ô tick và thứ tự bạn kéo cho lần sau. <b>Sắp xếp tự động</b> xoá thứ tự đã kéo; <b>Chọn hết</b> và <b>Bỏ chọn hết</b> đổi mọi ô tick một lần; <b>Làm mới</b> tải lại danh sách.</p>
+        <p>Hội thoại đã tóm tắt có dấu <b>✓</b>. Bấm Tạo bản tin lần nữa chỉ tóm tắt những hội thoại chưa có.</p>
+      </section>
+
+      <section id="ban-tin-the">
+        <h3>Trên mỗi thẻ</h3>
+        <table>
+          <tr><th>Nút</th><th>Làm gì</th></tr>
+          <tr><td>Mở</td><td>Mở hội thoại đó trong Zalo.</td></tr>
+          <tr><td>Tóm tắt chi tiết</td><td>Chuyển sang tab Tóm tắt của hội thoại đó, để chọn khoảng tin và độ dài khác.</td></tr>
+          <tr><td>Đã đọc</td><td>Đánh dấu đã đọc ngay trong Zalo, đồng bộ sang Zalo trên điện thoại.</td></tr>
+        </table>
+        <p><b>Đã đọc hết</b> ở đầu danh sách đánh dấu đã đọc mọi hội thoại trong danh sách.</p>
+        <p>Tạo bản tin không đánh dấu gì là đã đọc. Hội thoại vẫn hiện chưa đọc trong Zalo cho tới khi bạn mở nó hoặc bấm Đã đọc.</p>
+        <div class="tip">Độ dài mặc định của Bản tin là Ngắn, để cả danh sách đọc được trong một lần cuộn. Cần kỹ hơn cho một hội thoại thì bấm Tóm tắt chi tiết.</div>
+      </section>
+    </section>
+
+    <section class="part" id="cai-dat">
+      <h2>Cài đặt</h2>
+      <p>Bấm bánh răng trong khung Zenlo. Mọi thay đổi được lưu ngay.</p>
+
+      <section id="chon-ai">
+        <h3>Gemini hay Claude</h3>
+        <table>
+          <tr><th></th><th>Gemini</th><th>Claude</th></tr>
+          <tr><td>Cần gì</td><td>API key Gemini (có gói miễn phí)</td><td>Gói Claude Pro hoặc Max, Claude Code đã cài và đăng nhập</td></tr>
+          <tr><td>Tin nhắn gửi tới</td><td>generativelanguage.googleapis.com</td><td>Claude Code trên máy bạn, rồi tới api.anthropic.com</td></tr>
+          <tr><td>Dùng dữ liệu</td><td>Key miễn phí: Google có thể dùng để cải thiện sản phẩm. Key trả phí: không.</td><td>Theo điều khoản gói Claude của bạn</td></tr>
+        </table>
+        <p>Chưa có gì thì dùng Gemini, lấy key mất một phút. Đã có gói Claude thì Claude thường viết tốt hơn.</p>
+      </section>
+
+      <section id="gemini">
+        <h3>Gemini</h3>
+        <h4>API key</h4>
+        <p>Thêm tối đa 5 key bằng <b>+ Thêm API key</b>. Nút con mắt hiện key, <b>×</b> xoá key. Khi một key hết lượt trong ngày, Zenlo tự dùng key tiếp theo.</p>
+        <p>Lượt miễn phí tính theo <b>dự án</b> (project) trên Google, không theo key. Hai key cùng một dự án dùng chung lượt; muốn thêm lượt thì tạo key ở dự án khác. Lượt được làm mới lúc 0 giờ theo giờ Thái Bình Dương, khoảng 14–15 giờ chiều ở Việt Nam.</p>
+
+        <h4>Model</h4>
+        <p>Danh sách lấy trực tiếp từ Google theo key của bạn. Chọn <b>Từ Gemini X Flash</b> nghĩa là bắt đầu thử từ model đó; nếu model đang quá tải, Zenlo lần lượt chuyển xuống bản thấp hơn, ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite.</p>
+        <p>Thanh màu cạnh mỗi model là mức đông người dùng ước lượng, không phải đo trực tiếp. Model bị làm mờ là mọi key của bạn đã hết lượt cho model đó hôm nay.</p>
+
+        <h4>Effort</h4>
+        <p>Mức suy nghĩ của model. <b>high</b> (mặc định) viết kỹ hơn nhưng chậm hơn; <b>low</b> nhanh hơn, hợp với Bản tin dài.</p>
+
+        <h4>Chờ model trả lời</h4>
+        <p>Model chưa trả lời chữ nào sau khoảng này thì Zenlo coi là quá tải và chuyển xuống bản thấp hơn. Mặc định 10 giây. Mạng chậm thì tăng lên; muốn nhanh thì giảm xuống.</p>
+
+        <h4>Thử lại model quá tải sau</h4>
+        <p>Model vừa quá tải bị xếp xuống cuối trong khoảng này, để lần sau không phải chờ nó nữa; hết khoảng này nó lại được thử đầu tiên. Mặc định 5 phút. <b>Luôn thử lại</b> nghĩa là lần nào cũng bắt đầu từ model bạn chọn.</p>
+      </section>
+
+      <section id="claude">
+        <h3>Claude</h3>
+        <p>Zenlo gọi Claude Code đã cài trên máy, dùng lượt của gói Claude Pro hoặc Max, không cần API key. Chọn <b>Model</b> (Haiku nhanh, Sonnet cân bằng, Opus kỹ nhất) và <b>Effort</b>.</p>
+        <p>Chưa có Claude Code thì cài theo hướng dẫn của Anthropic, mở một lần để đăng nhập, rồi quay lại bấm <b>Kiểm tra kết nối</b>.</p>
+      </section>
+
+      <section id="kiem-tra">
+        <h3>Kiểm tra kết nối</h3>
+        <p>Gửi một câu rất ngắn tới AI đang chọn và báo sau bao nhiêu giây nó trả lời. Dùng sau khi dán key, hoặc khi tóm tắt bị lỗi mà không rõ lý do.</p>
+      </section>
+
+      <section id="mac-dinh">
+        <h3>Độ dài mặc định, lùi tối đa</h3>
+        <ul>
+          <li><b>Độ dài Tóm tắt</b> và <b>Độ dài Bản tin</b>: mức chọn sẵn mỗi lần mở.</li>
+          <li><b>Tìm tin chưa đọc lùi tối đa</b> (1, 3 hoặc 7 ngày, mặc định 3): Bản tin chỉ lấy tin chưa đọc trong khoảng này. Hội thoại có tin chưa đọc cũ hơn được bỏ qua, và Zenlo báo số hội thoại bị bỏ.</li>
+        </ul>
+      </section>
+
+      <section id="dat-lai">
+        <h3>Xoá và đặt lại</h3>
+        <ul>
+          <li><b>Xoá bản tóm tắt đã lưu</b>: xoá mọi bản tóm tắt và bản tin đã lưu trên máy. Ô tick và thứ tự trong Bản tin giữ nguyên.</li>
+          <li><b>Đặt lại mặc định</b>: đưa mọi cài đặt về như lúc mới cài. API key, bản tóm tắt, ô tick và thứ tự giữ nguyên.</li>
+        </ul>
+      </section>
+    </section>
+
+    <section class="part" id="zalo-cap-nhat">
+      <h2>Khi Zalo cập nhật</h2>
+      <p>Mỗi lần Zalo cập nhật, bản Zalo mới thay hết ứng dụng cũ nên nút Zenlo biến mất. Cài lại mất khoảng 10 giây:</p>
+      <ol>
+        <li>Mở Start, gõ <b>Zenlo</b>, chọn <b>Zenlo - Cài đặt</b>.</li>
+        <li>Gõ <code>1</code>, Enter, rồi <code>c</code>, Enter.</li>
+        <li>Mở lại Zalo.</li>
+      </ol>
+      <p>Cài đặt, API key, bản tóm tắt, ô tick và thứ tự trong Bản tin vẫn còn nguyên. Xoá mất lối tắt hoặc đổi máy thì tải lại <code>Zenlo-Setup.exe</code> ở trang chủ, kết quả y như vậy.</p>
+    </section>
+
+    <section class="part" id="go-zenlo">
+      <h2>Gỡ Zenlo</h2>
+      <p>Mở <b>Zenlo - Cài đặt</b> (hoặc <code>Zenlo-Setup.exe</code>), chọn <code>2</code>. Zalo trở về đúng bản gốc, lối tắt trong Start cũng được xoá.</p>
+      <p>Dữ liệu của Zenlo vẫn để lại trong <code>%APPDATA%\Zenlo</code>, phòng khi bạn cài lại. Muốn xoá sạch thì xoá thư mục đó.</p>
+    </section>
+
+    <section class="part" id="su-co">
+      <h2>Xử lý sự cố</h2>
+
+      <section id="su-co-mat-nut">
+        <h3>Không thấy nút Zenlo</h3>
+        <p>Gần như luôn là do Zalo vừa cập nhật. Làm theo <a class="link" href="#zalo-cap-nhat">Khi Zalo cập nhật</a>.</p>
+      </section>
+
+      <section id="su-co-het-luot">
+        <h3>Báo hết lượt</h3>
+        <p>Mọi key đã dùng hết lượt miễn phí trong ngày cho các model Zenlo thử. Có thể chờ tới khoảng 14–15 giờ chiều, thêm key từ một dự án Google khác, hoặc tạm chọn model thấp hơn như Flash-Lite. Cài đặt ghi rõ key nào hết lượt và mấy giờ mở lại.</p>
+      </section>
+
+      <section id="su-co-cham">
+        <h3>Tóm tắt chậm hoặc báo quá tải</h3>
+        <p>Model Gemini mới thường đông người dùng vào giờ cao điểm. Zenlo đã tự chuyển xuống bản thấp hơn; nếu vẫn chậm, chọn bắt đầu từ một model thấp hơn, giảm <b>Effort</b> xuống low, hoặc giảm <b>Chờ model trả lời</b>.</p>
+      </section>
+
+      <section id="su-co-claude">
+        <h3>Claude báo lỗi</h3>
+        <p>Kiểm tra Claude Code đã cài và đăng nhập: mở nó một lần trong Terminal. Gói Claude hết lượt trong khung giờ thì chờ hoặc tạm chuyển sang Gemini.</p>
+      </section>
+
+      <section id="su-co-moc-gio">
+        <h3>Mốc giờ không tới đúng tin</h3>
+        <p>AI đôi khi ghi lệch mốc một vài phút. Khi phút đó không có tin nào, Zenlo báo "Không tìm thấy tin nhắn lúc …"; bấm một mốc giờ gần đó, hoặc cuộn quanh giờ ấy trong Zalo.</p>
+      </section>
+
+      <section id="gop-y">
+        <h3>Vẫn không được</h3>
+        <p><a class="link js-feedback" href="#">Gửi e-mail góp ý</a>: ghi phiên bản Zalo, phiên bản Zenlo và dòng báo lỗi. Đừng gửi API key hay ảnh chụp có tin nhắn riêng tư.</p>
+      </section>
+    </section>
+
+    <section class="part" id="du-lieu">
+      <h2>Dữ liệu của bạn</h2>
+      <ul>
+        <li><b>Gửi đi khi nào:</b> chỉ khi bạn bấm Tóm tắt, Tạo bản tin hoặc Kiểm tra kết nối.</li>
+        <li><b>Gửi gì:</b> chữ của các tin trong khoảng đã chọn, tên người gửi, và mô tả ngắn cho ảnh, tệp, sticker (ví dụ tên tệp). Ảnh và tệp không được gửi.</li>
+        <li><b>Gửi tới đâu:</b> chỉ tới AI bạn chọn, qua HTTPS. Zenlo không có máy chủ riêng.</li>
+        <li><b>Lưu ở đâu:</b> cài đặt và bản tóm tắt nằm trong Zalo trên máy bạn, có bản sao trong <code>%APPDATA%\Zenlo</code>. API key được Windows mã hoá.</li>
+      </ul>
+      <p>Chi tiết đầy đủ ở trang <a class="link" href="privacy.html">Quyền riêng tư</a>. Mã nguồn để công khai tại <a class="link js-source" href="https://github.com/stephitnoob/zenlo">GitHub</a>.</p>
+    </section>
+  </article>
+</div>
+
+<footer class="foot">
+  <div class="wrap foot__inner">
+    <span>© 2026 stephit · không liên kết với Zalo hay VNG</span>
+    <nav aria-label="Liên kết">
+      <a href="./">Trang chủ</a>
+      <a href="privacy.html">Quyền riêng tư</a>
+      <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
+      <a class="js-feedback" href="#">Góp ý</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+<script src="guide.js"></script>
+</body>
+</html>
