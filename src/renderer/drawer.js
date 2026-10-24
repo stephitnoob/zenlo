@@ -3,7 +3,8 @@
 
   The Zenlo drawer (renderer): one panel docked as the last column of Zalo's window, so the chat
   narrows instead of being covered. Tabs "Tóm tắt" and "Bản tin", and a gear for "Cài đặt".
-  One Zenlo button in Zalo's left bar opens it; it closes with ×, that button again, or Esc.
+  The Zenlo button in Zalo's left bar opens "Bản tin", the button on a conversation's title bar
+  opens "Tóm tắt"; it closes with ×, the same button again, or Esc.
   Exposed as ZenloCore.drawer; each feature fills its own pane.
 */
 
@@ -134,8 +135,8 @@
     tab.innerHTML = `<div class="mmi-icon-wr zenlo-nav-btn__icon">${LOGO_SVG}<span class="zenlo-nav-btn__badge" hidden></span></div><div class="lb-tab-title truncate">Zenlo</div>`
     tab.addEventListener('click', (event) => {
       event.stopPropagation()
-      if (isOpen()) close()
-      else open(Z.getCurrentConversation() ? current : 'digest')
+      // The left-bar button is the way to the digest; the title-bar button is the way to the summary
+      toggle('digest')
     })
     bottom.prepend(tab)
   }

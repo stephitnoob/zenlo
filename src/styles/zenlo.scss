@@ -65,6 +65,8 @@ html.zenlo-dark {
 
 // Docked as the last column of Zalo's window row: the chat narrows, nothing is covered
 .zenlo-drawer {
+  // Always the rightmost column, even when Zalo adds its conversation-info panel after it
+  order: 999;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
