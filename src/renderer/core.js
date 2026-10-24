@@ -23,6 +23,8 @@
     effort: '@Zenlo:EFFORT',
     geminiModel: '@Zenlo:GEMINI_MODEL',
     geminiEffort: '@Zenlo:GEMINI_EFFORT',
+    geminiTimeout: '@Zenlo:GEMINI_TIMEOUT',
+    geminiRetry: '@Zenlo:GEMINI_RETRY',
     lookbackDays: '@Zenlo:LOOKBACK_DAYS',
     length: '@Zenlo:LENGTH:',
     last: '@Zenlo:LAST:'
@@ -51,6 +53,9 @@
   // Gemini's "thinking level"; "high" was needed for it not to miss what concerns the user
   const GEMINI_EFFORTS = ['low', 'medium', 'high']
   const LOOKBACK_DAYS = ['1', '3', '7']
+  // Gemini: seconds to wait for a model's first reply, and minutes an overloaded model stays last
+  const GEMINI_TIMEOUTS = ['5', '10', '15', '20', '30', '60']
+  const GEMINI_RETRIES = ['0', '1', '2', '5', '10', '30']
 
   // Output length; whatever concerns the user is always kept in full
   const LENGTHS = [
@@ -322,7 +327,9 @@
       return {
         provider,
         model,
-        effort: getSetting(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high')
+        effort: getSetting(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'),
+        timeout: Number(getSetting(STORAGE_KEYS.geminiTimeout, GEMINI_TIMEOUTS, '10')) * 1000,
+        retryWindow: Number(getSetting(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '5')) * MINUTE
       }
     }
     return {
@@ -370,6 +377,79 @@
   // watermarks of older Zenlo versions. Settings, the digest order and ticks are preferences and stay.
   const SAVED_RESULT_PREFIXES = [STORAGE_KEYS.last, '@Zenlo:DIGEST_LAST', '@Zenlo:READ:']
 
+  // "Đặt lại mặc định": every setting back to its default. API keys, saved summaries, the digest
+  // order and ticks are data, not settings, and stay.
+  function resetSettings () {
+    const keys = [STORAGE_KEYS.provider, STORAGE_KEYS.model, STORAGE_KEYS.effort, STORAGE_KEYS.geminiModel, STORAGE_KEYS.geminiEffort,
+      STORAGE_KEYS.geminiTimeout, STORAGE_KEYS.geminiRetry, STORAGE_KEYS.lookbackDays, STORAGE_KEYS.length + 'summary', STORAGE_KEYS.length + 'digest']
+    keys.forEach((key) => {
+      try {
+        localStorage.removeItem(key)
+      } catch (error) {}
+    })
+    backupStorage()
+  }
+
+  // ---------- Backup ----------
+
+  // Zenlo's localStorage lives in Zalo's data and survives Zalo updates, but not Zalo wiping its
+  // storage (e.g. a reinstall). A mirror is kept in %APPDATA%\Zenlo by the main process.
+  // A marker key tells a wiped storage apart: without it, every key missing from the storage is put
+  // back from the mirror (keys written since stay), and the mirror is not touched until then.
+  const STORAGE_MARKER = '@Zenlo:STORAGE_ID'
+  let restoreDone = false
+  let lastBackup = ''
+
+  function zenloStorage () {
+    const data = {}
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('@Zenlo:')) data[key] = localStorage.getItem(key)
+    }
+    return data
+  }
+
+  function backupStorage () {
+    const bridge = window.$zenlo
+    if (!bridge || !bridge.saveStorage || !restoreDone) return
+    try {
+      // No marker: the storage was wiped while Zalo ran; keep the good mirror for the next start
+      if (!localStorage.getItem(STORAGE_MARKER)) return
+      const data = zenloStorage()
+      const text = JSON.stringify(data)
+      if (text === lastBackup) return
+      lastBackup = text
+      bridge.saveStorage(data)
+    } catch (error) {}
+  }
+
+  async function restoreStorage () {
+    const bridge = window.$zenlo
+    if (!bridge || !bridge.loadStorage) return
+    try {
+      if (!localStorage.getItem(STORAGE_MARKER)) {
+        const data = (await bridge.loadStorage()) || {}
+        let restored = 0
+        for (const [key, value] of Object.entries(data)) {
+          if (!key.startsWith('@Zenlo:') || typeof value !== 'string' || localStorage.getItem(key) !== null) continue
+          localStorage.setItem(key, value)
+          restored++
+        }
+        if (restored) log('restored', restored, 'keys from the backup')
+        if (!localStorage.getItem(STORAGE_MARKER)) localStorage.setItem(STORAGE_MARKER, String(Date.now()))
+      }
+    } catch (error) {
+      log('restore failed', error)
+      return
+    }
+    restoreDone = true
+    backupStorage()
+  }
+
+  restoreStorage()
+  setInterval(backupStorage, 20 * 1000)
+  window.addEventListener('beforeunload', backupStorage)
+
   function clearSavedResults () {
     const keys = []
     for (let i = 0; i < localStorage.length; i++) {
@@ -377,6 +457,7 @@
       if (key && SAVED_RESULT_PREFIXES.some((prefix) => key.startsWith(prefix))) keys.push(key)
     }
     keys.forEach((key) => localStorage.removeItem(key))
+    backupStorage()
     return keys.length
   }
 
@@ -941,7 +1022,9 @@
     const request = {
       provider: provider || settings.provider,
       model: model || settings.model,
-      effort: effort || settings.effort
+      effort: effort || settings.effort,
+      timeout: settings.timeout,
+      retryWindow: settings.retryWindow
     }
 
     let id = null
@@ -1006,6 +1089,8 @@
     describeModelStatus,
     GEMINI_EFFORTS,
     LOOKBACK_DAYS,
+    GEMINI_TIMEOUTS,
+    GEMINI_RETRIES,
     LENGTHS,
     log,
 
@@ -1024,6 +1109,7 @@
     loadLastSummary,
     saveLastSummary,
     clearSavedResults,
+    resetSettings,
 
     readZaloUnread,
     getUnreadWhenOpened,

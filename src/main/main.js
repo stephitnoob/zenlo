@@ -126,8 +126,29 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
 // Up to 5 API keys, each encrypted with Windows' safeStorage. Quotas belong to Google Cloud projects,
 // so only keys from different projects add quota.
 const MAX_KEYS = 5
-const SECRETS_FILE = () => path.join(app.getPath('userData'), 'zenlo-secrets.json')
-const QUOTA_FILE = () => path.join(app.getPath('userData'), 'zenlo-gemini-quota.json')
+// Zenlo keeps its own files in %APPDATA%Zenlo, apart from Zalo's data, so they survive Zalo
+// updates, a reinstall of Zalo and Zalo clearing its storage
+const ZENLO_DIR = () => {
+  const dir = path.join(app.getPath('appData'), 'Zenlo')
+  fs.mkdirSync(dir, { recursive: true })
+  return dir
+}
+
+// Older Zenlo kept these files in Zalo's data folder: move them once
+const zenloFile = (name, oldName) => {
+  const file = path.join(ZENLO_DIR(), name)
+  const old = path.join(app.getPath('userData'), oldName)
+  if (!fs.existsSync(file) && fs.existsSync(old)) {
+    try {
+      fs.renameSync(old, file)
+    } catch (error) {}
+  }
+  return file
+}
+
+const SECRETS_FILE = () => zenloFile('secrets.json', 'zenlo-secrets.json')
+const QUOTA_FILE = () => zenloFile('gemini-quota.json', 'zenlo-gemini-quota.json')
+const STORAGE_BACKUP_FILE = () => path.join(ZENLO_DIR(), 'storage-backup.json')
 
 const readJSONFile = (file) => {
   try {
@@ -280,14 +301,16 @@ const geminiError = (status, body) => {
 
 // A model that sends nothing for this long is treated as overloaded: Google keeps requests from free
 // keys waiting in a queue instead of answering 503 (one waited over 90 s). Thought summaries are
-// requested, so a working model sends something within a few seconds.
+// requested, so a working model sends something within a few seconds. Both waits are settings
+// ("Chờ model trả lời", "Thử lại model quá tải sau"); these are the defaults and the limits.
 const FIRST_BYTE_TIMEOUT = 10 * 1000
 const IDLE_TIMEOUT = 60 * 1000
 const RECENT_FAILURE = 5 * 60 * 1000
+const clampSetting = (value, fallback, min, max) => Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback
 
 // One streaming call (server-sent events). Zalo's Electron runs Node 16, which has no fetch.
 // Resolves to { status, body } on an HTTP error or a timeout (status 0), or { status: 200, result, blocked }.
-const streamGemini = (model, key, body, onText, setCancel) => new Promise((resolve, reject) => {
+const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FIRST_BYTE_TIMEOUT) => new Promise((resolve, reject) => {
   let settled = false
   const settle = (fn, value) => {
     if (settled) return
@@ -353,7 +376,7 @@ const streamGemini = (model, key, body, onText, setCancel) => new Promise((resol
     request.destroy()
     settle(reject, new Error('cancelled'))
   })
-  arm(FIRST_BYTE_TIMEOUT)
+  arm(firstByteTimeout)
   request.end(body)
 })
 
@@ -364,7 +387,9 @@ const recentFailures = new Map()
 // - overloaded / no answer within 10 s: the server is busy, another key will not help → next model
 // - out of quota (daily or per minute): that key's project is out → same model with the next key;
 //   when every key is out, next model
-const runGemini = async (send, finish, { id, model, effort, systemPrompt, instruction, input }) => {
+const runGemini = async (send, finish, { id, model, effort, systemPrompt, instruction, input, timeout, retryWindow }) => {
+  const firstByteTimeout = clampSetting(timeout, FIRST_BYTE_TIMEOUT, 3000, 120000)
+  const failureWindow = clampSetting(retryWindow, RECENT_FAILURE, 0, 60 * 60 * 1000)
   const keys = getGeminiKeys()
   if (!keys.length) return finish({ type: 'error', message: 'Chưa có API key Gemini. Hãy dán key trong Cài đặt Zenlo.' })
 
@@ -378,7 +403,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
   const all = await getGeminiModels(keys)
   const start = all.indexOf(model)
   const chain = start > 0 ? all.slice(start) : all
-  const failedRecently = (m) => Date.now() - (recentFailures.get(m) || 0) < RECENT_FAILURE
+  const failedRecently = (m) => Date.now() - (recentFailures.get(m) || 0) < failureWindow
   const models = [...chain.filter((m) => !failedRecently(m)), ...chain.filter(failedRecently)]
   const body = JSON.stringify({
     systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -407,7 +432,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
       try {
         // Thinking models sometimes finish with no text at all: ask the same model once more
         for (let attempt = 0; attempt < 2; attempt++) {
-          response = await streamGemini(current, key, body, (text) => send({ type: 'text', text }), (fn) => { cancelRequest = fn })
+          response = await streamGemini(current, key, body, (text) => send({ type: 'text', text }), (fn) => { cancelRequest = fn }, firstByteTimeout)
           if (response.status !== 200 || response.result || response.blocked || cancelled) break
         }
       } catch (error) {
@@ -436,7 +461,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
       if ([0, 500, 503].includes(response.status)) {
         // The model's servers are busy for every key: go down a model
         recentFailures.set(current, Date.now())
-        problems.push(`${geminiLabel(current)}: quá tải${response.status === 0 ? ' (không phản hồi sau 10 giây)' : ''}`)
+        problems.push(`${geminiLabel(current)}: quá tải${response.status === 0 ? ` (không phản hồi sau ${Math.round(firstByteTimeout / 1000)} giây)` : ''}`)
         moveOn = true
         break
       }
@@ -520,6 +545,20 @@ ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {
   if (!isTrustedSender(event)) return false
   setGeminiKeys(Array.isArray(keys) ? keys : [])
   return true
+})
+
+// A mirror of Zenlo's localStorage (settings, saved summaries, digest order and ticks) in its own
+// folder; the page writes it and reads it back when Zalo's storage was wiped
+ipcMain.on('zenlo:storage:save', (event, data) => {
+  if (!isTrustedSender(event) || !data || typeof data !== 'object') return
+  try {
+    fs.writeFileSync(STORAGE_BACKUP_FILE(), JSON.stringify({ at: Date.now(), data }))
+  } catch (error) {}
+})
+
+ipcMain.handle('zenlo:storage:load', (event) => {
+  if (!isTrustedSender(event)) return null
+  return readJSONFile(STORAGE_BACKUP_FILE()).data || null
 })
 
 ipcMain.handle('zenlo:gemini:status', (event) => {

@@ -8,7 +8,7 @@
 
 (function () {
   const Z = window.ZenloCore
-  const { STORAGE_KEYS, MODELS, EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
+  const { STORAGE_KEYS, MODELS, EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, GEMINI_TIMEOUTS, GEMINI_RETRIES, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
 
   const EYE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
 
@@ -237,11 +237,18 @@
               </div>
             </label>
             <label>Effort<select class="js-settings-gemini-effort">${options(GEMINI_EFFORTS, get(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'))}</select></label>
+            <span></span>
+            <label title="Model chưa phản hồi sau thời gian này thì coi là quá tải và chuyển xuống bản thấp hơn">Chờ model trả lời
+              <select class="js-settings-gemini-timeout">${options(GEMINI_TIMEOUTS.map((v) => ({ value: v, label: `${v} giây` })), get(STORAGE_KEYS.geminiTimeout, GEMINI_TIMEOUTS, '10'))}</select>
+            </label>
+            <label title="Model vừa quá tải bị xếp xuống cuối trong thời gian này, rồi mới được thử lại đầu tiên">Thử lại model quá tải sau
+              <select class="js-settings-gemini-retry">${options(GEMINI_RETRIES.map((v) => ({ value: v, label: v === '0' ? 'Luôn thử lại' : `${v} phút` })), get(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '5'))}</select>
+            </label>
           </div>
           <div class="zenlo-settings__note">Thanh màu là mức đông người dùng <b>ước lượng</b>: <span class="zenlo-settings__legend zenlo-settings__legend--3"></span> đông · <span class="zenlo-settings__legend zenlo-settings__legend--2"></span> vừa · <span class="zenlo-settings__legend zenlo-settings__legend--1"></span> thoáng. Model bị mờ là mọi key đã hết lượt trong ngày; lượt được làm mới lúc 0 giờ giờ Thái Bình Dương (khoảng 14–15 giờ chiều ở Việt Nam).</div>
           <div class="zenlo-settings__note zenlo-settings__note--warn">
             <b>Lưu ý dữ liệu:</b> với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm, gồm cả tin nhắn của những người khác trong hội thoại. Key trả phí thì không bị dùng như vậy.
-            Lấy key tại aistudio.google.com/apikey. Khi model đang quá tải hoặc không phản hồi sau 10 giây, Zenlo chuyển xuống bản thấp hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
+            Lấy key tại aistudio.google.com/apikey. Khi model đang quá tải hoặc không phản hồi trong thời gian chờ ở trên, Zenlo chuyển xuống bản thấp hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
           </div>
         </div>
 
@@ -267,6 +274,15 @@
         </div>
         <div class="zenlo-settings__note">Thứ tự ưu tiên và các ô tick trong Bản tin được giữ lại.</div>
         <div class="zenlo__status js-settings-clear-status"></div>
+      </section>
+
+      <section class="zenlo-settings__section">
+        <div class="zenlo-settings__heading">Đặt lại</div>
+        <div class="zenlo__actions">
+          <button class="zenlo__btn js-settings-reset">Đặt lại mặc định</button>
+        </div>
+        <div class="zenlo-settings__note">Đưa mọi cài đặt về như ban đầu. API key, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin được giữ lại.</div>
+        <div class="zenlo__status js-settings-reset-status"></div>
       </section>
 
       <div class="zenlo-settings__footer">Zenlo · © stephit</div>
@@ -307,6 +323,8 @@
     })
 
     bindSelect('.js-settings-gemini-effort', STORAGE_KEYS.geminiEffort)
+    bindSelect('.js-settings-gemini-timeout', STORAGE_KEYS.geminiTimeout)
+    bindSelect('.js-settings-gemini-retry', STORAGE_KEYS.geminiRetry)
     bindSelect('.js-settings-lookback', STORAGE_KEYS.lookbackDays)
     el.querySelectorAll('.js-settings-length').forEach((select) => {
       select.addEventListener('change', () => Z.setLength(select.dataset.feature, select.value))
@@ -344,6 +362,15 @@
       if (!window.confirm('Xoá mọi bản tóm tắt và bản tin đã lưu?')) return
       const removed = Z.clearSavedResults()
       el.querySelector('.js-settings-clear-status').textContent = `Đã xoá ${removed} mục.`
+    })
+    el.querySelector('.js-settings-reset').addEventListener('click', () => {
+      if (!window.confirm('Đưa mọi cài đặt của Zenlo về mặc định? API key, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin vẫn được giữ.')) return
+      Z.resetSettings()
+      // Rebuild the page so every field shows its default
+      el.remove()
+      overlay = null
+      Z.drawer.open('settings')
+      overlay.querySelector('.js-settings-reset-status').textContent = 'Đã đặt lại mặc định.'
     })
 
     Z.drawer.pane('settings').appendChild(el)

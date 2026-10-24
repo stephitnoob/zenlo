@@ -132,18 +132,19 @@
     } catch (error) {}
   }
 
-  const unticked = readSet(UNTICKED_KEY)
-  const ticked = readSet(TICKED_KEY)
+  // Read each time (not once at load), so a restore from Zenlo's backup is picked up
 
   // Unticked by default: what the user unticked, and conversations whose unread messages are all
   // automated notices (account notices, cards), unless the user ticked them by hand
   function isSelectedByDefault (convId, fromOthers) {
-    if (unticked.has(convId)) return false
-    if (ticked.has(convId)) return true
+    if (readSet(UNTICKED_KEY).has(convId)) return false
+    if (readSet(TICKED_KEY).has(convId)) return true
     return !(fromOthers.length && fromOthers.every((m) => AUTOMATED_KINDS.includes(m.originMsgType)))
   }
 
   function rememberTick (convId, selected) {
+    const unticked = readSet(UNTICKED_KEY)
+    const ticked = readSet(TICKED_KEY)
     if (selected) {
       unticked.delete(convId)
       ticked.add(convId)

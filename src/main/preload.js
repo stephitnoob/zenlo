@@ -41,6 +41,9 @@ function exposeBridge () {
     // The keys are encrypted by the main process; an empty list deletes them
     setGeminiKeys: (keys) => ipcRenderer.invoke('zenlo:settings:setGeminiKeys', keys),
     // { models: [{ id, label, level, exhausted, resetAt }], keys: [{ masked, exhausted: [{ label, resetAt }] }] }
-    geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status')
+    geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status'),
+    // Backup of Zenlo's localStorage in %APPDATA%\Zenlo
+    saveStorage: (data) => ipcRenderer.send('zenlo:storage:save', data),
+    loadStorage: () => ipcRenderer.invoke('zenlo:storage:load')
   })
 }
