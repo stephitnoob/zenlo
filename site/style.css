@@ -954,7 +954,7 @@ button {
   padding: 4px 0 4px 28px;
   border-left: 3px solid var(--accent);
   color: var(--muted);
-  font-size: 20px;
+  font-size: 17px;
   font-style: italic;
   line-height: 1.7;
 }
@@ -963,11 +963,11 @@ button {
 .note__quote::before {
   content: "\201C";
   position: absolute;
-  top: -46px;
+  top: -38px;
   left: 14px;
   color: var(--accent);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 84px;
+  font-size: 68px;
   line-height: 1;
   opacity: 0.35;
 }
