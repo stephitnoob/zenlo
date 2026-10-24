@@ -249,7 +249,7 @@
           <div class="zenlo-settings__note">Thanh màu là mức đông người dùng <b>ước lượng</b>: <span class="zenlo-settings__legend zenlo-settings__legend--3"></span> đông · <span class="zenlo-settings__legend zenlo-settings__legend--2"></span> vừa · <span class="zenlo-settings__legend zenlo-settings__legend--1"></span> thoáng. Model bị mờ là mọi key đã hết lượt trong ngày; lượt được làm mới lúc 0 giờ giờ Thái Bình Dương (khoảng 14–15 giờ chiều ở Việt Nam).</div>
           <div class="zenlo-settings__note zenlo-settings__note--warn">
             <b>Lưu ý dữ liệu:</b> với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm, gồm cả tin nhắn của những người khác trong hội thoại. Key trả phí thì không bị dùng như vậy.
-            Lấy key tại aistudio.google.com/apikey. Khi model đang quá tải hoặc không phản hồi sau 15 giây, Zenlo chuyển xuống bản thấp hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
+            Lấy key tại aistudio.google.com/apikey. Khi model đang quá tải hoặc không phản hồi sau 10 giây, Zenlo chuyển xuống bản thấp hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
           </div>
         </div>
 

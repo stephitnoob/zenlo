@@ -281,7 +281,7 @@ const geminiError = (status, body) => {
 // A model that sends nothing for this long is treated as overloaded: Google keeps requests from free
 // keys waiting in a queue instead of answering 503 (one waited over 90 s). Thought summaries are
 // requested, so a working model sends something within a few seconds.
-const FIRST_BYTE_TIMEOUT = 15 * 1000
+const FIRST_BYTE_TIMEOUT = 10 * 1000
 const IDLE_TIMEOUT = 60 * 1000
 const RECENT_FAILURE = 5 * 60 * 1000
 
@@ -361,7 +361,7 @@ const streamGemini = (model, key, body, onText, setCancel) => new Promise((resol
 const recentFailures = new Map()
 
 // Order of attempts, from the chosen model down:
-// - overloaded / no answer within 15 s: the server is busy, another key will not help → next model
+// - overloaded / no answer within 10 s: the server is busy, another key will not help → next model
 // - out of quota (daily or per minute): that key's project is out → same model with the next key;
 //   when every key is out, next model
 const runGemini = async (send, finish, { id, model, effort, systemPrompt, instruction, input }) => {
@@ -436,7 +436,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
       if ([0, 500, 503].includes(response.status)) {
         // The model's servers are busy for every key: go down a model
         recentFailures.set(current, Date.now())
-        problems.push(`${geminiLabel(current)}: quá tải${response.status === 0 ? ' (không phản hồi sau 15 giây)' : ''}`)
+        problems.push(`${geminiLabel(current)}: quá tải${response.status === 0 ? ' (không phản hồi sau 10 giây)' : ''}`)
         moveOn = true
         break
       }
