@@ -1,8 +1,8 @@
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
-  Summary panel (renderer): reads every message of the open conversation within a time range
-  and asks Claude Code to summarize it. Uses window.ZenloCore.
+  Summary ("Tóm tắt" tab of the Zenlo drawer, renderer): reads every message of the open
+  conversation within a time range and asks the AI to summarize it. Uses window.ZenloCore.
 */
 
 (function () {
@@ -135,16 +135,10 @@
 
   function buildPanel () {
     const el = document.createElement('div')
-    el.className = 'zenlo'
-    el.hidden = true
+    el.className = 'zenlo zenlo-summary'
     el.innerHTML = `
-      <div class="zenlo__header">
-        <div>
-          <div class="zenlo__title"><span class="zenlo__brand">Zenlo</span> · Tóm tắt hội thoại</div>
-          <div class="zenlo__conv"></div>
-        </div>
-        <button class="zenlo__close js-summary-close" title="Đóng">&times;</button>
-      </div>
+      <div class="zenlo__empty js-summary-empty">Chọn một hội thoại ở danh sách bên trái để tóm tắt.</div>
+      <div class="zenlo__conv-title"></div>
 
       <div class="zenlo__presets">
         ${PRESETS.map((p, i) => `<button class="zenlo__chip" data-preset="${i}">${p.label}</button>`).join('')}
@@ -177,10 +171,6 @@
       <div class="zenlo__status zenlo__main-status"></div>
       <div class="zenlo__result" hidden></div>
     `
-
-    el.querySelector('.js-summary-close').addEventListener('click', () => {
-      el.hidden = true
-    })
 
     const fromEl = el.querySelector('.js-summary-from')
     const toEl = el.querySelector('.js-summary-to')
@@ -243,21 +233,34 @@
       navigator.clipboard.writeText(el.dataset.result || '').then(() => setStatus('Đã sao chép bản tóm tắt.'))
     })
 
-    document.body.appendChild(el)
+    Z.drawer.pane('summary').appendChild(el)
     return el
   }
 
-  // options.from: preset "Từ" (used by the digest's "Tóm tắt chi tiết")
+  // Opens the drawer on this tab. options.from: preset "Từ" (the digest's "Tóm tắt chi tiết")
+  let pendingFrom = null
+  // The conversation the tab shows ('' while it asks to pick one)
+  let shownConvId = ''
   function openPanel (options = {}) {
+    pendingFrom = options.from || null
+    Z.drawer.open('summary')
+  }
+
+  // Fills the tab for the open conversation, or asks to pick one in Zalo's list
+  function syncPanel () {
+    const options = { from: pendingFrom }
+    pendingFrom = null
+    if (!panel) panel = buildPanel()
     const conv = Z.getCurrentConversation()
+    panel.classList.toggle('zenlo--empty', !conv && !activeJob)
+    if (activeJob) return
+    shownConvId = conv ? conv.id : ''
     if (!conv) return
 
-    if (!panel) panel = buildPanel()
     const sameConv = panel.dataset.convId === conv.id
     panel.dataset.convId = conv.id
     panel.dataset.convName = conv.name
-    panel.querySelector('.zenlo__conv').textContent = conv.name
-    Z.showPanel(panel)
+    panel.querySelector('.zenlo__conv-title').textContent = conv.name
     renderLength()
 
     if (activeJob) return
@@ -391,21 +394,19 @@
     button.innerHTML = ICON_SVG
     button.addEventListener('click', (event) => {
       event.stopPropagation()
-      if (panel && !panel.hidden && panel.dataset.convId === (Z.getCurrentConversation() || {}).id) {
-        panel.hidden = true
-      } else {
-        openPanel()
-      }
+      Z.drawer.toggle('summary')
     })
     headerBtns.prepend(button)
   }
 
+  Z.drawer.onShow('summary', syncPanel)
+
   Z.onDomChange(() => {
     injectHeaderButton()
-    // Keep the panel in sync when the user switches conversations
-    if (panel && !panel.hidden && !activeJob) {
+    // Keep the tab in sync when the user picks another conversation in Zalo's list
+    if (Z.drawer.isOpen('summary') && !activeJob) {
       const conv = Z.getCurrentConversation()
-      if (conv && conv.id !== panel.dataset.convId) openPanel()
+      if ((conv ? conv.id : '') !== shownConvId) syncPanel()
     }
   })
 

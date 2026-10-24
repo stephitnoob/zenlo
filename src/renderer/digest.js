@@ -1,7 +1,7 @@
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
-  Digest ("Bản tin", renderer): a tab in Zalo's left bar that lists every conversation Zalo counts
+  Digest ("Bản tin" tab of the Zenlo drawer, renderer): lists every conversation Zalo counts
   as unread and summarizes the ticked ones, each with the same prompt as the summary panel.
   Messages are read from the local store, so making a digest sends no "seen" receipt; only the
   "Đã đọc" buttons mark conversations read in Zalo.
@@ -10,8 +10,6 @@
 (function () {
   const Z = window.ZenloCore
   const { formatTime, escapeHTML, LENGTHS } = Z
-
-  const ICON_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h4"/><path d="M18.5 13.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/></svg>'
 
   // Conversations summarized at the same time. Claude Code handles a few parallel runs well;
   // Gemini's free tier allows few requests per minute.
@@ -436,15 +434,8 @@
   function buildOverlay () {
     const el = document.createElement('div')
     el.className = 'zenlo zenlo-digest'
-    el.hidden = true
     el.innerHTML = `
-      <div class="zenlo__header">
-        <div>
-          <div class="zenlo__title"><span class="zenlo__brand">Zenlo</span> · Bản tin</div>
-          <div class="zenlo__conv">Các hội thoại Zalo đang tính là chưa đọc</div>
-        </div>
-        <button class="zenlo__close js-digest-close" title="Đóng">&times;</button>
-      </div>
+      <div class="zenlo__hint">Các hội thoại Zalo đang tính là chưa đọc</div>
 
       <div class="zenlo__actions">
         <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
@@ -471,9 +462,6 @@
       <div class="zenlo-digest__list"></div>
     `
 
-    el.querySelector('.js-digest-close').addEventListener('click', () => {
-      el.hidden = true
-    })
     el.querySelector('.js-digest-run').addEventListener('click', runDigest)
     el.querySelector('.js-digest-stop').addEventListener('click', () => {
       if (running) running.cancel()
@@ -516,25 +504,21 @@
 
       const cite = event.target.closest('.zenlo-cite')
       if (cite) {
-        el.hidden = true
         Z.jumpToMessage(item.convId, cite.dataset.times.split(',').map(Number)).catch((error) => {
-          el.hidden = false
           setStatus(`Lỗi: ${error.message || error}`, true)
         })
       } else if (event.target.closest('.js-digest-read')) {
         markRead([item.convId])
       } else if (event.target.closest('.js-digest-open')) {
         Z.openConversation(item.convId)
-        el.hidden = true
       } else if (event.target.closest('.js-digest-detail')) {
         Z.openConversation(item.convId)
-        el.hidden = true
         // Wait for Zalo to show the conversation, then open the summary panel from the unread start
         Z.waitForConversation(item.convId).then(() => window.ZenloSummary && window.ZenloSummary.open({ from: item.start }))
       }
     })
 
-    document.body.appendChild(el)
+    Z.drawer.pane('digest').appendChild(el)
     return el
   }
 
@@ -599,28 +583,9 @@
     })
   }
 
-  function toggleOverlay () {
+  // Each time the drawer shows this tab: build it once, then scan for unread conversations
+  Z.drawer.onShow('digest', () => {
     if (!overlay) overlay = buildOverlay()
-    if (overlay.hidden) Z.showPanel(overlay)
-    else overlay.hidden = true
-    if (!overlay.hidden && !running) refresh()
-  }
-
-  // A tab in Zalo's left bar, styled like Zalo's own tabs, above "Zalo Cloud"
-  function injectNavButton () {
-    const bottom = document.querySelector('#main-tab .nav__tabs__bottom')
-    if (!bottom || bottom.querySelector('.zenlo-digest-btn')) return
-
-    const tab = document.createElement('div')
-    tab.className = 'clickable leftbar-tab flx flx-col flx-al-c flx-center rel zenlo-nav-btn zenlo-digest-btn'
-    tab.title = 'Zenlo · Bản tin'
-    tab.innerHTML = `<div class="mmi-icon-wr">${ICON_SVG}</div><div class="lb-tab-title truncate">Bản tin</div>`
-    tab.addEventListener('click', (event) => {
-      event.stopPropagation()
-      toggleOverlay()
-    })
-    bottom.prepend(tab)
-  }
-
-  Z.onDomChange(injectNavButton)
+    if (!running) refresh()
+  })
 })()

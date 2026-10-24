@@ -1,7 +1,7 @@
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
-  Settings ("Cài đặt Zenlo", renderer): a tab in Zalo's left bar to choose the AI (Claude Code on
+  Settings ("Cài đặt Zenlo", the gear tab of the Zenlo drawer, renderer): choose the AI (Claude Code on
   a Claude Pro/Max plan, or Gemini with the user's own API key), default summary lengths, how far
   back unread messages are read, and to clear saved summaries.
 */
@@ -10,8 +10,6 @@
   const Z = window.ZenloCore
   const { STORAGE_KEYS, MODELS, EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
 
-  // Sliders, so it is not confused with Zalo's own settings gear at the bottom of the bar
-  const ICON_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>'
   const EYE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
 
   const options = (list, selected) => list
@@ -97,7 +95,7 @@
       if (!info) {
         el.textContent = ''
       } else if (!info.exhausted.length) {
-        el.textContent = 'Còn lượt.'
+        el.textContent = 'Chưa ghi nhận hết lượt hôm nay.'
       } else {
         const names = info.exhausted.map((m) => m.label.replace(/^Gemini /, '')).join(', ')
         el.textContent = `Hết lượt trong ngày: ${names} (mở lại lúc ${clock(Math.min(...info.exhausted.map((m) => m.resetAt)))}).`
@@ -208,13 +206,7 @@
 
     const el = document.createElement('div')
     el.className = 'zenlo zenlo-settings'
-    el.hidden = true
     el.innerHTML = `
-      <div class="zenlo__header">
-        <div class="zenlo__title"><span class="zenlo__brand">Zenlo</span> · Cài đặt</div>
-        <button class="zenlo__close js-settings-close" title="Đóng">&times;</button>
-      </div>
-
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">AI dùng để tóm tắt</div>
         <div class="zenlo-settings__choice">
@@ -238,7 +230,7 @@
           <div class="zenlo__status js-settings-keys-status"></div>
           <div class="zenlo-settings__note">Hạn mức tính theo <b>project</b> trên Google Cloud: các key trong cùng một project dùng chung lượt, chỉ key từ project khác mới có thêm lượt. Khi một key hết lượt, Zenlo tự dùng key tiếp theo.</div>
           <div class="zenlo__grid">
-            <label>Model
+            <label class="zenlo-settings__wide">Model
               <div class="zenlo-select js-gemini-model">
                 <button type="button" class="zenlo-select__button"><span class="zenlo-select__value"></span><span class="zenlo-select__arrow">▾</span></button>
                 <div class="zenlo-select__list" hidden></div>
@@ -279,10 +271,6 @@
 
       <div class="zenlo-settings__footer">Zenlo · © stephit</div>
     `
-
-    el.querySelector('.js-settings-close').addEventListener('click', () => {
-      el.hidden = true
-    })
 
     el.querySelectorAll('[name="zenlo-provider"]').forEach((radio) => {
       radio.addEventListener('change', () => {
@@ -358,41 +346,19 @@
       el.querySelector('.js-settings-clear-status').textContent = `Đã xoá ${removed} mục.`
     })
 
-    document.body.appendChild(el)
+    Z.drawer.pane('settings').appendChild(el)
     return el
   }
 
-  function toggleOverlay () {
+  // Each time the drawer shows this tab: build it once, then refresh what may have changed
+  Z.drawer.onShow('settings', () => {
     if (!overlay) overlay = buildOverlay()
-    if (overlay.hidden) Z.showPanel(overlay)
-    else overlay.hidden = true
-    if (overlay.hidden) return
-    // The lengths may have changed in the panels since this page was built
+    // The lengths may have changed in the other tabs since this page was built
     overlay.querySelectorAll('.js-settings-length').forEach((select) => {
       select.value = Z.getLength(select.dataset.feature)
     })
     renderProvider()
     loadMainSettings()
     loadGeminiModels()
-  }
-
-  // A tab in Zalo's left bar, below "Bản tin"
-  function injectNavButton () {
-    const bottom = document.querySelector('#main-tab .nav__tabs__bottom')
-    if (!bottom || bottom.querySelector('.zenlo-settings-btn')) return
-
-    const tab = document.createElement('div')
-    tab.className = 'clickable leftbar-tab flx flx-col flx-al-c flx-center rel zenlo-nav-btn zenlo-settings-btn'
-    tab.title = 'Zenlo · Cài đặt'
-    tab.innerHTML = `<div class="mmi-icon-wr">${ICON_SVG}</div><div class="lb-tab-title truncate">Zenlo</div>`
-    tab.addEventListener('click', (event) => {
-      event.stopPropagation()
-      toggleOverlay()
-    })
-    const digestTab = bottom.querySelector('.zenlo-digest-btn')
-    if (digestTab) digestTab.after(tab)
-    else bottom.prepend(tab)
-  }
-
-  Z.onDomChange(injectNavButton)
+  })
 })()

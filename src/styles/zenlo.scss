@@ -1,75 +1,219 @@
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
-  AI Summary panel
+  Look: Zalo's own background, text and border colors (so light and dark themes both fit), plus
+  Zenlo's own electric-violet accent and a monospace face for data (times, models, tokens).
+  Zalo's Electron (Chromium 108) has no color-mix(), so the soft accent shades are spelled out.
 */
 
+:root {
+  --zenlo-accent: #7c3aed;
+  --zenlo-accent-ink: #fff;
+  --zenlo-accent-soft: rgba(124, 58, 237, 0.1);
+  --zenlo-accent-line: rgba(124, 58, 237, 0.35);
+  --zenlo-mono: "Cascadia Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
+// Set by the drawer from Zalo's background
+html.zenlo-dark {
+  --zenlo-accent: #a78bfa;
+  --zenlo-accent-ink: #1a1033;
+  --zenlo-accent-soft: rgba(167, 139, 250, 0.14);
+  --zenlo-accent-line: rgba(167, 139, 250, 0.4);
+}
+
+// ---------- Entry points ----------
+
+// The button on a conversation's title bar
 .zenlo-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 4px;
-  color: var(--icon-primary, var(--text-primary));
+  color: var(--zenlo-accent);
 }
 
-.zenlo {
-  position: fixed;
-  top: 72px;
-  right: 16px;
-  z-index: 9999;
+// The one Zenlo button in Zalo's left bar
+.zenlo-nav-btn__icon {
+  position: relative;
+  color: var(--zenlo-accent);
+}
+
+.zenlo-nav-btn__badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--zenlo-accent);
+  color: var(--zenlo-accent-ink);
+  font-family: var(--zenlo-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+// ---------- Drawer ----------
+
+// Docked as the last column of Zalo's window row: the chat narrows, nothing is covered
+.zenlo-drawer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  flex-shrink: 0;
   width: 400px;
-  max-width: calc(100vw - 32px);
-  max-height: calc(100vh - 96px);
-  padding: 16px;
-  overflow-y: auto;
+  min-height: 0;
   box-sizing: border-box;
-  border: 1px solid var(--border, #d6dbe1);
-  border-radius: 12px;
+  border-left: 1px solid var(--border, #d6dbe1);
   background: var(--layer-background, #fff);
-  box-shadow: 0 8px 24px var(--shadow-overlay, rgba(0, 0, 0, 0.16));
   color: var(--text-primary, #081c36);
   font-size: 14px;
   line-height: 1.5;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px 6px 16px;
+  }
+
+  &__logo {
+    display: flex;
+    color: var(--zenlo-accent);
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  &__name {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  &__close {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary, #5a6981);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--layer-background-hover, #f1f2f4);
+    }
+  }
+
+  &__tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    padding: 0 8px;
+    border-bottom: 1px solid var(--border, #d6dbe1);
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__tab {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px 8px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-secondary, #5a6981);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text-primary, #081c36);
+    }
+
+    &--active,
+    &--active:hover {
+      border-bottom-color: var(--zenlo-accent);
+      color: var(--text-primary, #081c36);
+    }
+
+    &--icon {
+      padding: 8px 10px 6px;
+    }
+
+    &--icon.zenlo-drawer__tab--active {
+      color: var(--zenlo-accent);
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  &__pane {
+    padding: 14px 16px 20px;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+}
+
+// ---------- Shared pieces of the tabs ----------
+
+.zenlo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 
   [hidden] {
     display: none !important;
   }
 
-  &[hidden] {
+  // "Tóm tắt" with no conversation open: only the hint shows
+  &__empty {
+    display: none;
+    padding: 24px 8px;
+    color: var(--text-secondary, #5a6981);
+    text-align: center;
+  }
+
+  &--empty > * {
     display: none !important;
   }
 
-  &__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
+  &--empty > &__empty {
+    display: block !important;
   }
 
-  &__title {
-    font-size: 16px;
+  &__conv-title {
+    font-size: 15px;
     font-weight: 600;
   }
 
-  &__brand {
-    color: var(--button-primary-normal, #0068ff);
-  }
-
-  &__conv {
+  &__hint {
     color: var(--text-secondary, #5a6981);
     font-size: 13px;
-  }
-
-  &__close {
-    border: 0;
-    background: transparent;
-    color: var(--text-secondary, #5a6981);
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
   }
 
   &__presets {
@@ -84,11 +228,12 @@
     border-radius: 999px;
     background: transparent;
     color: var(--text-primary, #081c36);
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
 
     &:hover {
-      background: var(--layer-background-hover, #f1f2f4);
+      border-color: var(--zenlo-accent-line);
+      background: var(--zenlo-accent-soft);
     }
   }
 
@@ -113,12 +258,24 @@
       height: 32px;
       padding: 0 8px;
       border: 1px solid var(--border, #d6dbe1);
-      border-radius: 6px;
+      border-radius: 8px;
       background: var(--layer-background, #fff);
       color: var(--text-primary, #081c36);
       font-size: 13px;
       color-scheme: light dark;
+
+      &:focus {
+        border-color: var(--zenlo-accent);
+        outline: none;
+      }
     }
+  }
+
+  // Times typed by hand read as data
+  .js-summary-from,
+  .js-summary-to {
+    font-family: var(--zenlo-mono);
+    font-size: 12px;
   }
 
   &__field {
@@ -134,7 +291,7 @@
     flex-shrink: 0;
     padding: 0 8px;
     border: 1px solid var(--border, #d6dbe1);
-    border-radius: 6px;
+    border-radius: 8px;
     background: transparent;
     color: var(--text-primary, #081c36);
     font-size: 12px;
@@ -147,6 +304,7 @@
 
   &__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
   }
 
@@ -154,22 +312,28 @@
     height: 32px;
     padding: 0 14px;
     border: 1px solid var(--border, #d6dbe1);
-    border-radius: 6px;
+    border-radius: 8px;
     background: transparent;
     color: var(--text-primary, #081c36);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
 
+    &:hover:not(:disabled) {
+      background: var(--layer-background-hover, #f1f2f4);
+    }
+
     &:disabled {
       opacity: 0.5;
       cursor: default;
     }
 
-    &--primary {
+    &--primary,
+    &--primary:hover:not(:disabled) {
       border-color: transparent;
-      background: var(--button-primary-normal, #0068ff);
-      color: #fff;
+      background: var(--zenlo-accent);
+      color: var(--zenlo-accent-ink);
+      font-weight: 600;
     }
   }
 
@@ -186,16 +350,40 @@
     }
   }
 
+  // "55 tin · ~1.416 token · model": a data line, set like a terminal status bar
+  &__estimate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--layer-background-subtle, #f4f5f7);
+    font-family: var(--zenlo-mono);
+    font-size: 11px;
+
+    &::before {
+      content: "";
+      flex-shrink: 0;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--zenlo-accent);
+    }
+  }
+
   &__result {
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 10px;
     background: var(--layer-background-subtle, #f4f5f7);
     user-select: text;
 
     h4 {
       margin: 12px 0 4px;
-      font-size: 14px;
-      font-weight: 600;
+      color: var(--zenlo-accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
 
       &:first-child {
         margin-top: 0;
@@ -212,7 +400,11 @@
     }
 
     li {
-      margin: 2px 0;
+      margin: 3px 0;
+    }
+
+    li::marker {
+      color: var(--zenlo-accent);
     }
 
     pre {
@@ -224,14 +416,9 @@
   }
 }
 
-// Digest ("Bản tin"): opens next to the left bar
-.zenlo-digest {
-  top: 16px;
-  right: auto;
-  left: 80px;
-  width: 460px;
-  max-height: calc(100vh - 32px);
+// ---------- Bản tin ----------
 
+.zenlo-digest {
   &__list {
     display: flex;
     flex-direction: column;
@@ -244,7 +431,8 @@
     gap: 6px;
     padding: 10px 12px;
     border: 1px solid var(--border, #d6dbe1);
-    border-radius: 8px;
+    border-radius: 10px;
+    background: var(--layer-background-subtle, #f4f5f7);
   }
 
   &__card-head {
@@ -262,11 +450,11 @@
   }
 
   &__card--drop-before {
-    box-shadow: 0 -2px 0 var(--button-primary-normal, #0068ff);
+    box-shadow: 0 -2px 0 var(--zenlo-accent);
   }
 
   &__card--drop-after {
-    box-shadow: 0 2px 0 var(--button-primary-normal, #0068ff);
+    box-shadow: 0 2px 0 var(--zenlo-accent);
   }
 
   &__handle {
@@ -288,7 +476,7 @@
     width: 16px;
     height: 16px;
     margin: 0;
-    accent-color: var(--button-primary-normal, #0068ff);
+    accent-color: var(--zenlo-accent);
     cursor: pointer;
   }
 
@@ -305,7 +493,7 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--text-information, #005ae0);
+    color: var(--zenlo-accent);
     font-size: 13px;
     cursor: pointer;
 
@@ -332,15 +520,16 @@
   &__meta {
     flex-shrink: 0;
     color: var(--text-secondary, #5a6981);
-    font-size: 12px;
+    font-family: var(--zenlo-mono);
+    font-size: 11px;
   }
 
   &__badge {
     margin-right: 4px;
     padding: 1px 6px;
     border-radius: 999px;
-    background: var(--button-primary-normal, #0068ff);
-    color: #fff;
+    background: var(--zenlo-accent);
+    color: var(--zenlo-accent-ink);
     font-size: 11px;
   }
 
@@ -387,8 +576,9 @@
   margin-left: 4px;
   padding: 0 5px;
   border-radius: 4px;
-  background: var(--layer-background-selected, #e5efff);
-  color: var(--text-link, #0068ff);
+  background: var(--zenlo-accent-soft);
+  color: var(--zenlo-accent);
+  font-family: var(--zenlo-mono);
   font-size: 11px;
   line-height: 16px;
   white-space: nowrap;
@@ -428,7 +618,8 @@
   code {
     padding: 0 3px;
     border-radius: 3px;
-    background: var(--layer-background-selected, #e5efff);
+    background: var(--zenlo-accent-soft);
+    font-family: var(--zenlo-mono);
     font-size: 12px;
   }
 
@@ -474,8 +665,9 @@
 
   &--active,
   &--active:hover:not(:disabled) {
-    background: var(--button-primary-normal, #0068ff);
-    color: #fff;
+    background: var(--zenlo-accent);
+    color: var(--zenlo-accent-ink);
+    font-weight: 600;
   }
 
   &:disabled {
@@ -484,14 +676,9 @@
   }
 }
 
-// Settings: opens from the left bar, like the digest
-.zenlo-settings {
-  top: 16px;
-  right: auto;
-  left: 80px;
-  width: 440px;
-  max-height: calc(100vh - 32px);
+// ---------- Cài đặt ----------
 
+.zenlo-settings {
   &__section {
     display: flex;
     flex-direction: column;
@@ -536,6 +723,10 @@
       border-radius: 8px;
       background: var(--layer-background-subtle, #f4f5f7);
     }
+  }
+
+  input[type="radio"] {
+    accent-color: var(--zenlo-accent);
   }
 
   &__footer {
@@ -703,9 +894,13 @@
     text-align: left;
     cursor: pointer;
 
-    &:hover:not(:disabled),
-    &--active {
+    &:hover:not(:disabled) {
       background: var(--layer-background-hover, #f1f2f4);
+    }
+
+    &--active,
+    &--active:hover:not(:disabled) {
+      background: var(--zenlo-accent-soft);
     }
 
     &:disabled {
@@ -717,5 +912,43 @@
       color: var(--text-secondary, #5a6981);
       font-size: 12px;
     }
+  }
+}
+
+// Settings polish inside the drawer
+.zenlo-settings {
+  // The first section sits right under the tabs, which already draw a line
+  &__section:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  // The model list needs the full width for "Từ Gemini 3.8 Flash" and its bar
+  &__wide {
+    grid-column: 1 / -1;
+  }
+
+  &__key input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    border: 1px solid var(--border, #d6dbe1);
+    border-radius: 8px;
+    background: var(--layer-background, #fff);
+    color: var(--text-primary, #081c36);
+    font-family: var(--zenlo-mono);
+    font-size: 12px;
+
+    &:focus {
+      border-color: var(--zenlo-accent);
+      outline: none;
+    }
+  }
+
+  &__key-status {
+    font-family: var(--zenlo-mono);
+    font-size: 11px;
   }
 }

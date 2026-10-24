@@ -989,28 +989,6 @@
     fn()
   }
 
-  // ---------- Panels ----------
-
-  // At most one Zenlo panel (summary, digest, settings) is on screen. Every panel has the class
-  // "zenlo"; the buttons that open them are left out of the outside-click check, since they toggle.
-  const PANEL_TRIGGERS = '.zenlo-btn, .zenlo-nav-btn'
-
-  function showPanel (el) {
-    document.querySelectorAll('.zenlo').forEach((panel) => {
-      if (panel !== el) panel.hidden = true
-    })
-    el.hidden = false
-  }
-
-  // A click outside the open panel hides it (a running summary keeps going in the background)
-  document.addEventListener('mousedown', (event) => {
-    const target = event.target
-    if (!target || typeof target.closest !== 'function' || target.closest('.zenlo') || target.closest(PANEL_TRIGGERS)) return
-    document.querySelectorAll('.zenlo:not([hidden])').forEach((panel) => {
-      panel.hidden = true
-    })
-  }, true)
-
   // Zalo's unread state is sampled often, so a conversation's count is known just before opening it
   setInterval(trackUnread, 500)
   onDomChange(trackUnread)
@@ -1072,7 +1050,6 @@
     buildPartInstruction,
 
     runAI,
-    showPanel,
     onDomChange
   }
 })()
