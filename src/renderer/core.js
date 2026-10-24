@@ -20,6 +20,7 @@
   // Zenlo's public links; an empty one is not shown. Filled in when the site and repository exist.
   const LINKS = {
     site: 'https://stephitnoob.github.io/zenlo/',
+    guide: 'https://stephitnoob.github.io/zenlo/huong-dan.html',
     source: 'https://github.com/stephitnoob/zenlo',
     privacy: 'https://stephitnoob.github.io/zenlo/privacy.html',
     feedback: 'mailto:tungtd@outlook.com?subject=G%C3%B3p%20%C3%BD%20Zenlo',

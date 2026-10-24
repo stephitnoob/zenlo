@@ -804,22 +804,24 @@ html.zenlo-dark {
     align-self: flex-start;
   }
 
-  &__legend {
-    display: inline-block;
-    width: 10px;
-    height: 6px;
-    border-radius: 2px;
+  // "?" beside a heading: opens that part of the guide on the website
+  &__help {
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    padding: 0;
+    border: 1px solid var(--zenlo-accent-line);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--zenlo-accent);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 14px;
+    vertical-align: 1px;
+    cursor: pointer;
 
-    &--1 {
-      background: #0ab066;
-    }
-
-    &--2 {
-      background: #f5a623;
-    }
-
-    &--3 {
-      background: #db342e;
+    &:hover {
+      background: var(--zenlo-accent-soft);
     }
   }
 }

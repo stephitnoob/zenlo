@@ -205,6 +205,9 @@
     }
   }
 
+  // A small "?" that opens the guide on the website at that section
+  const help = (anchor) => ` <button type="button" class="zenlo-settings__help" data-guide="${anchor}" title="Xem hướng dẫn">?</button>`
+
   function buildOverlay () {
     const get = (key, list, fallback) => Z.getSetting(key, list.map((i) => (typeof i === 'string' ? i : i.value)), fallback)
 
@@ -212,7 +215,7 @@
     el.className = 'zenlo zenlo-settings'
     el.innerHTML = `
       <section class="zenlo-settings__section">
-        <div class="zenlo-settings__heading">AI dùng để tóm tắt</div>
+        <div class="zenlo-settings__heading">AI dùng để tóm tắt${help('chon-ai')}</div>
         <div class="zenlo-settings__choice">
           <label><input type="radio" name="zenlo-provider" value="claude"> Claude</label>
           <label><input type="radio" name="zenlo-provider" value="gemini"> Gemini</label>
@@ -223,26 +226,21 @@
             <label>Model<select class="js-settings-claude-model">${options(MODELS, get(STORAGE_KEYS.model, MODELS, 'sonnet'))}</select></label>
             <label>Effort<select class="js-settings-claude-effort">${options(EFFORTS, get(STORAGE_KEYS.effort, EFFORTS, 'medium'))}</select></label>
           </div>
-          <div class="zenlo-settings__note">Cần gói <b>Claude Pro</b> hoặc <b>Claude Max</b>, và Claude Code đã đăng nhập trên máy này. Zenlo dùng lượt của gói, không dùng API key.</div>
+          <div class="zenlo-settings__note">Cần gói Claude Pro/Max và Claude Code đã đăng nhập.${help('claude')}</div>
           <div class="zenlo__status js-settings-claude-status"></div>
         </div>
 
         <div class="js-settings-gemini">
           <div class="zenlo-settings__guide js-settings-guide" hidden>
-            <b>Lấy API key Gemini miễn phí (khoảng 1 phút)</b>
-            <ol>
-              <li>Mở <button type="button" class="zenlo__inline-link js-open-aistudio">Google AI Studio</button> và đăng nhập tài khoản Google.</li>
-              <li>Bấm <b>Create API key</b>, rồi sao chép key vừa tạo.</li>
-              <li>Dán key vào ô bên dưới. Xong.</li>
-            </ol>
+            <b>Chưa có key?</b> Mở <button type="button" class="zenlo__inline-link js-open-aistudio">Google AI Studio</button>, bấm <b>Create API key</b>, dán vào ô dưới.
+            <button type="button" class="zenlo__inline-link" data-guide="lay-key">Hướng dẫn có hình</button>
           </div>
-          <div class="zenlo-settings__label">API key Gemini <small>(tối đa 5)</small></div>
+          <div class="zenlo-settings__label">API key Gemini <small>(tối đa 5)</small>${help('gemini')}</div>
           <div class="zenlo-settings__keys js-settings-keys"></div>
           <button type="button" class="zenlo-digest__link zenlo-settings__add js-settings-add-key">+ Thêm API key</button>
           <div class="zenlo__status js-settings-keys-status"></div>
-          <div class="zenlo-settings__note">Hạn mức tính theo <b>project</b> trên Google Cloud: các key trong cùng một project dùng chung lượt, chỉ key từ project khác mới có thêm lượt. Khi một key hết lượt, Zenlo tự dùng key tiếp theo.</div>
           <div class="zenlo__grid">
-            <label class="zenlo-settings__wide">Model
+            <label class="zenlo-settings__wide" title="Thanh màu: mức đông người dùng ước lượng (đỏ đông, vàng vừa, xanh thoáng). Model mờ: mọi key đã hết lượt hôm nay, mở lại khoảng 14–15 giờ chiều.">Model
               <div class="zenlo-select js-gemini-model">
                 <button type="button" class="zenlo-select__button"><span class="zenlo-select__value"></span><span class="zenlo-select__arrow">▾</span></button>
                 <div class="zenlo-select__list" hidden></div>
@@ -257,11 +255,7 @@
               <select class="js-settings-gemini-retry">${options(GEMINI_RETRIES.map((v) => ({ value: v, label: v === '0' ? 'Luôn thử lại' : `${v} phút` })), get(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '5'))}</select>
             </label>
           </div>
-          <div class="zenlo-settings__note">Thanh màu là mức đông người dùng <b>ước lượng</b>: <span class="zenlo-settings__legend zenlo-settings__legend--3"></span> đông · <span class="zenlo-settings__legend zenlo-settings__legend--2"></span> vừa · <span class="zenlo-settings__legend zenlo-settings__legend--1"></span> thoáng. Model bị mờ là mọi key đã hết lượt trong ngày; lượt được làm mới lúc 0 giờ giờ Thái Bình Dương (khoảng 14–15 giờ chiều ở Việt Nam).</div>
-          <div class="zenlo-settings__note zenlo-settings__note--warn">
-            <b>Lưu ý dữ liệu:</b> với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm, gồm cả tin nhắn của những người khác trong hội thoại. Key trả phí thì không bị dùng như vậy.
-            Lấy key tại aistudio.google.com/apikey. Khi model đang quá tải hoặc không phản hồi trong thời gian chờ ở trên, Zenlo chuyển xuống bản thấp hơn (ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite).
-          </div>
+          <div class="zenlo-settings__note zenlo-settings__note--warn">Key miễn phí: Google có thể dùng nội dung gửi lên để cải thiện sản phẩm.</div>
         </div>
 
         <div class="zenlo__actions">
@@ -271,7 +265,7 @@
       </section>
 
       <section class="zenlo-settings__section">
-        <div class="zenlo-settings__heading">Tóm tắt và Bản tin</div>
+        <div class="zenlo-settings__heading">Tóm tắt và Bản tin${help('mac-dinh')}</div>
         <div class="zenlo__grid">
           <label>Độ dài Tóm tắt<select class="js-settings-length" data-feature="summary">${options(LENGTHS, Z.getLength('summary'))}</select></label>
           <label>Độ dài Bản tin<select class="js-settings-length" data-feature="digest">${options(LENGTHS, Z.getLength('digest'))}</select></label>
@@ -280,11 +274,11 @@
       </section>
 
       <section class="zenlo-settings__section">
-        <div class="zenlo-settings__heading">Dữ liệu</div>
+        <div class="zenlo-settings__heading">Dữ liệu${help('dat-lai')}</div>
         <div class="zenlo__actions">
           <button class="zenlo__btn js-settings-clear">Xoá bản tóm tắt đã lưu</button>
         </div>
-        <div class="zenlo-settings__note">Thứ tự ưu tiên và các ô tick trong Bản tin được giữ lại.</div>
+        <div class="zenlo-settings__note">Ô tick và thứ tự trong Bản tin được giữ lại.</div>
         <div class="zenlo__status js-settings-clear-status"></div>
       </section>
 
@@ -293,15 +287,14 @@
         <div class="zenlo__actions">
           <button class="zenlo__btn js-settings-reset">Đặt lại mặc định</button>
         </div>
-        <div class="zenlo-settings__note">Đưa mọi cài đặt về như ban đầu. API key, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin được giữ lại.</div>
+        <div class="zenlo-settings__note">API key, bản tóm tắt, ô tick và thứ tự được giữ lại.</div>
         <div class="zenlo__status js-settings-reset-status"></div>
       </section>
 
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">Về Zenlo</div>
-        <div class="zenlo-settings__note">Zenlo không có máy chủ và không thu thập dữ liệu. Tin nhắn chỉ được gửi tới dịch vụ AI bạn chọn ở trên, khi bạn bấm Tóm tắt hoặc Tạo bản tin.</div>
         <div class="zenlo-settings__links">
-          ${[['site', 'Trang chủ'], ['privacy', 'Quyền riêng tư'], ['source', 'Mã nguồn'], ['feedback', 'Góp ý & báo lỗi']]
+          ${[['guide', 'Hướng dẫn sử dụng'], ['site', 'Trang chủ'], ['privacy', 'Quyền riêng tư'], ['source', 'Mã nguồn'], ['feedback', 'Góp ý & báo lỗi']]
             .filter(([key]) => Z.LINKS[key])
             .map(([key, label]) => `<button type="button" class="zenlo__inline-link" data-link="${key}">${label}</button>`).join('')}
         </div>
@@ -382,6 +375,9 @@
 
     el.querySelector('.js-settings-test').addEventListener('click', testConnection)
     el.querySelector('.js-open-aistudio').addEventListener('click', () => Z.openLink(Z.LINKS.geminiKey))
+    el.querySelectorAll('[data-guide]').forEach((button) => {
+      button.addEventListener('click', () => Z.openLink(`${Z.LINKS.guide}#${button.dataset.guide}`))
+    })
     el.querySelectorAll('[data-link]').forEach((button) => {
       button.addEventListener('click', () => Z.openLink(Z.LINKS[button.dataset.link]))
     })

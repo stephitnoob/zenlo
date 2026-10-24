@@ -53,6 +53,9 @@
   const fileUrl = `https://github.com/${REPO}/releases/latest/download/Zenlo-Setup.exe`
   setDownload(fileUrl, 'Tải Zenlo cho Windows')
 
+  // Only the home page shows the release facts
+  if (!document.querySelector('.js-version, .js-size-small')) return
+
   fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
     .then((response) => (response.ok ? response.json() : Promise.reject(new Error(response.status))))
     .then((release) => {
@@ -61,6 +64,7 @@
       const size = asset ? `${(asset.size / 1048576).toFixed(0)} MB` : '–'
       setText('.js-version', release.tag_name || '–')
       setText('.js-size', size)
+      setText('.js-size-small', `${release.tag_name} · ${size}`)
       setText('.js-sha', sha || 'xem trong ghi chú phát hành')
       setText('.js-release-meta', `Miễn phí · ${release.tag_name} · ${size} · Windows 10/11`)
       if (sha) {
