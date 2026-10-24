@@ -47,5 +47,5 @@ Get-FileHash .\Zenlo-Setup.exe -Algorithm SHA256
 Kiểm tra file được build từ đúng kho mã này (cần GitHub CLI):
 
 ```powershell
-gh attestation verify .\Zenlo-Setup.exe --repo <chủ kho>/zenlo
+gh attestation verify .\Zenlo-Setup.exe --repo stephitnoob/zenlo
 ```

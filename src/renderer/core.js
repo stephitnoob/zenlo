@@ -19,9 +19,9 @@
 
   // Zenlo's public links; an empty one is not shown. Filled in when the site and repository exist.
   const LINKS = {
-    site: '',
-    source: '',
-    privacy: '',
+    site: 'https://stephitnoob.github.io/zenlo/',
+    source: 'https://github.com/stephitnoob/zenlo',
+    privacy: 'https://stephitnoob.github.io/zenlo/privacy.html',
     feedback: '',
     geminiKey: 'https://aistudio.google.com/apikey'
   }

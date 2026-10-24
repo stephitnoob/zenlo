@@ -6,7 +6,7 @@
 (function () {
   // The official repository ("owner/name") and the feedback e-mail. Empty until they exist:
   // the download buttons then say the first release is coming.
-  const REPO = ''
+  const REPO = 'stephitnoob/zenlo'
   const FEEDBACK_EMAIL = ''
 
   const $$ = (selector) => document.querySelectorAll(selector)
