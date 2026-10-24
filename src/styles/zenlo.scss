@@ -954,3 +954,23 @@ html.zenlo-dark {
     font-size: 11px;
   }
 }
+
+// "Đến" label with its "Hiện tại" link on the same line, so the time field gets the full width
+.zenlo__label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.zenlo__inline-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--zenlo-accent);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

@@ -146,11 +146,9 @@
 
       <div class="zenlo__grid">
         <label>Từ<input type="text" class="js-summary-from" placeholder="${TIME_FORMAT_HINT}" spellcheck="false"></label>
-        <label>Đến
-          <span class="zenlo__field">
-            <input type="text" class="js-summary-to" placeholder="${TIME_FORMAT_HINT}" spellcheck="false">
-            <button type="button" class="zenlo__now js-summary-now" title="Đặt &quot;Đến&quot; là thời điểm hiện tại">Hiện tại</button>
-          </span>
+        <label>
+          <span class="zenlo__label-row">Đến<button type="button" class="zenlo__inline-link js-summary-now" title="Đặt &quot;Đến&quot; là thời điểm hiện tại">Hiện tại</button></span>
+          <input type="text" class="js-summary-to" placeholder="${TIME_FORMAT_HINT}" spellcheck="false">
         </label>
       </div>
 
