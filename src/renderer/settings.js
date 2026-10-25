@@ -2,13 +2,13 @@
   Zenlo – trình quản lí hội thoại Zalo
 
   Settings ("Cài đặt Zenlo", the gear tab of the Zenlo drawer, renderer): choose the AI (Claude Code on
-  a Claude Pro/Max plan, or Gemini with the user's own API key), default summary lengths, how far
+  a Claude Pro/Max plan, Codex on a ChatGPT plan, or Gemini with the user's own API key), default summary lengths, how far
   back unread messages are read, and to clear saved summaries.
 */
 
 (function () {
   const Z = window.ZenloCore
-  const { STORAGE_KEYS, MODELS, EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, GEMINI_TIMEOUTS, GEMINI_RETRIES, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
+  const { STORAGE_KEYS, MODELS, EFFORTS, CODEX_MODELS, CODEX_EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, GEMINI_TIMEOUTS, GEMINI_RETRIES, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
 
   const EYE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
 
@@ -35,12 +35,15 @@
       radio.checked = radio.value === provider
     })
     overlay.querySelector('.js-settings-claude').hidden = provider !== 'claude'
+    overlay.querySelector('.js-settings-codex').hidden = provider !== 'codex'
     overlay.querySelector('.js-settings-gemini').hidden = provider !== 'gemini'
   }
 
-  // What the main process knows: whether Claude Code is installed, the saved Gemini keys
+  // What the main process knows: whether Claude Code and Codex are installed (and Codex logged
+  // in), the saved Gemini keys
   async function loadMainSettings () {
     const status = overlay.querySelector('.js-settings-claude-status')
+    const codexStatus = overlay.querySelector('.js-settings-codex-status')
     if (!window.$zenlo || !window.$zenlo.getSettings) {
       status.textContent = 'Chưa có cầu nối của Zenlo. Hãy cài lại Zenlo rồi mở lại Zalo.'
       return
@@ -51,6 +54,15 @@
         ? '✓ Đã tìm thấy Claude Code trên máy.'
         : '✗ Chưa tìm thấy Claude Code. Hãy cài Claude Code và đăng nhập bằng tài khoản Claude.'
       status.classList.toggle('zenlo__status--error', !settings.claudePath)
+      const codex = settings.codex || {}
+      codexStatus.textContent = !codex.path
+        ? '✗ Chưa tìm thấy Codex. Hãy cài Codex rồi chạy "codex login" để đăng nhập bằng tài khoản ChatGPT.'
+        : codex.loggedIn === false
+          ? '✗ Đã có Codex nhưng chưa đăng nhập ChatGPT. Mở Terminal, chạy "codex login".'
+          : codex.loggedIn === true
+            ? `✓ Đã tìm thấy Codex${codex.account ? `, ${codex.account}` : ''}.`
+            : '✓ Đã tìm thấy Codex trên máy.'
+      codexStatus.classList.toggle('zenlo__status--error', !codex.path || codex.loggedIn === false)
       maxKeys = settings.maxKeys || 5
       renderKeys(settings.geminiKeys || [])
     } catch (error) {
@@ -173,12 +185,12 @@
   }
 
   // A one-word request, to check that the chosen AI answers. The login, plan and key are the same
-  // for every model, so it uses the fastest settings: Haiku for Claude, low thinking for Gemini.
+  // for every model, so it uses the fastest settings: Haiku for Claude, low effort for Codex and Gemini.
   async function testConnection () {
     const button = overlay.querySelector('.js-settings-test')
     const { provider } = Z.getAISettings()
     const started = Date.now()
-    let model = provider === 'claude' ? 'Claude Haiku' : 'Gemini'
+    let model = provider === 'claude' ? 'Claude Haiku' : provider === 'codex' ? 'Codex' : 'Gemini'
     const tick = () => setTestStatus(`Đang thử ${model}… ${Math.round((Date.now() - started) / 1000)} giây`)
     button.disabled = true
     tick()
@@ -218,6 +230,7 @@
         <div class="zenlo-settings__heading">AI dùng để tóm tắt${help('chon-ai')}</div>
         <div class="zenlo-settings__choice">
           <label><input type="radio" name="zenlo-provider" value="claude"> Claude</label>
+          <label><input type="radio" name="zenlo-provider" value="codex"> Codex (ChatGPT)</label>
           <label><input type="radio" name="zenlo-provider" value="gemini"> Gemini</label>
         </div>
 
@@ -228,6 +241,15 @@
           </div>
           <div class="zenlo-settings__note">Cần gói Claude Pro/Max và Claude Code đã đăng nhập.${help('claude')}</div>
           <div class="zenlo__status js-settings-claude-status"></div>
+        </div>
+
+        <div class="js-settings-codex">
+          <div class="zenlo__grid">
+            <label>Model<select class="js-settings-codex-model">${options(CODEX_MODELS, get(STORAGE_KEYS.codexModel, CODEX_MODELS, 'default'))}</select></label>
+            <label>Effort<select class="js-settings-codex-effort">${options(CODEX_EFFORTS, get(STORAGE_KEYS.codexEffort, CODEX_EFFORTS, 'medium'))}</select></label>
+          </div>
+          <div class="zenlo-settings__note">Cần gói ChatGPT có Codex (Plus, Pro…) và Codex đã đăng nhập.${help('codex')}</div>
+          <div class="zenlo__status js-settings-codex-status"></div>
         </div>
 
         <div class="js-settings-gemini">
@@ -331,6 +353,8 @@
     }
     bindSelect('.js-settings-claude-model', STORAGE_KEYS.model)
     bindSelect('.js-settings-claude-effort', STORAGE_KEYS.effort)
+    bindSelect('.js-settings-codex-model', STORAGE_KEYS.codexModel)
+    bindSelect('.js-settings-codex-effort', STORAGE_KEYS.codexEffort)
     // The custom model dropdown
     const modelSelect = el.querySelector('.js-gemini-model')
     const modelList = modelSelect.querySelector('.zenlo-select__list')
