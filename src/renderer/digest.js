@@ -13,7 +13,7 @@
 
   // Conversations summarized at the same time. Claude Code handles a few parallel runs well;
   // Gemini's free tier allows few requests per minute.
-  const PARALLEL = { claude: 3, gemini: 2 }
+  const PARALLEL = { claude: 3, codex: 2, gemini: 2 }
 
   // Kinds of messages that automated accounts send (account notices, cards, bank cards)
   const AUTOMATED_KINDS = ['chat.list.action', 'chat.webcontent', 'chat.ecard']

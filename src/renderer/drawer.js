@@ -121,7 +121,7 @@
 
   // ---------- First run ----------
 
-  // A line above the tabs while the chosen AI cannot be used yet (no Gemini key, no Claude Code)
+  // A line above the tabs while the chosen AI cannot be used yet (no Gemini key, no Claude Code or Codex)
   async function refreshNotice () {
     if (!drawer || !window.$zenlo || !window.$zenlo.getSettings) return
     const notice = drawer.querySelector('.zenlo-drawer__notice')
@@ -134,6 +134,8 @@
         text = 'Zenlo cần một API key Gemini (miễn phí) để tóm tắt. Lấy key mất khoảng 1 phút.'
       } else if (provider === 'claude' && !settings.claudePath) {
         text = 'Chưa tìm thấy Claude Code trên máy. Hãy cài Claude Code, hoặc chuyển sang Gemini.'
+      } else if (provider === 'codex' && !settings.codexPath) {
+        text = 'Chưa tìm thấy Codex trên máy. Hãy cài Codex và đăng nhập bằng tài khoản ChatGPT, hoặc chuyển sang Gemini.'
       }
     } catch (error) {}
     // Nothing to set up: tell about a newer version found by the check, if any

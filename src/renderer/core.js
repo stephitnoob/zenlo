@@ -7,7 +7,7 @@
   - Zalo's own unread state, and marking conversations read in Zalo
   - access to Zalo internals (message store, conversation list, names, opening a conversation)
   - compact transcript building and the shared summary prompt
-  - the AI bridge (Claude Code or Gemini, run by the main process)
+  - the AI bridge (Claude Code, Codex or Gemini, run by the main process)
 */
 
 (function () {
@@ -54,6 +54,8 @@
     geminiEffort: '@Zenlo:GEMINI_EFFORT',
     geminiTimeout: '@Zenlo:GEMINI_TIMEOUT',
     geminiRetry: '@Zenlo:GEMINI_RETRY',
+    codexModel: '@Zenlo:CODEX_MODEL',
+    codexEffort: '@Zenlo:CODEX_EFFORT',
     lookbackDays: '@Zenlo:LOOKBACK_DAYS',
     length: '@Zenlo:LENGTH:',
     last: '@Zenlo:LAST:',
@@ -67,6 +69,7 @@
 
   const PROVIDERS = [
     { value: 'claude', label: 'Claude' },
+    { value: 'codex', label: 'Codex' },
     { value: 'gemini', label: 'Gemini' }
   ]
   const MODELS = [
@@ -75,6 +78,13 @@
     { value: 'opus', label: 'Opus' }
   ]
   const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
+  // Codex CLI on the user's ChatGPT plan. "default" lets Codex pick the model of the plan.
+  const CODEX_MODELS = [
+    { value: 'default', label: 'Mặc định của Codex' },
+    { value: 'gpt-5.5', label: 'GPT-5.5' },
+    { value: 'gpt-5.4-mini', label: 'GPT-5.4 mini' }
+  ]
+  const CODEX_EFFORTS = ['low', 'medium', 'high']
   // Gemini models come from Google's list for the user's key (main process). The setting holds a
   // model id to start from, or "auto" for the newest; an overloaded model falls back to older ones.
   const GEMINI_AUTO = 'auto'
@@ -381,6 +391,13 @@
         retryWindow: Number(getSetting(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '5')) * MINUTE
       }
     }
+    if (provider === 'codex') {
+      return {
+        provider,
+        model: getSetting(STORAGE_KEYS.codexModel, CODEX_MODELS.map((m) => m.value), 'default'),
+        effort: getSetting(STORAGE_KEYS.codexEffort, CODEX_EFFORTS, 'medium')
+      }
+    }
     return {
       provider,
       model: getSetting(STORAGE_KEYS.model, MODELS.map((m) => m.value), 'sonnet'),
@@ -396,7 +413,11 @@
 
   function getAILabel () {
     const { provider, model, effort } = getAISettings()
-    const label = provider === 'gemini' ? geminiLabel(model) : (MODELS.find((m) => m.value === model) || {}).label || model
+    const label = provider === 'gemini'
+      ? geminiLabel(model)
+      : provider === 'codex'
+        ? `Codex${model === 'default' ? '' : ` ${(CODEX_MODELS.find((m) => m.value === model) || {}).label || model}`}`
+        : (MODELS.find((m) => m.value === model) || {}).label || model
     return `${label} (${effort})`
   }
 
@@ -487,7 +508,7 @@
   // order and ticks are data, not settings, and stay.
   function resetSettings () {
     const keys = [STORAGE_KEYS.provider, STORAGE_KEYS.model, STORAGE_KEYS.effort, STORAGE_KEYS.geminiModel, STORAGE_KEYS.geminiEffort,
-      STORAGE_KEYS.geminiTimeout, STORAGE_KEYS.geminiRetry, STORAGE_KEYS.lookbackDays, STORAGE_KEYS.length + 'summary', STORAGE_KEYS.length + 'digest']
+      STORAGE_KEYS.geminiTimeout, STORAGE_KEYS.geminiRetry, STORAGE_KEYS.codexModel, STORAGE_KEYS.codexEffort, STORAGE_KEYS.lookbackDays, STORAGE_KEYS.length + 'summary', STORAGE_KEYS.length + 'digest']
     keys.forEach((key) => {
       try {
         localStorage.removeItem(key)
@@ -1117,7 +1138,7 @@
     }
   }
 
-  // Runs the AI chosen in the settings (Claude Code or Gemini) through the main process.
+  // Runs the AI chosen in the settings (Claude Code, Codex or Gemini) through the main process.
   // Returns { promise, cancel }. provider / model / effort / now / myName can be passed in (tests,
   // the settings' connection check); by default they come from the settings, the clock and Zalo.
   // onStatus({ model, skipped, done }) reports which Gemini model is answering (and which were skipped).
@@ -1196,6 +1217,8 @@
     PROVIDERS,
     MODELS,
     EFFORTS,
+    CODEX_MODELS,
+    CODEX_EFFORTS,
     GEMINI_AUTO,
     geminiLabel,
     describeModelStatus,
