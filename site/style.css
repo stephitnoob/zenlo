@@ -1488,10 +1488,31 @@ button {
   word-break: break-all;
 }
 
-.doc .treat__thanks {
-  margin-top: 32px;
+.treat__thanks {
+  max-width: 660px;
+  margin-top: 40px;
+  padding: 4px 0 4px 24px;
+  border-left: 3px solid var(--accent);
+}
+
+.doc .treat__thanks p {
+  margin: 0 0 14px;
   color: var(--text);
-  font-size: 18px;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.doc .treat__thanks p:first-child {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.doc .treat__thanks .treat__sign {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 14px;
 }
 
 /* Get told about new versions */
