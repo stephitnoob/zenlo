@@ -154,7 +154,7 @@
         </table>
         <p>Muốn khoảng khác thì sửa ô <b>Từ</b> và <b>Đến</b> theo dạng <code>dd/mm/yyyy hh:mm</code>. Chữ <b>Hiện tại</b> cạnh ô Đến đặt nó về lúc này.</p>
         <p>Dưới các nút có dòng ước lượng, ví dụ <code>120 tin · ước tính ~3.400 token đầu vào</code>. Con số này đếm trên máy, chưa gửi gì đi.</p>
-        <p>Bấm <b>Tóm tắt</b>. Chữ hiện dần khi AI viết; bấm <b>Dừng</b> để ngắt, <b>Sao chép</b> để lấy cả bản tóm tắt.</p>
+        <p>Bấm <b>Tóm tắt</b>. Chữ hiện dần khi AI viết; bấm <b>Dừng</b> để ngắt, <b>Sao chép</b> để lấy cả bản tóm tắt; văn bản sao chép có thêm một dòng ghi nguồn Zenlo ở cuối.</p>
         <div class="tip">"Từ tin chưa đọc" cần Zenlo đang chạy lúc bạn mở hội thoại, vì Zalo xoá số tin chưa đọc ngay khi mở. Nếu Zenlo báo không ghi nhận tin chưa đọc nào, dùng các nút theo giờ.</div>
       </section>
 
@@ -173,6 +173,20 @@
         <p>Cuối mỗi ý có một mốc như <code>19/10 08:20</code>. Bấm vào, Zalo cuộn tới đúng tin nhắn đó và làm nổi nó lên.</p>
         <p>AI có lúc hiểu sai hoặc nhầm người. Với việc quan trọng như tiền, hạn nộp, lịch hẹn, bấm mốc giờ để đọc lại tin gốc trước khi làm theo.</p>
         <p>Bản tóm tắt gần nhất của mỗi hội thoại được lưu trên máy, mở lại vẫn thấy.</p>
+      </section>
+
+      <section id="ghi-chu">
+        <h3>Ghi chú cho AI</h3>
+        <h4>Dùng khi nào</h4>
+        <p>Khi AI cần biết thêm điều gì đó mà tin nhắn không nói ra: ai là sếp, bạn phụ trách việc gì, hay bạn chỉ quan tâm một phần của nhóm.</p>
+        <h4>Cách làm</h4>
+        <ol>
+          <li>Mở hội thoại, bấm nút <b>Ghi chú</b> (hình tờ giấy) ngay cạnh nút Tóm tắt trên thanh trên cùng khung chat.</li>
+          <li>Viết ghi chú, tối đa 300 ký tự, rồi bấm <b>Lưu</b> (hoặc <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span>). Bấm <b>Xoá</b> để bỏ ghi chú.</li>
+        </ol>
+        <p>Mỗi hội thoại một ghi chú riêng. AI đọc nó mỗi lần tóm tắt hội thoại đó, cả trong Bản tin. Hội thoại nào có ghi chú thì nút Ghi chú sáng màu tím, và khung Tóm tắt hiện dòng "Ghi chú cho AI: …" dưới tên hội thoại.</p>
+        <div class="tip">Ví dụ: "Hoa là sếp mình." · "Mình phụ trách khách ABC." · "Chỉ cần hạn chót và lịch họp, bỏ qua chuyện phiếm."</div>
+        <p>Ghi chú được lưu trên máy bạn và được gửi tới AI cùng tin nhắn, giống phần còn lại của bản tóm tắt.</p>
       </section>
     </section>
 
@@ -270,6 +284,16 @@
           <li><b>Xoá bản tóm tắt đã lưu</b>: xoá mọi bản tóm tắt và bản tin đã lưu trên máy. Ô tick và thứ tự trong Bản tin giữ nguyên.</li>
           <li><b>Đặt lại mặc định</b>: đưa mọi cài đặt về như lúc mới cài. API key, bản tóm tắt, ô tick và thứ tự giữ nguyên.</li>
         </ul>
+      </section>
+
+      <section id="phien-ban">
+        <h3>Phiên bản và bản mới</h3>
+        <p>Mục <b>Phiên bản</b> cuối Cài đặt cho biết bạn đang dùng Zenlo bản nào. Báo lỗi thì nhớ ghi số phiên bản này.</p>
+        <ul>
+          <li><b>Kiểm tra bản mới</b>: hỏi GitHub bản mới nhất là bản nào. Có bản mới thì hiện link tới trang <a class="link" href="phien-ban.html">Phiên bản</a> để tải.</li>
+          <li><b>Tự kiểm tra bản mới mỗi ngày</b> (mặc định tắt): bật lên thì mỗi ngày Zenlo tự hỏi một lần; có bản mới thì một dòng báo hiện trên đầu khung Zenlo.</li>
+        </ul>
+        <p>Yêu cầu gửi GitHub không chứa tin nhắn, ghi chú hay thông tin nào về bạn. Muốn nhận thông báo qua e-mail thì <a class="link" href="phien-ban.html#thong-bao">theo dõi Zenlo trên GitHub</a>.</p>
       </section>
     </section>
 

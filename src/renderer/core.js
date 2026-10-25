@@ -127,7 +127,8 @@
   // user, unlike the transcript, so it goes in the request itself.
   function noteLine (note) {
     const text = String(note || '').replace(/\s+/g, ' ').trim().slice(0, NOTE_MAX)
-    return text ? `Ghi chú của mình về cuộc trò chuyện này (dùng để hiểu bối cảnh và chọn ý cần nêu): "${text}".` : ''
+    if (!text) return ''
+    return `Ghi chú của mình về cuộc trò chuyện này, dùng để hiểu bối cảnh và chọn ý cần nêu: ${text}${/[.!?…]$/.test(text) ? '' : '.'}`
   }
 
   // Notes for one part of a conversation too long for one request

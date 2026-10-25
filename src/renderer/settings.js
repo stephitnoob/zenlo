@@ -303,7 +303,7 @@
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">Phiên bản</div>
         <div class="zenlo__actions">
-          <span>Bạn đang dùng Zenlo ${escapeHTML(Z.VERSION)}.</span>
+          <span>Bạn đang dùng Zenlo v${escapeHTML(Z.VERSION)}.</span>
           <button class="zenlo__btn js-settings-update">Kiểm tra bản mới</button>
         </div>
         <div class="zenlo__status js-settings-update-status"></div>
@@ -311,7 +311,7 @@
         <div class="zenlo-settings__note">Chỉ hỏi GitHub bản mới nhất là bản nào, không gửi gì về bạn.</div>
       </section>
 
-      <div class="zenlo-settings__footer">Zenlo ${escapeHTML(Z.VERSION)} · © stephit</div>
+      <div class="zenlo-settings__footer">Zenlo v${escapeHTML(Z.VERSION)} · © stephit</div>
     `
 
     el.querySelectorAll('[name="zenlo-provider"]').forEach((radio) => {

@@ -40,6 +40,27 @@
     ]
   }
 
+  // The same chat with a note for the AI
+  const NOTED = {
+    none: TEAM.medium,
+    deadline: [
+      { h: 'Hạn chót' },
+      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai.', cite: ['19/10 08:30'] },
+      { li: 'Gửi Quang file ảnh sản phẩm gốc ngay tối nay.', cite: ['19/10 17:45'] },
+      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
+      { li: 'Ra mắt sản phẩm thứ 6 (23/10).', cite: ['19/10 11:40'] }
+    ],
+    client: [
+      { h: 'Liên quan tới bạn' },
+      { li: 'Khách ABC muốn đổi logo sang xanh đậm, đây là lần đổi thứ 4.', cite: ['19/10 09:10'] },
+      { li: 'Quang cần file ảnh sản phẩm gốc ngay tối nay vì khách cần gấp.', cite: ['19/10 17:45'] },
+      { li: 'Ra mắt chốt thứ 6 (23/10); Quang làm việc lại với khách.', cite: ['19/10 11:40'] },
+      { h: 'Còn lại' },
+      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai.', cite: ['19/10 08:30'] },
+      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] }
+    ]
+  }
+
   function citeButton (label) {
     const button = document.createElement('button')
     button.type = 'button'
@@ -327,8 +348,22 @@
     })
   }
 
+  function setupNote () {
+    const box = document.getElementById('demo-note')
+    if (!box) return
+    const out = box.querySelector('.js-note-out')
+    const choice = box.querySelector('.js-note')
+    render(out, NOTED.none)
+    choice.addEventListener('click', (event) => {
+      const button = event.target.closest('button')
+      if (!button) return
+      choice.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === button)))
+      render(out, NOTED[button.dataset.note])
+    })
+  }
+
   // Each demo on its own: one that fails leaves the others working
-  for (const setup of [setupSummary, setupDigest, setupYours]) {
+  for (const setup of [setupSummary, setupDigest, setupYours, setupNote]) {
     try {
       setup()
     } catch (error) {
