@@ -294,13 +294,24 @@
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">Về Zenlo</div>
         <div class="zenlo-settings__links">
-          ${[['guide', 'Hướng dẫn sử dụng'], ['site', 'Trang chủ'], ['privacy', 'Quyền riêng tư'], ['source', 'Mã nguồn'], ['feedback', 'Góp ý & báo lỗi']]
+          ${[['guide', 'Hướng dẫn sử dụng'], ['site', 'Trang chủ'], ['versions', 'Các phiên bản'], ['privacy', 'Quyền riêng tư'], ['terms', 'Điều khoản sử dụng'], ['source', 'Mã nguồn'], ['feedback', 'Góp ý & báo lỗi'], ['treat', '🧋 Mời trà sữa']]
             .filter(([key]) => Z.LINKS[key])
             .map(([key, label]) => `<button type="button" class="zenlo__inline-link" data-link="${key}">${label}</button>`).join('')}
         </div>
       </section>
 
-      <div class="zenlo-settings__footer">Zenlo · © stephit</div>
+      <section class="zenlo-settings__section">
+        <div class="zenlo-settings__heading">Phiên bản</div>
+        <div class="zenlo__actions">
+          <span>Bạn đang dùng Zenlo ${escapeHTML(Z.VERSION)}.</span>
+          <button class="zenlo__btn js-settings-update">Kiểm tra bản mới</button>
+        </div>
+        <div class="zenlo__status js-settings-update-status"></div>
+        <label class="zenlo-settings__check"><input type="checkbox" class="js-settings-update-auto"> Tự kiểm tra bản mới mỗi ngày</label>
+        <div class="zenlo-settings__note">Chỉ hỏi GitHub bản mới nhất là bản nào, không gửi gì về bạn.</div>
+      </section>
+
+      <div class="zenlo-settings__footer">Zenlo ${escapeHTML(Z.VERSION)} · © stephit</div>
     `
 
     el.querySelectorAll('[name="zenlo-provider"]').forEach((radio) => {
@@ -381,6 +392,35 @@
     el.querySelectorAll('[data-link]').forEach((button) => {
       button.addEventListener('click', () => Z.openLink(Z.LINKS[button.dataset.link]))
     })
+    const updateStatus = el.querySelector('.js-settings-update-status')
+    el.querySelector('.js-settings-update').addEventListener('click', async (event) => {
+      const button = event.currentTarget
+      button.disabled = true
+      updateStatus.textContent = 'Đang hỏi GitHub…'
+      updateStatus.classList.remove('zenlo__status--error')
+      const result = await Z.checkForUpdate()
+      button.disabled = false
+      updateStatus.textContent = ''
+      if (result.error) {
+        updateStatus.textContent = `Không kiểm tra được: ${result.error}`
+        updateStatus.classList.add('zenlo__status--error')
+      } else if (result.newer) {
+        updateStatus.append(`Đã có Zenlo ${result.latest}. `)
+        const link = document.createElement('button')
+        link.type = 'button'
+        link.className = 'zenlo__inline-link'
+        link.textContent = 'Xem bản mới'
+        link.addEventListener('click', () => Z.openLink(Z.LINKS.versions))
+        updateStatus.append(link)
+      } else {
+        updateStatus.textContent = 'Bạn đang dùng bản mới nhất.'
+      }
+      Z.drawer.refreshNotice()
+    })
+    const auto = el.querySelector('.js-settings-update-auto')
+    auto.checked = Z.getSetting(STORAGE_KEYS.updateCheck, ['on'], '') === 'on'
+    auto.addEventListener('change', () => Z.setSetting(STORAGE_KEYS.updateCheck, auto.checked ? 'on' : 'off'))
+
     el.querySelector('.js-settings-clear').addEventListener('click', () => {
       if (!window.confirm('Xoá mọi bản tóm tắt và bản tin đã lưu?')) return
       const removed = Z.clearSavedResults()
@@ -411,4 +451,17 @@
     loadMainSettings()
     loadGeminiModels()
   })
+
+  // "Tự kiểm tra bản mới mỗi ngày" (off unless the user turns it on): once a day, a minute after
+  // Zalo starts, ask GitHub; a newer version shows in the line above the drawer's tabs
+  setTimeout(async () => {
+    if (Z.getSetting(STORAGE_KEYS.updateCheck, ['on'], '') !== 'on') return
+    let last = 0
+    try {
+      last = Number(localStorage.getItem(STORAGE_KEYS.updateCheckedAt)) || 0
+    } catch (error) {}
+    if (Date.now() - last < Z.DAY) return
+    const result = await Z.checkForUpdate()
+    if (result.newer) Z.drawer.refreshNotice()
+  }, 60 * 1000)
 })()

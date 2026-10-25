@@ -1,3 +1,4 @@
+/* global ZENLO_VERSION */
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
@@ -21,11 +22,25 @@
   const LINKS = {
     site: 'https://stephitnoob.github.io/zenlo/',
     guide: 'https://stephitnoob.github.io/zenlo/huong-dan.html',
+    versions: 'https://stephitnoob.github.io/zenlo/phien-ban.html',
+    treat: 'https://stephitnoob.github.io/zenlo/tra-sua.html',
     source: 'https://github.com/stephitnoob/zenlo',
     privacy: 'https://stephitnoob.github.io/zenlo/privacy.html',
+    terms: 'https://stephitnoob.github.io/zenlo/dieu-khoan.html',
     feedback: 'mailto:stephit.zenlo@outlook.com?subject=G%C3%B3p%20%C3%BD%20Zenlo',
     geminiKey: 'https://aistudio.google.com/apikey'
   }
+
+  // The version from package.json, put in at build time
+  const VERSION = typeof ZENLO_VERSION === 'string' ? ZENLO_VERSION : 'dev'
+
+  // Added under a summary when it is copied (not shown in the panel), so a summary pasted into a
+  // chat says where it came from
+  const COPY_CREDIT = `Bản tóm tắt được tạo bởi Zenlo by Stephit – ${LINKS.site}`
+  const withCredit = (text) => `${String(text || '').trim()}\n\n${COPY_CREDIT}`
+
+  // The thank-you line under a finished summary or digest
+  const TREAT_HTML = 'Thấy Zenlo có ích thì <button type="button" class="zenlo__inline-link js-treat-link">mời mình ly trà sữa</button> để mình có thêm động lực phát triển nha 🧋'
 
   function openLink (url) {
     if (url && window.$zenlo && window.$zenlo.openExternal) window.$zenlo.openExternal(url)
@@ -41,8 +56,14 @@
     geminiRetry: '@Zenlo:GEMINI_RETRY',
     lookbackDays: '@Zenlo:LOOKBACK_DAYS',
     length: '@Zenlo:LENGTH:',
-    last: '@Zenlo:LAST:'
+    last: '@Zenlo:LAST:',
+    note: '@Zenlo:NOTE:',
+    updateCheck: '@Zenlo:UPDATE_CHECK',
+    updateCheckedAt: '@Zenlo:UPDATE_CHECKED_AT'
   }
+
+  // A note the user writes for one conversation, sent to the AI with every summary of it
+  const NOTE_MAX = 300
 
   const PROVIDERS = [
     { value: 'claude', label: 'Claude' },
@@ -89,21 +110,33 @@
 
   // The request for one conversation. kind: "range" (the panel) or "unread" (the digest).
   // notes: the input is part notes of a long conversation, not the transcript itself.
-  function buildSummaryInstruction ({ convName, isGroup, from, to, count, length, kind = 'range', notes = false }) {
+  function buildSummaryInstruction ({ convName, isGroup, from, to, count, length, kind = 'range', notes = false, note = '' }) {
     const type = isGroup === undefined ? '' : isGroup ? ' (nhóm)' : ' (trò chuyện riêng)'
     const what = kind === 'unread' ? 'tin chưa đọc' : 'tin nhắn'
     const lengthRule = (LENGTHS.find((l) => l.value === length) || LENGTHS[1]).rule
     return [
       `Cuộc trò chuyện Zalo "${convName}"${type}, ${formatTime(from, true)} – ${formatTime(to, true)}, ${count} ${what}.`,
       notes ? 'Dữ liệu là ghi chú đã tóm tắt từng phần, xếp theo thời gian.' : '',
+      noteLine(note),
       lengthRule,
       'Tóm tắt giúp mình.'
     ].filter(Boolean).join(' ')
   }
 
+  // The user's own note for the conversation: context and what matters to them. It comes from the
+  // user, unlike the transcript, so it goes in the request itself.
+  function noteLine (note) {
+    const text = String(note || '').replace(/\s+/g, ' ').trim().slice(0, NOTE_MAX)
+    return text ? `Ghi chú của mình về cuộc trò chuyện này (dùng để hiểu bối cảnh và chọn ý cần nêu): "${text}".` : ''
+  }
+
   // Notes for one part of a conversation too long for one request
-  function buildPartInstruction ({ convName, part, parts }) {
-    return `Đây là phần ${part}/${parts} của cuộc trò chuyện Zalo "${convName}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt. Ghi lại đầy đủ những gì đáng chú ý trong phần này, mỗi ý kèm mốc.`
+  function buildPartInstruction ({ convName, part, parts, note = '' }) {
+    return [
+      `Đây là phần ${part}/${parts} của cuộc trò chuyện Zalo "${convName}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt.`,
+      noteLine(note),
+      'Ghi lại đầy đủ những gì đáng chú ý trong phần này, mỗi ý kèm mốc.'
+    ].filter(Boolean).join(' ')
   }
 
   // Shared rules about the transcript format, appended to every feature's system prompt
@@ -386,6 +419,63 @@
 
   function saveLastSummary (convId, data) {
     writeJSON(STORAGE_KEYS.last + convId, data)
+  }
+
+  // ---------- New versions ----------
+
+  // 1 when version a is newer than b ("v0.1.2" vs "0.1.1"), -1 when older, 0 when the same
+  function compareVersions (a, b) {
+    const parts = (v) => String(v).replace(/^v/, '').split('.').map((n) => parseInt(n, 10) || 0)
+    const [x, y] = [parts(a), parts(b)]
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+      if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0) ? 1 : -1
+    }
+    return 0
+  }
+
+  // Asks GitHub for the newest release: { latest, newer } or { error }. Remembers a newer one so
+  // the drawer can mention it.
+  async function checkForUpdate () {
+    const bridge = window.$zenlo
+    if (!bridge || !bridge.latestRelease) return { error: 'Bản Zenlo này chưa hỗ trợ kiểm tra bản mới.' }
+    const result = (await bridge.latestRelease()) || {}
+    if (result.error || !result.tag) return { error: result.error || 'GitHub không trả lời.' }
+    setSetting(STORAGE_KEYS.updateCheckedAt, String(Date.now()))
+    const newer = VERSION !== 'dev' && compareVersions(result.tag, VERSION) > 0
+    try {
+      if (newer) localStorage.setItem('@Zenlo:UPDATE_AVAILABLE', result.tag)
+      else localStorage.removeItem('@Zenlo:UPDATE_AVAILABLE')
+    } catch (error) {}
+    return { latest: result.tag, newer }
+  }
+
+  // The newer version found by the last check, if it is still newer than this one
+  function availableUpdate () {
+    try {
+      const tag = localStorage.getItem('@Zenlo:UPDATE_AVAILABLE')
+      return tag && VERSION !== 'dev' && compareVersions(tag, VERSION) > 0 ? tag : ''
+    } catch (error) {
+      return ''
+    }
+  }
+
+  // The user's note for a conversation ('' when there is none)
+  function getNote (convId) {
+    try {
+      return (convId && localStorage.getItem(STORAGE_KEYS.note + convId)) || ''
+    } catch (error) {
+      return ''
+    }
+  }
+
+  function setNote (convId, text) {
+    if (!convId) return
+    const note = String(text || '').trim().slice(0, NOTE_MAX)
+    try {
+      if (note) localStorage.setItem(STORAGE_KEYS.note + convId, note)
+      else localStorage.removeItem(STORAGE_KEYS.note + convId)
+    } catch (error) {}
+    backupStorage()
   }
 
   // "Xoá bản tóm tắt đã lưu" in the settings: saved summaries and digest results, plus the read
@@ -1129,6 +1219,9 @@
     getLookback,
     loadLastSummary,
     saveLastSummary,
+    NOTE_MAX,
+    getNote,
+    setNote,
     clearSavedResults,
     resetSettings,
 
@@ -1160,6 +1253,11 @@
     runAI,
     onDomChange,
     LINKS,
-    openLink
+    openLink,
+    VERSION,
+    checkForUpdate,
+    availableUpdate,
+    withCredit,
+    TREAT_HTML
   }
 })()

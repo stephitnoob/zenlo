@@ -50,7 +50,10 @@
       </div>
     `
     el.querySelector('.js-drawer-close').addEventListener('click', close)
-    el.querySelector('.js-drawer-notice-action').addEventListener('click', () => open('settings'))
+    el.querySelector('.js-drawer-notice-action').addEventListener('click', (event) => {
+      if (event.target.closest('.zenlo-drawer__notice').dataset.update) Z.openLink(Z.LINKS.versions)
+      else open('settings')
+    })
     el.querySelector('.zenlo-drawer__tabs').addEventListener('click', (event) => {
       const tab = event.target.closest('[data-tab]')
       if (tab) open(tab.dataset.tab)
@@ -123,6 +126,7 @@
     if (!drawer || !window.$zenlo || !window.$zenlo.getSettings) return
     const notice = drawer.querySelector('.zenlo-drawer__notice')
     let text = ''
+    let update = ''
     try {
       const settings = await window.$zenlo.getSettings()
       const { provider } = Z.getAISettings()
@@ -132,8 +136,15 @@
         text = 'Chưa tìm thấy Claude Code trên máy. Hãy cài Claude Code, hoặc chuyển sang Gemini.'
       }
     } catch (error) {}
+    // Nothing to set up: tell about a newer version found by the check, if any
+    if (!text && Z.availableUpdate()) {
+      update = Z.availableUpdate()
+      text = `Đã có Zenlo ${update}.`
+    }
     notice.querySelector('.js-drawer-notice-text').textContent = text
-    notice.hidden = !text || current === 'settings'
+    notice.querySelector('.js-drawer-notice-action').textContent = update ? 'Xem bản mới' : 'Mở Cài đặt'
+    notice.dataset.update = update ? '1' : ''
+    notice.hidden = !text || (current === 'settings' && !update)
   }
 
   // ---------- Theme ----------

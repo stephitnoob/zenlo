@@ -23,13 +23,14 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = path.join(ROOT, 'dist')
 const STYLES = path.join(ROOT, 'src', 'styles')
 const watching = process.argv.includes('--watch')
+const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
 
 const common = {
   bundle: true,
   minify: !watching,
   legalComments: 'none',
   logLevel: 'info',
-  define: { DEBUG: String(watching) }
+  define: { DEBUG: String(watching), ZENLO_VERSION: JSON.stringify(version) }
 }
 
 const targets = [

@@ -571,6 +571,33 @@ ipcMain.handle('zenlo:open-external', (event, url) => {
   return true
 })
 
+// The newest Zenlo release, asked only when the user presses "Kiểm tra bản mới" or turned on the
+// daily check in the settings. A plain request to GitHub's public API; nothing about the user is sent.
+const LATEST_RELEASE = 'https://api.github.com/repos/stephitnoob/zenlo/releases/latest'
+
+ipcMain.handle('zenlo:update:latest', (event) => {
+  if (!isTrustedSender(event)) return null
+  return new Promise((resolve) => {
+    const headers = { 'User-Agent': 'Zenlo', Accept: 'application/vnd.github+json' }
+    const request = https.get(LATEST_RELEASE, { ...GEMINI_TLS, headers }, (response) => {
+      let text = ''
+      response.setEncoding('utf8')
+      response.on('data', (chunk) => { text += chunk })
+      response.on('end', () => {
+        if (response.statusCode !== 200) return resolve({ error: `GitHub trả lời mã ${response.statusCode}.` })
+        try {
+          const release = JSON.parse(text)
+          resolve({ tag: String(release.tag_name || '') })
+        } catch (error) {
+          resolve({ error: 'Không đọc được trả lời của GitHub.' })
+        }
+      })
+    })
+    request.setTimeout(10000, () => request.destroy(new Error('Hết thời gian chờ GitHub.')))
+    request.on('error', (error) => resolve({ error: error.message }))
+  })
+})
+
 ipcMain.handle('zenlo:settings:get', (event) => {
   if (!isTrustedSender(event)) return null
   return {
