@@ -11,6 +11,27 @@
 
   const $$ = (selector) => document.querySelectorAll(selector)
 
+  // "Sao chép" buttons: copy their data-copy text, or select it when the clipboard is not allowed
+  $$('.js-copy').forEach((button) => {
+    const label = button.textContent
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy)
+        button.textContent = 'Đã sao chép ✓'
+      } catch (error) {
+        const target = document.querySelector(button.dataset.select || '.js-account')
+        if (target) {
+          const range = document.createRange()
+          range.selectNodeContents(target)
+          window.getSelection().removeAllRanges()
+          window.getSelection().addRange(range)
+        }
+        button.textContent = 'Bấm Ctrl+C để sao chép'
+      }
+      setTimeout(() => { button.textContent = label }, 2000)
+    })
+  })
+
   // Platforms that are not out yet: a "Coming soon" note in the middle of the screen for a moment
   let soon = null
   let soonTimer = null
@@ -81,8 +102,8 @@
   const fileUrl = `https://github.com/${REPO}/releases/latest/download/Zenlo-Setup.exe`
   setDownload(fileUrl, 'Tải Zenlo cho Windows')
 
-  // Only the home page shows the release facts
-  if (!document.querySelector('.js-version, .js-size-small')) return
+  // Only the home page and the versions page show the release facts
+  if (!document.querySelector('.js-version, .js-size-small, .js-sha')) return
 
   fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
     .then((response) => (response.ok ? response.json() : Promise.reject(new Error(response.status))))

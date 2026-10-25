@@ -23,7 +23,7 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 
 Người dùng: tải `Zenlo-Setup.exe` từ trang web hoặc mục Releases của kho mã này, mở file và chọn "1. Cài Zenlo". Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
 
-Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md)
+Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Các phiên bản](https://stephitnoob.github.io/zenlo/phien-ban.html) · [🧋 Mời trà sữa](https://stephitnoob.github.io/zenlo/tra-sua.html)
 
 ## Yêu cầu (để phát triển)
 
