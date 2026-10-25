@@ -24,10 +24,11 @@ Zenlo không đọc ảnh, video, tệp đính kèm hay tin nhắn thoại; ch�
 
 ## Zenlo gửi gì, gửi đi đâu
 
-Zenlo chỉ gửi đi phần tin nhắn cần tóm tắt, kèm lời yêu cầu tóm tắt và ghi chú của bạn cho hội thoại đó (nếu có), tới **một** trong hai dịch vụ AI mà bạn chọn trong Cài đặt:
+Zenlo chỉ gửi đi phần tin nhắn cần tóm tắt, kèm lời yêu cầu tóm tắt và ghi chú của bạn cho hội thoại đó (nếu có), tới **một** trong ba dịch vụ AI mà bạn chọn trong Cài đặt:
 
 | Dịch vụ | Cách Zenlo gửi | Dữ liệu được dùng thế nào |
 |---|---|---|
+| **ChatGPT** (OpenAI) | Qua Codex đã cài và đăng nhập trên máy bạn, dùng gói ChatGPT của bạn | Theo chính sách của OpenAI cho tài khoản ChatGPT của bạn. Với gói cá nhân, OpenAI có thể dùng nội dung để cải thiện model trừ khi bạn tắt mục cải thiện mô hình trong Kiểm soát dữ liệu của ChatGPT |
 | **Claude** (Anthropic) | Qua Claude Code đã cài và đăng nhập trên máy bạn, dùng gói Claude Pro/Max của bạn | Theo chính sách của Anthropic cho tài khoản Claude của bạn |
 | **Gemini** (Google) | Gửi thẳng tới `generativelanguage.googleapis.com` bằng API key của bạn | **Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm**, gồm cả tin nhắn của những người khác trong hội thoại. Với key trả phí thì không |
 

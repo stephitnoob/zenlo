@@ -115,7 +115,7 @@
           <li>Trong Zalo: bấm nút Zenlo tím → bánh răng → dán vào ô <b>API key Gemini</b> → <b>Kiểm tra kết nối</b>.</li>
         </ol>
         <div class="tip">Giữ key như mật khẩu, đừng gửi cho ai. Zenlo lưu key trên máy bạn, được Windows mã hoá bằng tài khoản Windows của bạn.</div>
-        <p>Với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Hội thoại nhạy cảm thì cân nhắc, dùng key trả phí, hoặc <a class="link" href="#claude">dùng Claude</a>.</p>
+        <p>Với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Hội thoại nhạy cảm thì cân nhắc, dùng key trả phí, hoặc dùng <a class="link" href="#claude">Claude</a> hay <a class="link" href="#codex">ChatGPT (Codex)</a> nếu bạn đã có gói trả phí.</p>
       </section>
 
       <section id="mo-zenlo">
@@ -229,14 +229,14 @@
       <p>Bấm bánh răng trong khung Zenlo. Mọi thay đổi được lưu ngay.</p>
 
       <section id="chon-ai">
-        <h3>Gemini hay Claude</h3>
+        <h3>Gemini, Claude hay ChatGPT</h3>
         <table>
-          <tr><th></th><th>Gemini</th><th>Claude</th></tr>
-          <tr><td>Cần gì</td><td>API key Gemini (có gói miễn phí)</td><td>Gói Claude Pro hoặc Max, Claude Code đã cài và đăng nhập</td></tr>
-          <tr><td>Tin nhắn gửi tới</td><td>generativelanguage.googleapis.com</td><td>Claude Code trên máy bạn, rồi tới api.anthropic.com</td></tr>
-          <tr><td>Dùng dữ liệu</td><td>Key miễn phí: Google có thể dùng để cải thiện sản phẩm. Key trả phí: không.</td><td>Theo điều khoản gói Claude của bạn</td></tr>
+          <tr><th></th><th>Gemini</th><th>Claude</th><th>ChatGPT (Codex)</th></tr>
+          <tr><td>Cần gì</td><td>API key Gemini (có gói miễn phí)</td><td>Gói Claude Pro hoặc Max, Claude Code đã cài và đăng nhập</td><td>Gói ChatGPT có Codex (Plus, Pro, Business…), Codex đã cài và đăng nhập</td></tr>
+          <tr><td>Tin nhắn gửi tới</td><td>generativelanguage.googleapis.com</td><td>Claude Code trên máy bạn, rồi tới api.anthropic.com</td><td>Codex trên máy bạn, rồi tới máy chủ OpenAI</td></tr>
+          <tr><td>Dùng dữ liệu</td><td>Key miễn phí: Google có thể dùng để cải thiện sản phẩm. Key trả phí: không.</td><td>Theo điều khoản gói Claude của bạn</td><td>Gói cá nhân: OpenAI có thể dùng để cải thiện model, trừ khi bạn tắt trong Kiểm soát dữ liệu của ChatGPT. Gói Business, Enterprise, Edu: mặc định không.</td></tr>
         </table>
-        <p>Chưa có gì thì dùng Gemini, lấy key mất một phút. Đã có gói Claude thì Claude thường viết tốt hơn.</p>
+        <p>Chưa có gì thì dùng Gemini, lấy key mất một phút, miễn phí. Đã trả tiền cho Claude hay ChatGPT thì dùng luôn gói đó, không tốn thêm đồng nào.</p>
       </section>
 
       <section id="gemini">
@@ -263,6 +263,18 @@
         <h3>Claude</h3>
         <p>Zenlo gọi Claude Code đã cài trên máy, dùng lượt của gói Claude Pro hoặc Max, không cần API key. Chọn <b>Model</b> (Haiku nhanh, Sonnet cân bằng, Opus kỹ nhất) và <b>Effort</b>.</p>
         <p>Chưa có Claude Code thì cài theo hướng dẫn của Anthropic, mở một lần để đăng nhập, rồi quay lại bấm <b>Kiểm tra kết nối</b>.</p>
+      </section>
+
+      <section id="codex">
+        <h3>ChatGPT (Codex)</h3>
+        <p>Zenlo gọi <b>Codex</b>, công cụ dòng lệnh của OpenAI, đã cài và đăng nhập trên máy bạn. Codex dùng lượt của gói ChatGPT, không cần API key và không tính tiền theo API. Codex có trong các gói Plus, Pro, Business, Edu, Enterprise; gói Free và Go tuỳ thời điểm OpenAI mở.</p>
+        <ol>
+          <li>Cài Codex theo hướng dẫn của OpenAI (ví dụ <code>npm install -g @openai/codex</code> nếu máy có Node.js).</li>
+          <li>Mở Terminal, chạy <code>codex login</code>, chọn đăng nhập bằng tài khoản ChatGPT.</li>
+          <li>Trong Cài đặt Zenlo, chọn <b>Codex (ChatGPT)</b>, rồi bấm <b>Kiểm tra kết nối</b>.</li>
+        </ol>
+        <p><b>Model</b> để "Mặc định của Codex" là được; <b>Effort</b> cao thì viết kỹ hơn nhưng chậm hơn và tốn lượt hơn. Mỗi lần tóm tắt tính vào giới hạn 5 giờ và giới hạn tuần của gói ChatGPT, giống khi bạn dùng Codex bình thường.</p>
+        <div class="tip">Zenlo chạy Codex ở chế độ chỉ đọc, trong một thư mục trống, không cho chạy lệnh hay sửa file, và không nạp cài đặt hay AGENTS.md của dự án. Riêng file <code>AGENTS.md</code> chung trong thư mục <code>.codex</code> của bạn (nếu có) thì Codex luôn đọc, Zenlo không tắt được; nếu file đó dài hoặc không liên quan, bản tóm tắt có thể bị ảnh hưởng.</div>
       </section>
 
       <section id="kiem-tra">
@@ -335,6 +347,16 @@
       <section id="su-co-claude">
         <h3>Claude báo lỗi</h3>
         <p>Kiểm tra Claude Code đã cài và đăng nhập: mở nó một lần trong Terminal. Gói Claude hết lượt trong khung giờ thì chờ hoặc tạm chuyển sang Gemini.</p>
+      </section>
+
+      <section id="su-co-codex">
+        <h3>Codex báo lỗi</h3>
+        <ul>
+          <li><b>Chưa tìm thấy Codex:</b> cài Codex rồi mở lại Zalo.</li>
+          <li><b>Chưa đăng nhập:</b> mở Terminal, chạy <code>codex login</code>.</li>
+          <li><b>Hết lượt của gói:</b> chờ tới giờ Zenlo báo, hoặc tạm chuyển sang Gemini.</li>
+          <li><b>Model không dùng được:</b> chọn lại Model là "Mặc định của Codex".</li>
+        </ul>
       </section>
 
       <section id="su-co-moc-gio">

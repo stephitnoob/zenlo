@@ -81,8 +81,7 @@
   // Codex CLI on the user's ChatGPT plan. "default" lets Codex pick the model of the plan.
   const CODEX_MODELS = [
     { value: 'default', label: 'Mặc định của Codex' },
-    { value: 'gpt-5.5', label: 'GPT-5.5' },
-    { value: 'gpt-5.4-mini', label: 'GPT-5.4 mini' }
+    { value: 'gpt-5.5', label: 'GPT-5.5' }
   ]
   const CODEX_EFFORTS = ['low', 'medium', 'high']
   // Gemini models come from Google's list for the user's key (main process). The setting holds a
