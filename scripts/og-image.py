@@ -31,6 +31,7 @@ def logo(x, y, size, width):
 # Brand
 logo(72, 64, 52, 4.5)
 d.text((136 * S, 70 * S), 'zenlo', font=font('segoeuib.ttf', 34), fill=TEXT)
+d.text((240 * S, 86 * S), 'by stephit', font=font('consola.ttf', 18), fill=MUTED)
 
 # Headline
 title = font('segoeuib.ttf', 54)
