@@ -8,8 +8,8 @@
 <meta property="og:title" content="Zenlo – tóm tắt tin nhắn ngay trong Zalo PC">
 <meta property="og:description" content="Ba trăm tin chưa đọc, đọc trong mười giây. Tiện ích miễn phí cho Zalo PC trên Windows.">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css">
-<script src="theme.js"></script>
+<link rel="stylesheet" href="style.css?v=dev">
+<script src="theme.js?v=dev"></script>
 </head>
 <body>
 
@@ -38,8 +38,25 @@
     </div>
   </section>
 
+  <!-- Why Zenlo exists -->
+  <section class="why" id="vi-sao">
+    <div class="wrap">
+      <div class="why__numbers">
+        <p><b>81,3 triệu</b>người dùng Zalo mỗi tháng</p>
+        <p><b>2,2 tỷ</b>tin nhắn mỗi ngày</p>
+      </div>
+      <p class="why__source">Số liệu Zalo công bố, tháng 6/2026, <a class="link" href="https://znews.vn/zalo-dat-81-3-trieu-nguoi-dung-voi-2-2-ty-tin-nhan-moi-ngay-post1673857.html" rel="noopener">theo Znews</a></p>
+      <ol class="why__flow">
+        <li>Nhóm lớp, nhóm phụ huynh, nhóm công ty: việc cần làm và chuyện phiếm nằm chung một dòng tin.</li>
+        <li>Vắng vài tiếng là có hàng trăm tin. Đọc hết thì mất thời gian, bỏ qua thì dễ lỡ hạn nộp, lịch hẹn hay câu hỏi gửi cho bạn.</li>
+        <li><b>Zenlo đọc hộ, ngay trong Zalo PC:</b> điều liên quan tới bạn được đưa lên trước, mỗi ý có mốc giờ để kiểm tra lại tin gốc.</li>
+      </ol>
+      <p class="why__goal"><em>Đọc ít hơn</em>, không sót việc.</p>
+    </div>
+  </section>
+
   <!-- 1. One long group chat -->
-  <section class="chapter chapter--first" id="tom-tat">
+  <section class="chapter" id="tom-tat">
     <div class="wrap">
       <div class="chapter__head">
         <span class="chapter__step">01 · Tóm tắt</span>
@@ -51,26 +68,47 @@
         <div class="zw__chat">
           <div class="zw__title">
             <span class="zw__avatar" aria-hidden="true"></span>
-            <div><b>Lớp 12A1</b><small>32 thành viên · 14 tin chưa đọc</small></div>
+            <div><b>Team Marketing</b><small>8 thành viên · 35 tin chưa đọc</small></div>
           </div>
           <div class="zw__msgs js-msgs">
             <div class="zw__day">Thứ Hai, 19/10</div>
-            <div class="msg" data-t="07:52"><b>An <span>07:52</span></b>Thứ 6 này lớp đi picnic không mọi người</div>
-            <div class="msg" data-t="07:55"><b>Bình <span>07:55</span></b>đi đi, thi xong rồi mà</div>
-            <div class="msg" data-t="07:56"><b>Dũng <span>07:56</span></b>+1</div>
-            <div class="msg" data-t="08:03"><b>An <span>08:03</span></b>Chốt thứ 6 (23/10) nha. Địa điểm để mình với Hà tìm</div>
-            <div class="msg" data-t="08:10"><b>Hà <span>08:10</span></b>Mỗi bạn góp 100k, chuyển cho mình trước tối thứ 4 nha</div>
-            <div class="msg" data-t="08:20"><b>Chi <span>08:20</span></b>@Minh ơi xác nhận số áo lớp giùm mình, bên in cần trước thứ 5</div>
-            <div class="msg" data-t="09:02"><b>Bình <span>09:02</span></b>ai có đề cương Lý không</div>
-            <div class="msg" data-t="09:05"><b>Dũng <span>09:05</span></b>📄 De_cuong_Ly_HK1.pdf</div>
-            <div class="msg" data-t="12:30"><b>Giang <span>12:30</span></b>[Sticker]</div>
-            <div class="msg" data-t="20:15"><b>Cô Lan <span>20:15</span></b>Mai kiểm tra 15 phút Toán chương 3, các em ôn kỹ phần cấp số nhân</div>
-            <div class="msg" data-t="20:17"><b>Bình <span>20:17</span></b>😭</div>
-            <div class="msg" data-t="20:40"><b>Hà <span>20:40</span></b>@All ai chưa chuyển 100k thì chuyển nha, mới có 12 bạn</div>
-            <div class="msg" data-t="21:05"><b>An <span>21:05</span></b>Hà ơi có cần đặt cọc chỗ không</div>
-            <div class="msg" data-t="21:08"><b>Hà <span>21:08</span></b>có, mai mình đặt</div>
+            <div class="msg" data-t="08:05"><b>Chị Hoa <span>08:05</span></b>10h họp chốt kế hoạch ra mắt nha cả nhà, phòng họp tầng 3</div>
+            <div class="msg" data-t="08:06"><b>Tuấn <span>08:06</span></b>dạ chị</div>
+            <div class="msg" data-t="08:07"><b>Quang <span>08:07</span></b>ok chị</div>
+            <div class="msg" data-t="08:12"><b>Linh <span>08:12</span></b>Ai uống cà phê không, em order luôn</div>
+            <div class="msg" data-t="08:13"><b>Tuấn <span>08:13</span></b>1 bạc xỉu ít đá nha</div>
+            <div class="msg" data-t="08:14"><b>Quang <span>08:14</span></b>+1 đen đá</div>
+            <div class="msg" data-t="08:15"><b>Phương <span>08:15</span></b>cho mình trà đào</div>
+            <div class="msg" data-t="08:16"><b>Linh <span>08:16</span></b>trà đào hết rồi chị ơi 🥲</div>
+            <div class="msg" data-t="08:17"><b>Phương <span>08:17</span></b>vậy trà vải</div>
+            <div class="msg" data-t="08:20"><b>Linh <span>08:20</span></b>ok chốt 4 ly</div>
+            <div class="msg" data-t="08:30"><b>Chị Hoa <span>08:30</span></b>@Minh mai em gửi chị bản slide trước 9h nhé, chị xem lại số liệu</div>
+            <div class="msg" data-t="08:41"><b>Tuấn <span>08:41</span></b>[Sticker]</div>
+            <div class="msg" data-t="09:10"><b>Quang <span>09:10</span></b>Khách bên ABC phản hồi rồi, họ muốn đổi logo sang xanh đậm</div>
+            <div class="msg" data-t="09:12"><b>Linh <span>09:12</span></b>lại đổi nữa à 😩</div>
+            <div class="msg" data-t="09:13"><b>Tuấn <span>09:13</span></b>lần thứ 4 rồi đó</div>
+            <div class="msg" data-t="09:15"><b>Phương <span>09:15</span></b>thôi đổi đi cho khách vui</div>
+            <div class="msg" data-t="09:40"><b>Linh <span>09:40</span></b>cà phê tới rồi nha, mọi người xuống lấy</div>
+            <div class="msg" data-t="10:58"><b>Tuấn <span>10:58</span></b>họp xong đói quá</div>
+            <div class="msg" data-t="11:02"><b>Phương <span>11:02</span></b>trưa nay ăn bún bò không</div>
+            <div class="msg" data-t="11:03"><b>Quang <span>11:03</span></b>đi đi</div>
+            <div class="msg" data-t="11:05"><b>Linh <span>11:05</span></b>cho em đi với</div>
+            <div class="msg" data-t="11:40"><b>Chị Hoa <span>11:40</span></b>Chốt: ra mắt thứ 6 (23/10). Linh lo bài đăng Facebook, Quang làm việc lại với khách</div>
+            <div class="msg" data-t="11:42"><b>Linh <span>11:42</span></b>ok chị</div>
+            <div class="msg" data-t="11:43"><b>Quang <span>11:43</span></b>dạ</div>
+            <div class="msg" data-t="13:20"><b>Tuấn <span>13:20</span></b>[Ảnh] con mèo ở quán bún bò nè</div>
+            <div class="msg" data-t="13:21"><b>Phương <span>13:21</span></b>😍</div>
+            <div class="msg" data-t="15:00"><b>Tuấn <span>15:00</span></b>Mọi người ra pantry ăn bánh sinh nhật chị Hoa nha 🎂</div>
+            <div class="msg" data-t="15:02"><b>Linh <span>15:02</span></b>🎉🎉</div>
+            <div class="msg" data-t="15:03"><b>Phương <span>15:03</span></b>chúc mừng sinh nhật chị Hoa!!</div>
+            <div class="msg" data-t="15:10"><b>Chị Hoa <span>15:10</span></b>cảm ơn cả nhà nhaa ❤️</div>
+            <div class="msg" data-t="16:30"><b>Quang <span>16:30</span></b>ai có sạc Type-C cho mượn với</div>
+            <div class="msg" data-t="16:32"><b>Tuấn <span>16:32</span></b>bàn mình có nè</div>
+            <div class="msg" data-t="17:30"><b>Chị Hoa <span>17:30</span></b>@All mai nộp báo cáo tuần trước 12h trưa nha</div>
+            <div class="msg" data-t="17:45"><b>Quang <span>17:45</span></b>Minh ơi gửi mình file ảnh sản phẩm bản gốc với, khách cần gấp tối nay</div>
+            <div class="msg" data-t="18:02"><b>Linh <span>18:02</span></b>về thôi mọi người 👋</div>
           </div>
-          <div class="zw__composer">Nhập tin nhắn tới Lớp 12A1</div>
+          <div class="zw__composer">Nhập tin nhắn tới Team Marketing</div>
         </div>
 
         <div class="zp">
@@ -81,14 +119,14 @@
           <div class="zp__tabs"><span class="on">Tóm tắt</span><span>Bản tin</span></div>
           <div class="zp__body">
             <div class="zp__row">
-              <span class="zp__range">Từ tin chưa đọc · 07:52 → bây giờ</span>
+              <span class="zp__range">Từ tin chưa đọc · 08:05 → bây giờ</span>
             </div>
             <div class="zp__row">
               <button class="zp__btn zp__btn--pulse js-run" type="button">Tóm tắt</button>
               <span class="zp__hint js-hint">← thử bấm</span>
             </div>
             <div class="sum js-out" aria-live="polite"></div>
-            <div class="netlog js-netlog">→ gửi 14 tin tới <b>generativelanguage.googleapis.com</b><br>&nbsp;&nbsp;bằng key Gemini của bạn · gemini-3.6-flash · 6.2 giây</div>
+            <div class="netlog js-netlog">→ gửi 35 tin tới <b>generativelanguage.googleapis.com</b><br>&nbsp;&nbsp;bằng key Gemini của bạn · gemini-3.6-flash · 6.2 giây</div>
           </div>
         </div>
       </div>
@@ -110,32 +148,39 @@
           <span class="digest__count js-count"></span>
         </div>
         <div class="js-cards">
+          <div class="dcard" draggable="true" data-id="team">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Team Marketing">
+            <span class="dcard__name">Team Marketing</span>
+            <span class="dcard__meta"><span class="tag">@ bạn</span>35 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
+          <div class="dcard" draggable="true" data-id="ph">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Phụ huynh lớp 3A">
+            <span class="dcard__name">Phụ huynh lớp 3A</span>
+            <span class="dcard__meta">37 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
           <div class="dcard" draggable="true" data-id="lop">
             <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
             <input class="dcard__check" type="checkbox" checked aria-label="Chọn Lớp 12A1">
             <span class="dcard__name">Lớp 12A1</span>
-            <span class="dcard__meta"><span class="tag">@ bạn</span>14 tin</span>
+            <span class="dcard__meta">52 tin</span>
             <div class="dcard__sum"></div>
           </div>
-          <div class="dcard" draggable="true" data-id="tin">
+          <div class="dcard" draggable="true" data-id="nha">
             <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Đội tuyển Tin">
-            <span class="dcard__name">Đội tuyển Tin</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Gia đình">
+            <span class="dcard__name">Gia đình</span>
+            <span class="dcard__meta">4 tin</span>
+            <div class="dcard__sum"></div>
+          </div>
+          <div class="dcard" draggable="true" data-id="cc">
+            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
+            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Cư dân Block B">
+            <span class="dcard__name">Cư dân Block B</span>
             <span class="dcard__meta">23 tin</span>
-            <div class="dcard__sum"></div>
-          </div>
-          <div class="dcard" draggable="true" data-id="me">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Mẹ">
-            <span class="dcard__name">Mẹ</span>
-            <span class="dcard__meta">2 tin</span>
-            <div class="dcard__sum"></div>
-          </div>
-          <div class="dcard" draggable="true" data-id="clb">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn CLB Robotics">
-            <span class="dcard__name">CLB Robotics</span>
-            <span class="dcard__meta">51 tin</span>
             <div class="dcard__sum"></div>
           </div>
           <div class="dcard" draggable="true" data-id="shop" data-off="true">
@@ -162,25 +207,40 @@
       <div class="zw zw--compact" id="demo-cite">
         <div class="zw__chat">
           <div class="zw__title">
-            <span class="zw__avatar" aria-hidden="true" style="background:#6b4fa3"></span>
-            <div><b>Đội tuyển Tin</b><small>9 thành viên</small></div>
+            <span class="zw__avatar zw__avatar--trip" aria-hidden="true"></span>
+            <div><b>Hội đi Hội An</b><small>6 thành viên</small></div>
           </div>
           <div class="zw__msgs js-msgs">
             <div class="zw__day">Thứ Ba, 20/10</div>
-            <div class="msg" data-t="18:02"><b>Thầy Hùng <span>18:02</span></b>Thứ 7 này thi thử, 7h30 có mặt ở phòng máy 2</div>
-            <div class="msg" data-t="18:05"><b>Khoa <span>18:05</span></b>dạ</div>
-            <div class="msg" data-t="18:06"><b>Linh <span>18:06</span></b>thi mấy bài vậy thầy</div>
-            <div class="msg" data-t="18:10"><b>Thầy Hùng <span>18:10</span></b>3 bài, 180 phút, đề kiểu VOI</div>
-            <div class="msg" data-t="18:31"><b>Khoa <span>18:31</span></b>có ai giải bài dãy con hôm qua chưa</div>
-            <div class="msg" data-t="18:40"><b>Linh <span>18:40</span></b>mình làm O(n log n) mà vẫn TLE test 14</div>
-            <div class="msg" data-t="18:44"><b>Khoa <span>18:44</span></b>đọc nhanh lên, cin chậm lắm</div>
-            <div class="msg" data-t="19:20"><b>Phong <span>19:20</span></b>ai đi chung xe thứ 7 không</div>
-            <div class="msg" data-t="19:22"><b>Linh <span>19:22</span></b>mình đi với</div>
-            <div class="msg" data-t="21:47"><b>Thầy Hùng <span>21:47</span></b>Nhớ mang thẻ học sinh, không có thẻ không vào phòng</div>
-            <div class="msg" data-t="21:50"><b>Khoa <span>21:50</span></b>dạ thầy</div>
-            <div class="msg" data-t="22:15"><b>Phong <span>22:15</span></b>ok</div>
+            <div class="msg" data-t="18:02"><b>Trang <span>18:02</span></b>Chốt đi Hội An thứ 7 này nha, 6h sáng tập trung ở nhà Nam</div>
+            <div class="msg" data-t="18:03"><b>Vy <span>18:03</span></b>yeahhh</div>
+            <div class="msg" data-t="18:04"><b>Huy <span>18:04</span></b>cuối cùng cũng đi được 🥳</div>
+            <div class="msg" data-t="18:05"><b>Nam <span>18:05</span></b>ok</div>
+            <div class="msg" data-t="18:06"><b>Vy <span>18:06</span></b>đi mấy xe vậy</div>
+            <div class="msg" data-t="18:10"><b>Trang <span>18:10</span></b>2 xe, Nam với Huy chở</div>
+            <div class="msg" data-t="18:11"><b>Huy <span>18:11</span></b>xe mình mới thay nhớt luôn</div>
+            <div class="msg" data-t="18:15"><b>Khánh <span>18:15</span></b>cho mình ngồi xe Nam nha, Huy chạy nhanh sợ lắm</div>
+            <div class="msg" data-t="18:16"><b>Huy <span>18:16</span></b>😤</div>
+            <div class="msg" data-t="18:20"><b>Vy <span>18:20</span></b>[Sticker]</div>
+            <div class="msg" data-t="18:31"><b>Huy <span>18:31</span></b>có ai biết quán cao lầu nào ngon không</div>
+            <div class="msg" data-t="18:35"><b>Khánh <span>18:35</span></b>hôm trước mình ăn quán đầu hẻm, cũng được</div>
+            <div class="msg" data-t="18:40"><b>Vy <span>18:40</span></b>quán gần chùa Cầu ngon lắm, mà phải đặt bàn trước</div>
+            <div class="msg" data-t="18:44"><b>Huy <span>18:44</span></b>để mình gọi</div>
+            <div class="msg" data-t="19:02"><b>Nam <span>19:02</span></b>có ai mang loa không</div>
+            <div class="msg" data-t="19:03"><b>Khánh <span>19:03</span></b>mình mang</div>
+            <div class="msg" data-t="19:20"><b>Nam <span>19:20</span></b>mỗi người góp 300k tiền xăng với ăn uống nha</div>
+            <div class="msg" data-t="19:22"><b>Vy <span>19:22</span></b>chuyển cho ai</div>
+            <div class="msg" data-t="19:30"><b>Khánh <span>19:30</span></b>tối về có thả đèn hoa đăng không</div>
+            <div class="msg" data-t="19:31"><b>Vy <span>19:31</span></b>có chứ!!</div>
+            <div class="msg" data-t="20:10"><b>Trang <span>20:10</span></b>[Ảnh] dự báo thứ 7 nắng đẹp nha</div>
+            <div class="msg" data-t="20:11"><b>Huy <span>20:11</span></b>trời ủng hộ 😎</div>
+            <div class="msg" data-t="21:47"><b>Trang <span>21:47</span></b>Chuyển cho mình trước tối thứ 6 nha, ai trễ là ở nhà 😆</div>
+            <div class="msg" data-t="21:50"><b>Vy <span>21:50</span></b>haha ok</div>
+            <div class="msg" data-t="21:52"><b>Khánh <span>21:52</span></b>chuyển rồi nha</div>
+            <div class="msg" data-t="22:15"><b>Huy <span>22:15</span></b>đặt bàn quán chùa Cầu 12h trưa rồi nha</div>
+            <div class="msg" data-t="22:16"><b>Nam <span>22:16</span></b>👍</div>
           </div>
-          <div class="zw__composer">Nhập tin nhắn tới Đội tuyển Tin</div>
+          <div class="zw__composer">Nhập tin nhắn tới Hội đi Hội An</div>
         </div>
 
         <div class="zp">
@@ -193,13 +253,13 @@
             <div class="sum">
               <h4>Liên quan tới bạn</h4>
               <ul>
-                <li>Thi thử thứ 7 (24/10), 7h30 ở phòng máy 2: 3 bài, 180 phút. <button class="cite" type="button" data-t="18:02">20/10 18:02</button></li>
-                <li>Phải mang thẻ học sinh, không có thì không được vào phòng. <button class="cite" type="button" data-t="21:47">20/10 21:47</button></li>
+                <li>Thứ 7 (24/10) đi Hội An, 6h sáng tập trung ở nhà Nam. <button class="cite" type="button" data-t="18:02">20/10 18:02</button></li>
+                <li>Góp 300k, chuyển cho Trang trước tối thứ 6. <button class="cite" type="button" data-t="21:47">20/10 21:47</button></li>
               </ul>
               <h4>Còn lại</h4>
               <ul>
-                <li>Linh bị TLE test 14 bài dãy con; Khoa gợi ý đọc dữ liệu nhanh hơn. <button class="cite" type="button" data-t="18:40">20/10 18:40</button></li>
-                <li>Phong và Linh đi chung xe thứ 7. <button class="cite" type="button" data-t="19:20">20/10 19:20</button></li>
+                <li>Đi 2 xe, Nam và Huy chở. <button class="cite" type="button" data-t="18:10">20/10 18:10</button></li>
+                <li>Đã đặt bàn quán cao lầu gần chùa Cầu, 12h trưa. <button class="cite" type="button" data-t="22:15">20/10 22:15</button></li>
               </ul>
             </div>
           </div>
@@ -219,7 +279,7 @@
 
       <div class="yours" id="demo-yours">
         <div class="panel">
-          <p class="panel__label">Độ dài</p>
+          <p class="panel__label">Độ dài · bản tóm tắt nhóm <b>Team Marketing</b> ở <a class="link" href="#tom-tat">mục 01</a></p>
           <div class="seg js-length" role="group" aria-label="Độ dài bản tóm tắt">
             <button type="button" data-len="short" aria-pressed="false">Ngắn</button>
             <button type="button" data-len="medium" aria-pressed="true">Vừa</button>
@@ -237,6 +297,34 @@
           <div class="field js-ai-field"></div>
           <div class="netlog js-ai-log"></div>
           <p class="panel__label js-ai-note" style="margin-top:12px"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Who it suits -->
+  <section class="chapter" id="hop-voi-ai">
+    <div class="wrap">
+      <div class="chapter__head">
+        <h2>Có hợp với bạn không?</h2>
+      </div>
+      <div class="fit">
+        <div>
+          <h3>Hợp với bạn nếu</h3>
+          <ul>
+            <li>Bạn ở nhiều nhóm Zalo đông người.</li>
+            <li>Bạn dùng Zalo trên máy tính Windows.</li>
+            <li>Bạn hay vắng vài giờ rồi mới quay lại đọc.</li>
+            <li>Bạn cần nắm nhanh việc, hạn chót, lịch hẹn.</li>
+          </ul>
+        </div>
+        <div class="fit--no">
+          <h3>Chưa hợp nếu</h3>
+          <ul>
+            <li>Bạn chủ yếu dùng Zalo trên điện thoại hoặc Mac.</li>
+            <li>Bạn không muốn tin nhắn được gửi tới dịch vụ AI (Google hoặc Anthropic).</li>
+            <li>Hội thoại có thông tin cần giữ kín tuyệt đối.</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -306,6 +394,7 @@
         <p>Đi học về, mở Zalo: 367 tin chưa đọc. Lười đọc, mà vẫn muốn biết hôm nay lớp có drama gì.</p>
         <p>Cuộn được một lúc thì mấy tin quan trọng trôi mất tiêu. Sáng hôm sau mới biết có bài tập, kèm thêm một câu quen thuộc: “Sao offline Zalo nhiều vậy, tui nhắn lên nhóm rồi mà.”</p>
         <p>Zenlo ra đời từ mấy buổi tối như vậy. Giờ mở Zalo, bấm một cái, đọc vài dòng: việc của mình nằm trên cùng, drama nằm ngay bên dưới.</p>
+        <p>Cảm ơn Claude đã ngồi code cùng mình qua nhiều buổi tối, và cảm ơn Gemini đã cho mọi người dùng Zenlo miễn phí.</p>
         </blockquote>
         <figcaption class="note__sign">— stephit, founder of Zenlo</figcaption>
       </figure>
@@ -332,8 +421,8 @@
   </div>
 </footer>
 
-<script src="app.js"></script>
-<script src="stats.js"></script>
-<script src="demo.js"></script>
+<script src="app.js?v=dev"></script>
+<script src="stats.js?v=dev"></script>
+<script src="demo.js?v=dev"></script>
 </body>
 </html>
