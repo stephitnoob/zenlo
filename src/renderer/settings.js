@@ -302,7 +302,7 @@
 
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">Phiên bản</div>
-        <div class="zenlo__actions">
+        <div class="zenlo__actions zenlo__actions--center">
           <span>Bạn đang dùng Zenlo v${escapeHTML(Z.VERSION)}.</span>
           <button class="zenlo__btn js-settings-update">Kiểm tra bản mới</button>
         </div>
