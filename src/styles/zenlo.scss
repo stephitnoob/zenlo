@@ -1155,3 +1155,16 @@ html.zenlo-dark {
     accent-color: var(--zenlo-accent);
   }
 }
+
+// A row whose text sits on the buttons' middle line
+.zenlo__actions--center {
+  align-items: center;
+}
+
+// Text that streams in while the AI writes (summary and digest cards): wraps inside the panel
+.zenlo pre {
+  margin: 0;
+  font-family: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
