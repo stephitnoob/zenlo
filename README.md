@@ -16,19 +16,19 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 - **Trạng thái chưa đọc lấy từ Zalo.** Zalo xoá số tin chưa đọc ngay khi mở hội thoại, nên Zenlo ghi lại con số đó trước khi bạn mở, để "Từ tin chưa đọc" vẫn đúng.
 - **Gọi Claude** bằng [Claude Code](https://claude.com/claude-code) ở chế độ headless (`claude -p`), dùng gói Claude Pro/Max của bạn. Không dùng API key, không nạp `CLAUDE.md` hay memory cá nhân vào ngữ cảnh.
 - **Gọi Gemini** bằng API key của bạn (tối đa 5 key), lưu mã hoá bằng Windows (`safeStorage`) trên máy. Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện.
-- **Dữ liệu của Zenlo** (cài đặt, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm một bản sao lưu cùng key và hạn mức trong `%APPDATA%Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
+- **Dữ liệu của Zenlo** (cài đặt, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm một bản sao lưu cùng key và hạn mức trong `%APPDATA%\Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
 - **Cài vào Zalo** bằng cách giải nén `app.asar`, thêm Zenlo, giữ bản gốc ở `app.asar.bak`.
 
 ## Tải về
 
-Người dùng: tải `Zenlo-Setup.exe` từ trang web hoặc mục Releases của kho mã này, mở file và chọn "1. Cài Zenlo". Bộ cài giữ một bản trong `%LOCALAPPDATA%Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
+Người dùng: tải `Zenlo-Setup.exe` từ trang web hoặc mục Releases của kho mã này, mở file và chọn "1. Cài Zenlo". Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
 
 Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md)
 
 ## Yêu cầu (để phát triển)
 
 - Zalo PC trên Windows
-- Node.js 18 trở lên
+- Node.js 22 trở lên (bộ cài `Zenlo-Setup.exe` là một Node single executable application)
 - Một trong hai: Claude Code đã cài và đăng nhập bằng gói Claude Pro/Max, hoặc API key Gemini
 
 ## Sử dụng
@@ -47,6 +47,7 @@ npm run zalo:install
 | `npm run zalo:status` | Xem Zenlo đang được cài thế nào |
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
 | `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài cho người không có Node.js) kèm SHA-256 |
+| `npm run site` | Xem trang web trên máy ở http://127.0.0.1:4173 (không lưu cache, luôn thấy bản mới nhất) |
 
 Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệnh cài.
 
