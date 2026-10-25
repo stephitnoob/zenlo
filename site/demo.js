@@ -11,30 +11,32 @@
   // ---------- Summaries ----------
 
   // A summary is a list of blocks: { h: 'heading' } or { li: 'text', cite: ['dd/mm hh:mm', ...] }
-  const CLASS = {
+  // The "Team Marketing" chat of the first window
+  const TEAM = {
     short: [
       { h: 'Liên quan tới bạn' },
-      { li: 'Xác nhận số áo lớp cho Chi trước thứ 5.', cite: ['19/10 08:20'] },
-      { li: 'Chuyển 100k picnic cho Hà trước tối thứ 4.', cite: ['19/10 20:40'] },
-      { li: 'Mai kiểm tra 15 phút Toán chương 3.', cite: ['19/10 20:15'] }
+      { li: 'Gửi chị Hoa slide trước 9h mai.', cite: ['19/10 08:30'] },
+      { li: 'Gửi Quang ảnh sản phẩm gốc tối nay.', cite: ['19/10 17:45'] },
+      { li: 'Nộp báo cáo trước 12h trưa mai.', cite: ['19/10 17:30'] }
     ],
     medium: [
       { h: 'Liên quan tới bạn' },
-      { li: 'Chi nhờ bạn xác nhận số áo lớp, bên in cần trước thứ 5 (22/10).', cite: ['19/10 08:20'] },
-      { li: 'Hà nhắc cả lớp chuyển 100k tiền picnic trước tối thứ 4 (21/10); mới có 12 bạn chuyển.', cite: ['19/10 20:40'] },
+      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai.', cite: ['19/10 08:30'] },
+      { li: 'Gửi Quang file ảnh sản phẩm gốc ngay tối nay, khách cần gấp.', cite: ['19/10 17:45'] },
+      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
       { h: 'Còn lại' },
-      { li: 'Lớp đi picnic thứ 6 (23/10). An và Hà tìm địa điểm, mai Hà đặt cọc.', cite: ['19/10 08:03'] },
-      { li: 'Cô Lan: mai (20/10) kiểm tra 15 phút Toán chương 3, ôn cấp số nhân.', cite: ['19/10 20:15'] },
-      { li: 'Dũng gửi đề cương Lý HK1.', cite: ['19/10 09:05'] }
+      { li: 'Chốt ra mắt sản phẩm thứ 6 (23/10).', cite: ['19/10 11:40'] },
+      { li: 'Khách ABC đổi logo sang xanh đậm.', cite: ['19/10 09:10'] }
     ],
     long: [
       { h: 'Liên quan tới bạn' },
-      { li: 'Chi nhắc tên bạn: cần xác nhận số áo lớp, bên in cần trước thứ 5 (22/10). Bạn chưa trả lời.', cite: ['19/10 08:20'] },
-      { li: 'Hà nhắc cả lớp (@All) chuyển 100k tiền picnic cho Hà trước tối thứ 4 (21/10). Tới 20:40 mới có 12 bạn chuyển.', cite: ['19/10 08:10', '19/10 20:40'] },
+      { li: 'Chị Hoa nhắc tên bạn: gửi bản slide trước 9h sáng mai để chị xem lại số liệu.', cite: ['19/10 08:30'] },
+      { li: 'Quang cần file ảnh sản phẩm bản gốc ngay tối nay vì khách cần gấp.', cite: ['19/10 17:45'] },
+      { li: 'Cả nhóm (@All) nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
       { h: 'Còn lại' },
-      { li: 'Picnic: An rủ, Bình và Dũng đồng ý, chốt thứ 6 (23/10). An và Hà lo địa điểm; An hỏi có cần đặt cọc, Hà nói mai sẽ đặt.', cite: ['19/10 08:03', '19/10 21:08'] },
-      { li: 'Cô Lan báo mai (20/10) kiểm tra 15 phút Toán chương 3, các em ôn kỹ phần cấp số nhân.', cite: ['19/10 20:15'] },
-      { li: 'Bình hỏi đề cương Lý; Dũng gửi file De_cuong_Ly_HK1.pdf.', cite: ['19/10 09:05'] }
+      { li: 'Chốt ra mắt sản phẩm thứ 6 (23/10): Linh lo bài đăng Facebook, Quang làm việc lại với khách.', cite: ['19/10 11:40'] },
+      { li: 'Khách ABC muốn đổi logo sang xanh đậm, lần đổi thứ 4.', cite: ['19/10 09:10'] },
+      { li: 'Chuyện khác: gọi cà phê, rủ ăn bún bò, bánh sinh nhật chị Hoa lúc 15h.', cite: ['19/10 08:12', '19/10 15:00'] }
     ]
   }
 
@@ -108,7 +110,8 @@
     const msg = msgs && msgs.querySelector(`.msg[data-t="${time}"]`)
     if (!msg) return
     msgs.scrollTop += msg.getBoundingClientRect().top - msgs.getBoundingClientRect().top - 40
-    msg.classList.remove('msg--flash')
+    // Only the message just cited lights up
+    msgs.querySelectorAll('.msg--flash').forEach((m) => m.classList.remove('msg--flash'))
     msg.getBoundingClientRect() // restart the flash animation
     msg.classList.add('msg--flash')
     setTimeout(() => msg.classList.remove('msg--flash'), 1600)
@@ -126,8 +129,9 @@
 
   // ---------- 1. Summary ----------
 
-  const summary = document.getElementById('demo-summary')
-  if (summary) {
+  function setupSummary () {
+    const summary = document.getElementById('demo-summary')
+    if (!summary) return
     const run = summary.querySelector('.js-run')
     const hint = summary.querySelector('.js-hint')
     const out = summary.querySelector('.js-out')
@@ -138,12 +142,12 @@
       busy = true
       run.disabled = true
       run.classList.remove('zp__btn--pulse')
-      hint.textContent = 'Đang đọc 14 tin…'
+      hint.textContent = 'Đang đọc 35 tin…'
       log.classList.remove('show')
       out.textContent = ''
       await wait(700)
       hint.textContent = ''
-      await stream(out, CLASS.medium)
+      await stream(out, TEAM.medium)
       log.classList.add('show')
       hint.textContent = 'thử bấm vào một mốc giờ'
       run.textContent = 'Tóm tắt lại'
@@ -155,21 +159,24 @@
   // ---------- 2. Digest ----------
 
   const DIGEST = {
-    lop: { text: 'Chi cần bạn xác nhận số áo lớp trước thứ 5. Chuyển 100k picnic cho Hà trước tối thứ 4. Mai kiểm tra 15 phút Toán.', cite: '19/10 08:20', count: 14 },
-    tin: { text: 'Thi thử thứ 7, 7h30 ở phòng máy 2, nhớ mang thẻ học sinh.', cite: '20/10 18:02', count: 23 },
-    me: { text: 'Mẹ dặn tối nay về sớm ăn cơm, nhà có khách.', cite: '20/10 16:40', count: 2 },
-    clb: { text: 'Họp chuẩn bị giải thứ 5, 17h ở phòng Lab. Cần 2 bạn mang laptop; Tuấn đã nhận một chỗ.', cite: '20/10 19:05', count: 51 },
-    shop: { text: 'Đơn hàng đang giao, kèm mã giảm 10% cho lần sau.', cite: '20/10 10:12', count: 6 }
+    team: { text: 'Gửi chị Hoa slide trước 9h mai, gửi Quang ảnh sản phẩm tối nay.', cite: '19/10 08:30', count: 35 },
+    ph: { text: 'Họp phụ huynh 19h thứ 5; nộp quỹ lớp 200k trước thứ 6.', cite: '20/10 20:05', count: 37 },
+    lop: { text: 'Mai kiểm tra 15 phút Toán; chuyển 100k picnic trước tối thứ 4.', cite: '19/10 20:15', count: 52 },
+    nha: { text: 'Cuối tuần về quê ăn giỗ ông, đi lúc 6h sáng thứ 7.', cite: '20/10 16:40', count: 4 },
+    cc: { text: 'Cúp nước 8h–12h sáng thứ 4 để sửa đường ống.', cite: '20/10 09:12', count: 23 },
+    shop: { text: 'Đơn hàng đang giao, kèm mã giảm 10%.', cite: '20/10 10:12', count: 6 }
   }
 
-  const digest = document.getElementById('demo-digest')
-  if (digest) {
+  function setupDigest () {
+    const digest = document.getElementById('demo-digest')
+    if (!digest) return
     const run = digest.querySelector('.js-run')
     const cards = digest.querySelector('.js-cards')
     const count = digest.querySelector('.js-count')
     let round = 0
 
-    const ticked = () => [...cards.querySelectorAll('.dcard')].filter((card) => card.querySelector('.dcard__check').checked)
+    // A card without a made-up summary is left out instead of breaking the demo
+    const ticked = () => [...cards.querySelectorAll('.dcard')].filter((card) => DIGEST[card.dataset.id] && card.querySelector('.dcard__check').checked)
     function updateCount () {
       const chosen = ticked()
       const total = chosen.reduce((sum, card) => sum + DIGEST[card.dataset.id].count, 0)
@@ -266,18 +273,19 @@
 
   // ---------- 4. Length and AI ----------
 
-  const yours = document.getElementById('demo-yours')
-  if (yours) {
+  function setupYours () {
+    const yours = document.getElementById('demo-yours')
+    if (!yours) return
     const lengthOut = yours.querySelector('.js-length-out')
     const pick = (group, button) => group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === button)))
 
     const lengths = yours.querySelector('.js-length')
-    render(lengthOut, CLASS.medium)
+    render(lengthOut, TEAM.medium)
     lengths.addEventListener('click', (event) => {
       const button = event.target.closest('button')
       if (!button) return
       pick(lengths, button)
-      render(lengthOut, CLASS[button.dataset.len])
+      render(lengthOut, TEAM[button.dataset.len])
     })
 
     const AI = {
@@ -317,5 +325,14 @@
       pick(ai, button)
       showAI(button.dataset.ai)
     })
+  }
+
+  // Each demo on its own: one that fails leaves the others working
+  for (const setup of [setupSummary, setupDigest, setupYours]) {
+    try {
+      setup()
+    } catch (error) {
+      console.error('Zenlo demo:', error)
+    }
   }
 })()

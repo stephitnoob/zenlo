@@ -25,6 +25,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # Pages and their scripts and stylesheets are cached separately by browsers. Links carry
+      # "?v=dev" in the repository; the published copy gets this commit's id instead, so a new
+      # page never runs with an old cached script.
+      - name: Stamp asset links with the commit
+        run: sed -i "s/?v=dev/?v=${GITHUB_SHA::7}/g" site/*.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

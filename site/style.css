@@ -294,10 +294,6 @@ button {
   border-top: 1px solid var(--line);
 }
 
-.chapter--first {
-  padding-top: 24px;
-}
-
 .chapter__head {
   max-width: 640px;
   margin-bottom: 36px;
@@ -324,6 +320,140 @@ button {
   margin: 14px 0 0;
   color: var(--muted);
   font-size: 18px;
+}
+
+/* ---------- Why Zenlo exists ---------- */
+
+.why {
+  padding: 32px 0 8px;
+}
+
+.why .wrap {
+  max-width: 760px;
+}
+
+.why__numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 56px;
+}
+
+.why__numbers p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.why__numbers b {
+  display: block;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: clamp(34px, 5vw, 46px);
+  font-weight: 600;
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+
+.why__source {
+  margin: 10px 0 40px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.why__flow {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 18px;
+}
+
+.why__flow li {
+  position: relative;
+  padding: 0 0 18px 30px;
+  color: var(--muted);
+}
+
+/* An arrow leads from one line to the next; the last one is the answer */
+.why__flow li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--faint);
+  font-family: var(--mono);
+}
+
+.why__flow li:first-child::before {
+  content: "·";
+}
+
+.why__flow li:last-child {
+  color: var(--text);
+}
+
+.why__flow li:last-child::before {
+  color: var(--accent);
+}
+
+.why__flow b {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.why__goal {
+  margin: 22px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-family: var(--display);
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 650;
+  letter-spacing: -0.3px;
+}
+
+.why__goal em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+/* ---------- Who it suits ---------- */
+
+.fit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 900px;
+}
+
+.fit > div {
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.fit h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.fit ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.fit li {
+  margin: 6px 0;
+}
+
+.fit li::marker {
+  color: var(--accent);
+}
+
+.fit--no {
+  color: var(--muted);
+}
+
+.fit--no li::marker {
+  color: var(--faint);
 }
 
 /* ---------- The pretend Zalo window ---------- */
@@ -360,6 +490,10 @@ button {
   height: 34px;
   border-radius: 50%;
   background: #2f6f73;
+}
+
+.zw__avatar--trip {
+  background: #b86a2e;
 }
 
 .zw__title b {
@@ -1232,7 +1366,8 @@ button {
   }
 
   .yours,
-  .steps {
+  .steps,
+  .fit {
     grid-template-columns: minmax(0, 1fr);
   }
 
