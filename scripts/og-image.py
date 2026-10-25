@@ -38,7 +38,7 @@ title = font('segoeuib.ttf', 54)
 d.text((72 * S, 178 * S), 'Ba trăm tin chưa đọc,', font=title, fill=TEXT)
 d.text((72 * S, 254 * S), 'đọc trong mười giây.', font=title, fill=ACCENT)
 d.text((72 * S, 352 * S), 'Zenlo tóm tắt hội thoại ngay', font=font('segoeui.ttf', 28), fill=MUTED)
-d.text((72 * S, 392 * S), 'trong Zalo PC. Miễn phí.', font=font('segoeui.ttf', 28), fill=MUTED)
+d.text((72 * S, 392 * S), 'trong Zalo. Miễn phí.', font=font('segoeui.ttf', 28), fill=MUTED)
 
 # Summary card
 cx, cy, cw, ch = 700, 140, 430, 350
@@ -63,7 +63,7 @@ for text, cite in rows:
     y += 82
 
 # Footer line
-d.text((72 * S, 548 * S), 'Zalo PC · Windows 10/11', font=font('consola.ttf', 20), fill=MUTED)
+d.text((72 * S, 548 * S), 'Zalo · Windows 10/11', font=font('consola.ttf', 20), fill=MUTED)
 d.text((690 * S, 548 * S), 'stephitnoob.github.io/zenlo', font=font('consola.ttf', 20), fill=MUTED)
 
 img.resize((W, H), Image.LANCZOS).save(sys.argv[1], optimize=True)

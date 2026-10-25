@@ -11,6 +11,34 @@
 
   const $$ = (selector) => document.querySelectorAll(selector)
 
+  // Platforms that are not out yet: a "Coming soon" note in the middle of the screen for a moment
+  let soon = null
+  let soonTimer = null
+  function showSoon (what) {
+    if (!soon) {
+      soon = document.createElement('div')
+      soon.className = 'soon'
+      soon.setAttribute('role', 'status')
+      soon.addEventListener('click', () => soon.classList.remove('soon--show'))
+      document.body.appendChild(soon)
+    }
+    soon.textContent = ''
+    const title = document.createElement('b')
+    title.textContent = 'Coming soon…'
+    const detail = document.createElement('span')
+    detail.textContent = `${what} đang được làm.`
+    soon.append(title, detail)
+    soon.classList.add('soon--show')
+    clearTimeout(soonTimer)
+    soonTimer = setTimeout(() => soon.classList.remove('soon--show'), 2200)
+  }
+  $$('.js-soon').forEach((button) => {
+    button.addEventListener('click', () => showSoon(button.querySelector('.js-soon-label').textContent))
+  })
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && soon) soon.classList.remove('soon--show')
+  })
+
   function setDownload (href, label) {
     $$('.js-download').forEach((a) => {
       if (href) {
