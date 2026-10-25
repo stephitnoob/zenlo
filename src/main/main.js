@@ -142,7 +142,7 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
 // Up to 5 API keys, each encrypted with Windows' safeStorage. Quotas belong to Google Cloud projects,
 // so only keys from different projects add quota.
 const MAX_KEYS = 5
-// Zenlo keeps its own files in %APPDATA%Zenlo, apart from Zalo's data, so they survive Zalo
+// Zenlo keeps its own files in %APPDATA%\Zenlo, apart from Zalo's data, so they survive Zalo
 // updates, a reinstall of Zalo and Zalo clearing its storage
 const ZENLO_DIR = () => {
   const dir = path.join(app.getPath('appData'), 'Zenlo')

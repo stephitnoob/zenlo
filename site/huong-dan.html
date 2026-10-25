@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hướng dẫn sử dụng – Zenlo</title>
 <meta name="description" content="Cách cài, cách dùng Tóm tắt, Bản tin và từng mục trong Cài đặt của Zenlo, cùng cách xử lý khi gặp sự cố.">
+<meta property="og:title" content="Hướng dẫn sử dụng – Zenlo">
+<meta property="og:url" content="https://stephitnoob.github.io/zenlo/huong-dan.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Zenlo">
+<meta property="og:image" content="https://stephitnoob.github.io/zenlo/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zenlo: ba trăm tin chưa đọc, đọc trong mười giây">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css?v=dev">
 <script src="theme.js?v=dev"></script>
@@ -48,13 +57,50 @@
         <h3>Cài Zenlo</h3>
         <p>Cần Windows 10 hoặc 11 và Zalo PC đã cài sẵn.</p>
         <ol>
-          <li>Tải <code>Zenlo-Setup.exe</code> ở <a class="link" href="./#cai-dat">trang chủ</a> rồi mở file.</li>
-          <li>Nếu Windows hiện <b>Windows protected your PC</b>, bấm <b>More info</b> rồi <b>Run anyway</b>. Thông báo này hiện vì Zenlo chưa mua chữ ký số, không phải vì phát hiện virus.</li>
+          <li>Tải <code>Zenlo-Setup.exe</code> ở <a class="link" href="./#cai-dat">trang chủ</a> rồi mở file. Trình duyệt và Windows có thể hiện cảnh báo, xem <a class="link" href="#canh-bao">cách bỏ qua</a> ngay bên dưới.</li>
           <li>Gõ <code>1</code> rồi Enter để cài, gõ <code>c</code> rồi Enter để đồng ý tắt Zalo trong lúc cài.</li>
           <li>Mở lại Zalo. Thanh bên trái có thêm nút Zenlo màu tím.</li>
         </ol>
         <p>Bộ cài cũng để lại một lối tắt <b>Zenlo - Cài đặt</b> trong Start, dùng khi <a class="link" href="#zalo-cap-nhat">Zalo cập nhật</a>.</p>
         <div class="tip">Muốn chắc file tải về đúng là file đã phát hành: mở PowerShell ở thư mục chứa file, chạy <code>Get-FileHash .\Zenlo-Setup.exe</code>, so dãy số với dòng SHA-256 ở trang chủ.</div>
+      </section>
+
+      <section id="canh-bao">
+        <h3>Khi trình duyệt hoặc Windows cảnh báo</h3>
+        <p>Zenlo là phần mềm mới và chưa mua chữ ký số, nên Microsoft chưa "quen" file này. Cảnh báo không có nghĩa là phát hiện virus. Có thể gặp hai lần:</p>
+
+        <div class="warn-steps">
+          <figure class="warn">
+            <figcaption><b>1. Lúc tải về</b> (Edge)</figcaption>
+            <div class="warn__box warn__box--edge" aria-hidden="true">
+              <p class="warn__title">⚠ Make sure you trust Zenlo-Setup.exe before you open it</p>
+              <p class="warn__text">Microsoft Defender SmartScreen couldn't verify if this file is safe because it isn't commonly downloaded.</p>
+              <p class="warn__text">Publisher: Unknown</p>
+              <div class="warn__buttons">
+                <span class="warn__btn">Cancel</span>
+                <span class="warn__btn">Delete <span class="warn__arrow">˅</span></span>
+              </div>
+              <div class="warn__menu"><span class="warn__pick">Keep anyway</span></div>
+            </div>
+            <p>Trong danh sách tải xuống, bấm <b>…</b> cạnh file, chọn <b>Keep</b>. Hộp trên hiện ra: bấm mũi tên <b>˅</b> cạnh <b>Delete</b>, chọn <b>Keep anyway</b>. Chrome thì chỉ cần bấm <b>Keep</b>.</p>
+          </figure>
+
+          <figure class="warn">
+            <figcaption><b>2. Lúc mở file</b> (Windows)</figcaption>
+            <div class="warn__box warn__box--win" aria-hidden="true">
+              <p class="warn__title">Windows protected your PC</p>
+              <p class="warn__text">Microsoft Defender SmartScreen prevented an unrecognized app from starting.</p>
+              <p class="warn__text"><span class="warn__pick">More info</span></p>
+              <p class="warn__text">App: Zenlo-Setup.exe<br>Publisher: Unknown publisher</p>
+              <div class="warn__buttons">
+                <span class="warn__btn warn__pick">Run anyway</span>
+                <span class="warn__btn">Don't run</span>
+              </div>
+            </div>
+            <p>Bấm <b>More info</b>, nút <b>Run anyway</b> hiện ra, bấm vào đó.</p>
+          </figure>
+        </div>
+        <p class="muted">Hình chỉ minh hoạ, chữ thật có thể khác một chút theo phiên bản Windows và trình duyệt. Chỉ bỏ qua cảnh báo với file tải từ trang này hoặc <a class="link" href="https://github.com/stephitnoob/zenlo/releases">trang phát hành chính thức</a>.</p>
       </section>
 
       <section id="lay-key">
@@ -272,7 +318,7 @@
 
       <section id="gop-y">
         <h3>Vẫn không được</h3>
-        <p><a class="link js-feedback" href="#">Gửi e-mail góp ý</a>: ghi phiên bản Zalo, phiên bản Zenlo và dòng báo lỗi. Đừng gửi API key hay ảnh chụp có tin nhắn riêng tư.</p>
+        <p><a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">Gửi e-mail góp ý</a>: ghi phiên bản Zalo, phiên bản Zenlo và dòng báo lỗi. Đừng gửi API key hay ảnh chụp có tin nhắn riêng tư.</p>
       </section>
     </section>
 
@@ -297,7 +343,7 @@
       <a href="privacy.html">Quyền riêng tư</a>
       <a href="dieu-khoan.html">Điều khoản</a>
       <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
-      <a class="js-feedback" href="#">Góp ý</a>
+      <a class="js-feedback" href="mailto:stephit.zenlo@outlook.com">Góp ý</a>
     </nav>
   </div>
 </footer>

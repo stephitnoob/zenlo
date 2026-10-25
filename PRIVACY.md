@@ -1,13 +1,13 @@
 # Chính sách quyền riêng tư của Zenlo
 
-Cập nhật: 24/10/2026
+Cập nhật: 25/10/2026
 
 Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
 
 ## Tóm tắt
 
 - **Zenlo không có máy chủ.** Tác giả Zenlo không nhận, không lưu và không thấy được tin nhắn, tài khoản hay bất kỳ dữ liệu nào của bạn.
-- **Không tài khoản, không quảng cáo, không theo dõi.** Zenlo không gửi số liệu sử dụng (telemetry) đi đâu cả.
+- **Không tài khoản, không quảng cáo, không theo dõi.** Ứng dụng Zenlo không gửi số liệu sử dụng (telemetry) đi đâu cả. Trang web của Zenlo chỉ đếm lượt xem ẩn danh, không dùng cookie (xem [Trang web](#trang-web)).
 - **Tin nhắn chỉ được gửi tới dịch vụ AI do chính bạn chọn**, và chỉ khi bạn bấm Tóm tắt hoặc Tạo bản tin.
 
 ## Zenlo đọc gì
@@ -50,6 +50,16 @@ Mọi thứ chỉ nằm trên máy bạn:
 - Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, và xoá từng API key bằng nút ✕.
 - Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` nếu muốn xoá sạch.
 
+## Trang web
+
+Trang web của Zenlo (stephitnoob.github.io/zenlo) đếm lượt xem bằng [GoatCounter](https://www.goatcounter.com/), một dịch vụ thống kê mã nguồn mở, để tác giả biết có bao nhiêu người ghé xem và bao nhiêu người bấm Tải về.
+
+- **Được gửi đi:** địa chỉ trang đang xem, tiêu đề trang, trang web dẫn bạn tới đây (nếu có), và việc bạn bấm nút Tải về.
+- **GoatCounter lưu** từng lượt xem ở dạng ẩn danh: thời gian, trang được xem, trang dẫn tới, loại trình duyệt, hệ điều hành và quốc gia. Địa chỉ IP không được lưu. Để không đếm trùng khi một người tải lại trang, GoatCounter dùng một mã phiên ẩn danh chỉ tồn tại tối đa 8 giờ.
+- **Không có:** cookie, mã định danh lâu dài, quảng cáo, hay dữ liệu nào được lưu trong trình duyệt của bạn.
+
+Việc đếm này chỉ có trên trang web, không có trong ứng dụng Zenlo. Toàn bộ mã đếm nằm trong [`site/stats.js`](site/stats.js).
+
 ## Liên hệ
 
-Câu hỏi về quyền riêng tư: tungtd@outlook.com.
+Câu hỏi về quyền riêng tư: stephit.zenlo@outlook.com.

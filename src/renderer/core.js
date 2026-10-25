@@ -23,7 +23,7 @@
     guide: 'https://stephitnoob.github.io/zenlo/huong-dan.html',
     source: 'https://github.com/stephitnoob/zenlo',
     privacy: 'https://stephitnoob.github.io/zenlo/privacy.html',
-    feedback: 'mailto:tungtd@outlook.com?subject=G%C3%B3p%20%C3%BD%20Zenlo',
+    feedback: 'mailto:stephit.zenlo@outlook.com?subject=G%C3%B3p%20%C3%BD%20Zenlo',
     geminiKey: 'https://aistudio.google.com/apikey'
   }
 
