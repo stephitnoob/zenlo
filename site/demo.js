@@ -161,7 +161,7 @@
   const DIGEST = {
     team: { text: 'Gửi chị Hoa slide trước 9h mai, gửi Quang ảnh sản phẩm tối nay.', cite: '19/10 08:30', count: 35 },
     ph: { text: 'Họp phụ huynh 19h thứ 5; nộp quỹ lớp 200k trước thứ 6.', cite: '20/10 20:05', count: 37 },
-    lop: { text: 'Mai kiểm tra 15 phút Toán; chuyển 100k picnic trước tối thứ 4.', cite: '19/10 20:15', count: 52 },
+    run: { text: 'Chạy sáng chủ nhật 5h30 ở biển Mỹ Khê; đăng ký giải 10K trước thứ 6.', cite: '19/10 20:15', count: 52 },
     nha: { text: 'Cuối tuần về quê ăn giỗ ông, đi lúc 6h sáng thứ 7.', cite: '20/10 16:40', count: 4 },
     cc: { text: 'Cúp nước 8h–12h sáng thứ 4 để sửa đường ống.', cite: '20/10 09:12', count: 23 },
     shop: { text: 'Đơn hàng đang giao, kèm mã giảm 10%.', cite: '20/10 10:12', count: 6 }
