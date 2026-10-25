@@ -3,6 +3,7 @@
 
   Main process: runs the AI the user chose and streams the answer back to the renderer through IPC.
   - Claude: Claude Code headless (`claude -p`) on the user's own Claude Pro/Max subscription
+  - Codex: OpenAI's Codex CLI (`codex exec`) on the user's ChatGPT plan
   - Gemini: the Gemini API with the user's own API key, kept encrypted with Windows' safeStorage
 */
 
@@ -135,6 +136,228 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
 
   child.stdin.on('error', () => {})
   child.stdin.end(input, 'utf8')
+}
+
+// ---------- Codex (ChatGPT) ----------
+
+// OpenAI's Codex CLI, logged in with the user's ChatGPT plan. Run as `codex exec` with the summary
+// prompt as its whole instructions, read-only, in an empty folder, without tools, the user's
+// config.toml or project AGENTS.md. (Codex always reads the global $CODEX_HOME/AGENTS.md, if the
+// user has one; no setting turns that off.)
+const CODEX_MODELS = ['gpt-5.5']
+const CODEX_EFFORTS = ['low', 'medium', 'high']
+
+// The codex.exe itself, never npm's .cmd shim (quoting through cmd.exe is unsafe)
+const findCodexExecutable = () => {
+  if (process.platform !== 'win32') return null
+  const local = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
+  const roaming = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming')
+  const vendor = (arch) => [
+    path.join(roaming, 'npm', 'node_modules', '@openai', 'codex', 'node_modules', '@openai', `codex-win32-${arch}`),
+    path.join(roaming, 'npm', 'node_modules', '@openai', `codex-win32-${arch}`)
+  ].map((dir) => path.join(dir, 'vendor', `${arch === 'arm64' ? 'aarch64' : 'x86_64'}-pc-windows-msvc`, 'bin', 'codex.exe'))
+  const candidates = [
+    // The standalone installer (install.ps1)
+    path.join(local, 'Programs', 'OpenAI', 'Codex', 'bin', 'codex.exe'),
+    path.join(os.homedir(), '.codex', 'packages', 'standalone', 'current', 'bin', 'codex.exe'),
+    // npm install -g @openai/codex
+    ...vendor('x64'),
+    ...vendor('arm64'),
+    // Anything else on PATH
+    ...String(process.env.PATH || '').split(path.delimiter).filter(Boolean).map((dir) => path.join(dir, 'codex.exe'))
+  ]
+  return candidates.find((p) => {
+    try {
+      return fs.statSync(p).isFile()
+    } catch (error) {
+      return false
+    }
+  }) || null
+}
+
+// Variables that would make Codex bill an API key instead of the ChatGPT plan, or send the
+// messages somewhere else
+const CODEX_UNSAFE_ENV = [
+  'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORGANIZATION', 'OPENAI_PROJECT',
+  'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_SANDBOX', 'CODEX_OSS_BASE_URL', 'CODEX_OSS_PORT', 'RUST_LOG'
+]
+
+const getCodexEnv = () => {
+  const env = getChildEnv()
+  for (const name of Object.keys(env)) {
+    if (CODEX_UNSAFE_ENV.includes(name.toUpperCase())) delete env[name]
+  }
+  env.RUST_LOG = 'error'
+  return env
+}
+
+// "codex login status": { loggedIn, mode } (mode "chatgpt" or "apikey"); null when unknown.
+// Kept for a minute, since the settings and the drawer ask often.
+let codexLogin = null
+const getCodexLogin = (exe) => {
+  if (!exe) return Promise.resolve(null)
+  if (codexLogin && codexLogin.exe === exe && Date.now() - codexLogin.at < 60 * 1000) return Promise.resolve(codexLogin.value)
+  return new Promise((resolve) => {
+    let output = ''
+    let done = false
+    const finish = (value) => {
+      if (done) return
+      done = true
+      codexLogin = { exe, at: Date.now(), value }
+      resolve(value)
+    }
+    let child
+    try {
+      child = spawn(exe, ['login', 'status'], { cwd: os.tmpdir(), env: getCodexEnv(), windowsHide: true })
+    } catch (error) {
+      return finish(null)
+    }
+    child.stdout.setEncoding('utf8')
+    child.stderr.setEncoding('utf8')
+    child.stdout.on('data', (chunk) => { output += chunk })
+    child.stderr.on('data', (chunk) => { output += chunk })
+    child.on('error', () => finish(null))
+    child.on('close', (code) => {
+      if (/Logged in using ChatGPT/i.test(output)) finish({ loggedIn: true, mode: 'chatgpt' })
+      else if (/API key configured/i.test(output)) finish({ loggedIn: true, mode: 'apikey' })
+      else if (/Not logged in/i.test(output) || code === 1) finish({ loggedIn: false })
+      else finish(null)
+    })
+    setTimeout(() => {
+      try {
+        child.kill()
+      } catch (error) {}
+      finish(null)
+    }, 15000)
+  })
+}
+
+// Codex's error texts (English) as a short Vietnamese message
+const codexError = (message) => {
+  const text = String(message || '').trim()
+  if (/usage limit|quota exceeded/i.test(text)) {
+    const reset = text.match(/try again at ([^.]+)\./i)
+    return `Gói ChatGPT đã hết lượt dùng Codex${reset ? `, thử lại lúc ${reset[1].trim()}` : ', thử lại sau'}. Có thể tạm chuyển sang Gemini trong Cài đặt.`
+  }
+  if (/upgrade to plus/i.test(text)) return 'Gói ChatGPT của bạn chưa dùng được Codex. Cần gói Plus trở lên.'
+  if (/not logged in|unauthori[sz]ed|\b401\b|log ?in/i.test(text)) return 'Codex chưa đăng nhập. Mở Terminal, chạy "codex login" và đăng nhập bằng tài khoản ChatGPT.'
+  if (/model_not_found|model metadata for|model .*(not found|does not exist|not supported|unsupported)|unknown model/i.test(text)) {
+    return 'Model đã chọn không dùng được với tài khoản ChatGPT này. Trong Cài đặt Zenlo, chọn Model là "Mặc định của Codex".'
+  }
+  if (/at capacity|high demand|overloaded/i.test(text)) return 'Máy chủ OpenAI đang quá tải. Thử lại sau ít phút.'
+  if (/connection failed|timed out|stream disconnected|retry limit|reading the server response/i.test(text)) {
+    return 'Không kết nối được tới OpenAI. Kiểm tra mạng rồi thử lại.'
+  }
+  return `Codex báo lỗi: ${text || 'không rõ lý do'}`
+}
+
+// TOML string for a -c value (JSON strings are valid TOML basic strings for this text)
+const tomlString = (text) => JSON.stringify(String(text))
+
+const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, input }) => {
+  const exe = findCodexExecutable()
+  if (!exe) {
+    return finish({ type: 'error', message: 'Không tìm thấy Codex trên máy. Hãy cài Codex của OpenAI rồi chạy "codex login" để đăng nhập bằng tài khoản ChatGPT.' })
+  }
+  // An empty folder of its own: nothing for Codex to read, no project AGENTS.md
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'zenlo-codex-'))
+  const cleanUp = () => fs.rm(work, { recursive: true, force: true }, () => {})
+
+  getCodexLogin(exe).then((login) => {
+    if (login && login.loggedIn === false) {
+      cleanUp()
+      return finish({ type: 'error', message: codexError('Not logged in') })
+    }
+    if (login && login.mode === 'apikey') {
+      cleanUp()
+      return finish({ type: 'error', message: 'Codex đang đăng nhập bằng API key, sẽ bị tính tiền theo API. Hãy chạy "codex logout" rồi "codex login" và chọn đăng nhập bằng ChatGPT.' })
+    }
+
+    const config = [
+      `model_reasoning_effort=${tomlString(CODEX_EFFORTS.includes(effort) ? effort : 'medium')}`,
+      `instructions=${tomlString(systemPrompt)}`,
+      'project_doc_max_bytes=0',
+      'web_search="disabled"',
+      'features.shell_tool=false',
+      'features.multi_agent=false',
+      'features.apps=false',
+      'features.plugins=false',
+      'features.view_image=false',
+      'include_environment_context=false',
+      'include_permissions_instructions=false',
+      'include_apps_instructions=false',
+      'include_collaboration_mode_instructions=false',
+      'skills.include_instructions=false'
+    ]
+    const args = [
+      'exec', '--json', '--ephemeral', '--skip-git-repo-check', '--ignore-user-config', '--ignore-rules',
+      '-s', 'read-only', '-C', work,
+      ...(CODEX_MODELS.includes(model) ? ['-m', model] : []),
+      ...config.flatMap((item) => ['-c', item]),
+      // The prompt comes from stdin
+      '-'
+    ]
+
+    const child = spawn(exe, args, { cwd: work, env: getCodexEnv(), windowsHide: true })
+    running.set(id, () => child.kill())
+
+    let buffer = ''
+    let stderr = ''
+    let answer = ''
+    let lastError = ''
+
+    child.stdout.setEncoding('utf8')
+    child.stdout.on('data', (chunk) => {
+      buffer += chunk
+      let newline
+      while ((newline = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, newline).trim()
+        buffer = buffer.slice(newline + 1)
+        if (!line) continue
+        let event
+        try {
+          event = JSON.parse(line)
+        } catch (error) {
+          continue
+        }
+        const item = event.item || {}
+        if (event.type === 'item.completed' && item.type === 'agent_message' && item.text) {
+          // Codex sends each message whole, not word by word
+          answer = item.text
+          send({ type: 'text', text: item.text })
+        } else if (event.type === 'item.completed' && item.type === 'error' && item.message) {
+          if (/model metadata for/i.test(item.message)) lastError = item.message
+        } else if (event.type === 'error' && event.message) {
+          lastError = event.message
+        } else if (event.type === 'turn.failed') {
+          finish({ type: 'error', message: codexError((event.error && event.error.message) || lastError) })
+        } else if (event.type === 'turn.completed') {
+          finish({ type: 'done', isError: false, result: answer })
+        }
+      }
+    })
+
+    child.stderr.setEncoding('utf8')
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk
+    })
+
+    child.on('error', (error) => {
+      cleanUp()
+      finish({ type: 'error', message: error.code === 'ENOENT' ? 'Không tìm thấy Codex trên máy. Hãy cài Codex rồi mở lại Zalo.' : codexError(error.message) })
+    })
+
+    child.on('close', (code) => {
+      cleanUp()
+      if (code === 0 && answer) return finish({ type: 'done', isError: false, result: answer })
+      const message = lastError || stderr.trim().split(/\r?\n/).filter((l) => !/^Reading prompt from stdin/i.test(l)).pop() || ''
+      finish({ type: 'error', message: message ? codexError(message.replace(/^Error:\s*/, '')) : `Codex thoát với mã ${code} mà không trả kết quả.` })
+    })
+
+    // The transcript first, the request after it, as with Gemini
+    child.stdin.on('error', () => {})
+    child.stdin.end(`${input}\n\n${instruction}`, 'utf8')
+  })
 }
 
 // ---------- Gemini ----------
@@ -539,6 +762,7 @@ ipcMain.on('zenlo:summary:run', (event, request) => {
     send(payload)
   }
   if (request.provider === 'gemini') runGemini(send, finish, request)
+  else if (request.provider === 'codex') runCodex(send, finish, request)
   else runClaude(send, finish, request)
 })
 
@@ -598,12 +822,20 @@ ipcMain.handle('zenlo:update:latest', (event) => {
   })
 })
 
-ipcMain.handle('zenlo:settings:get', (event) => {
+ipcMain.handle('zenlo:settings:get', async (event) => {
   if (!isTrustedSender(event)) return null
+  const codexPath = findCodexExecutable()
+  const login = await getCodexLogin(codexPath)
   return {
     geminiKeys: getGeminiKeys(),
     maxKeys: MAX_KEYS,
     claudePath: findClaudeExecutable(),
+    codexPath,
+    codex: {
+      path: codexPath,
+      loggedIn: login ? login.loggedIn : null,
+      account: login && login.mode === 'chatgpt' ? 'đã đăng nhập bằng ChatGPT' : login && login.mode === 'apikey' ? 'đang dùng API key (nên đăng nhập bằng ChatGPT)' : ''
+    },
     encryption: safeStorage.isEncryptionAvailable()
   }
 })

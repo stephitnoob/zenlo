@@ -319,6 +319,11 @@
         field: ['Claude Code', 'đã đăng nhập'],
         log: ['Claude Code trên máy bạn → api.anthropic.com', 'HTTPS · bằng gói Claude của bạn'],
         note: 'Cần gói Claude Pro hoặc Max, và Claude Code đã cài trên máy.'
+      },
+      codex: {
+        field: ['Codex', 'đã đăng nhập ChatGPT'],
+        log: ['Codex trên máy bạn → máy chủ OpenAI', 'HTTPS · bằng gói ChatGPT của bạn'],
+        note: 'Cần gói ChatGPT có Codex (Plus, Pro…) và Codex đã cài, đăng nhập trên máy.'
       }
     }
     const ai = yours.querySelector('.js-ai')

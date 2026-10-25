@@ -14,7 +14,8 @@
     "zalo:status": "node installer status",
     "zalo:uninstall": "node installer uninstall",
     "build:setup": "npm run build && node scripts/build-setup.mjs",
-    "site": "node scripts/serve-site.mjs"
+    "site": "node scripts/serve-site.mjs",
+    "test:codex": "npm run build && node test/codex/run.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
