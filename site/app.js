@@ -100,7 +100,7 @@
     a.href = `https://github.com/${REPO}`
   })
   const fileUrl = `https://github.com/${REPO}/releases/latest/download/Zenlo-Setup.exe`
-  setDownload(fileUrl, 'Tải Zenlo cho Windows')
+  setDownload(fileUrl, 'Tải Zenlo miễn phí cho Windows')
 
   // Only the home page and the versions page show the release facts
   if (!document.querySelector('.js-version, .js-size-small, .js-sha')) return
