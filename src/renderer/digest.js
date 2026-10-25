@@ -345,7 +345,7 @@
         for (let i = 0; i < chunks.length; i++) {
           const call = Z.runAI({
             systemPrompt: Z.SUMMARY_PROMPT,
-            instruction: Z.buildPartInstruction({ convName: item.name, part: i + 1, parts: chunks.length }),
+            instruction: Z.buildPartInstruction({ convName: item.name, part: i + 1, parts: chunks.length, note: Z.getNote(item.convId) }),
             input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
           })
           calls.add(call)
@@ -358,6 +358,7 @@
       const call = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
         instruction: Z.buildSummaryInstruction({
+          note: Z.getNote(item.convId),
           convName: item.name,
           isGroup: item.isGroup,
           from: item.start,
@@ -404,6 +405,8 @@
     }
     const stopButton = overlay.querySelector('.js-digest-stop')
     stopButton.hidden = false
+    showTreat(false)
+    overlay.querySelector('.js-digest-copy').hidden = true
     setStatus(`Đang tạo bản tin bằng ${Z.getAILabel()}…`)
     renderItems()
 
@@ -430,6 +433,24 @@
     else if (failed) setStatus(`${failed} hội thoại bị lỗi, xem trên từng thẻ. Bấm "Tạo bản tin" để thử lại.`, true)
     else setStatus(`Bản tin lúc ${formatTime(Date.now(), true)}.`)
     renderItems()
+    const done = items.some((item) => item.status === 'done' && item.summary)
+    overlay.querySelector('.js-digest-copy').hidden = !done
+    if (!cancelled && done) showTreat(true)
+  }
+
+  // The thank-you line under a finished digest; × hides it until the next one
+  function showTreat (shown) {
+    overlay.querySelector('.zenlo__treat').hidden = !shown
+  }
+
+  // Every summarized conversation as plain text, with where it came from
+  function copyDigest () {
+    const text = items
+      .filter((item) => item.status === 'done' && item.summary)
+      .map((item) => `## ${item.name}\n${String(item.summary).trim()}`)
+      .join('\n\n')
+    if (!text) return
+    navigator.clipboard.writeText(Z.withCredit(text)).then(() => setStatus('Đã sao chép bản tin.'))
   }
 
   function buildOverlay () {
@@ -441,6 +462,7 @@
       <div class="zenlo__actions">
         <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
         <button class="zenlo__btn js-digest-stop" hidden>Dừng</button>
+        <button class="zenlo__btn js-digest-copy" hidden>Sao chép</button>
         <button class="zenlo__btn js-digest-refresh">Làm mới</button>
         <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc trong Zalo mọi hội thoại trong danh sách">Đã đọc hết</button>
       </div>
@@ -461,9 +483,16 @@
         <button class="zenlo-digest__link js-digest-auto-order" title="Xoá thứ tự bạn đã kéo, quay về sắp xếp tự động">Sắp xếp tự động</button>
       </div>
       <div class="zenlo-digest__list"></div>
+      <div class="zenlo__treat" hidden>
+        <span>${Z.TREAT_HTML}</span>
+        <button type="button" class="zenlo__treat-close js-treat-close" title="Ẩn">&times;</button>
+      </div>
     `
 
     el.querySelector('.js-digest-run').addEventListener('click', runDigest)
+    el.querySelector('.js-digest-copy').addEventListener('click', copyDigest)
+    el.querySelector('.js-treat-link').addEventListener('click', () => Z.openLink(Z.LINKS.treat))
+    el.querySelector('.js-treat-close').addEventListener('click', () => showTreat(false))
     el.querySelector('.js-digest-stop').addEventListener('click', () => {
       if (running) running.cancel()
     })
