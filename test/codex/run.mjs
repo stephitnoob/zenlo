@@ -27,7 +27,7 @@ const require = createRequire(import.meta.url)
 if (!process.argv[2]) {
   fs.mkdirSync(FAKE_DIR, { recursive: true })
   const csc = path.join(process.env.WINDIR || 'C:\\Windows', 'Microsoft.NET', 'Framework64', 'v4.0.30319', 'csc.exe')
-  execFileSync(csc, ['/nologo', '/codepage:65001', `/out:${FAKE}`, path.join(ROOT, 'test', 'codex', 'FakeCodex.cs')], { stdio: 'inherit' })
+  execFileSync(csc, ['/nologo', '/codepage:65001', '/reference:System.Web.Extensions.dll', `/out:${FAKE}`, path.join(ROOT, 'test', 'codex', 'FakeCodex.cs')], { stdio: 'inherit' })
   let failed = 0
   for (const login of ['chatgpt', 'none', 'apikey', 'missing']) {
     const result = spawnSync(process.execPath, [fileURLToPath(import.meta.url), login], { stdio: 'inherit' })
@@ -129,15 +129,77 @@ await test('Cài đặt báo đúng trạng thái Codex', async () => {
   }
 })
 
+const logArgs = () => fs.readFileSync(LOG, 'utf8').split('\nCWD\n')[0].split('\n').slice(1)
+
 if (login === 'chatgpt') {
-  await test('Thành công: trả đúng câu trả lời, có sự kiện text', async () => {
+  // ----- app-server: the answer word by word -----
+
+  await test('Chữ chạy dần: nhiều sự kiện text, ghép lại đúng câu trả lời', async () => {
+    const { events, last } = await summarize('success')
+    assert.equal(last.type, 'done')
+    assert.match(last.result, /Gửi chị Hoa slide trước 9h mai/)
+    const texts = events.filter((e) => e.type === 'text').map((e) => e.text)
+    assert.ok(texts.length >= 3, `${texts.length} text events`)
+    assert.equal(texts.join(''), last.result)
+  })
+
+  await test('app-server: tắt MCP, notify, bộ nhớ; chỉ đọc; thư mục trống; đúng effort và model', async () => {
+    await summarize('success', { effort: 'high', model: 'gpt-6-luna' })
+    const log = fs.readFileSync(LOG, 'utf8')
+    const args = logArgs()
+    assert.equal(args[0], 'app-server')
+    for (const config of ['notify=[]', 'model_provider="openai"', 'features.memories=false', 'history.persistence="none"', 'project_doc_max_bytes=0', 'web_search="disabled"', 'features.shell_tool=false', 'features.plugins=false']) assert.ok(args.includes(config), config)
+    for (const line of ['thread.sandbox=read-only', 'thread.approvalPolicy=never', 'thread.ephemeral=true', 'thread.mcp.node_repl.off=true', 'turn.effort=high', 'turn.model=gpt-6-luna']) assert.ok(args.includes(line), line)
+    assert.ok(args.some((a) => a.startsWith('thread.baseInstructions=Bạn tóm tắt cuộc trò chuyện Zalo')), 'instructions')
+    assert.match(path.basename(log.split('\nCWD\n')[1].split('\n')[0]), /^zenlo-codex-/)
+    assert.match(log, /ENV CODEX_API_KEY=\n/)
+    const prompt = log.split('\nPROMPT\n')[1]
+    assert.ok(prompt.indexOf('<transcript>') < prompt.indexOf('Tóm tắt giúp mình.'), 'transcript first, request last')
+  })
+
+  await test('app-server: model mặc định không gửi tên model', async () => {
+    await summarize('success')
+    assert.ok(logArgs().includes('turn.model=null'))
+  })
+
+  for (const [mode, why] of [['missing', 'Codex cũ không có app-server'], ['mcp', 'MCP server vẫn chạy'], ['hook', 'có hook']]) {
+    await test(`Quay về codex exec khi ${why}, trước khi gửi tin nhắn`, async () => {
+      process.env.FAKE_CODEX_APPSERVER = mode
+      const { last } = await summarize('success')
+      delete process.env.FAKE_CODEX_APPSERVER
+      assert.equal(last.type, 'done')
+      assert.equal(logArgs()[0], 'exec')
+    })
+  }
+
+  const streamErrors = {
+    usage: /hết lượt dùng Codex, thử lại lúc 3:05 PM/,
+    upgrade: /Cần gói Plus/i,
+    badmodel: /Model đã chọn không dùng được/,
+    network: /Không kết nối được tới OpenAI/,
+    crash: /Codex báo lỗi|thoát với mã 101/,
+    tooLong: /Input exceeds/
+  }
+  for (const [scenario, expected] of Object.entries(streamErrors)) {
+    await test(`app-server: lỗi "${scenario}" thành thông báo dễ hiểu, không gọi lại bằng exec`, async () => {
+      const { last } = await summarize(scenario)
+      assert.equal(last.type, 'error')
+      assert.match(last.message, expected, last.message)
+      assert.equal(logArgs()[0], 'app-server')
+    })
+  }
+
+  // ----- codex exec (the fallback) -----
+  process.env.FAKE_CODEX_APPSERVER = 'missing'
+
+  await test('exec: trả đúng câu trả lời, có sự kiện text', async () => {
     const { events, last } = await summarize('success')
     assert.equal(last.type, 'done')
     assert.match(last.result, /Gửi chị Hoa slide trước 9h mai/)
     assert.ok(events.some((e) => e.type === 'text'))
   })
 
-  await test('Lệnh gọi sạch: chỉ đọc, thư mục trống, tắt công cụ, đúng effort, prompt qua stdin', async () => {
+  await test('exec: lệnh gọi sạch: chỉ đọc, thư mục trống, tắt công cụ, đúng effort, prompt qua stdin', async () => {
     await summarize('success', { effort: 'high' })
     const log = fs.readFileSync(LOG, 'utf8')
     const args = log.split('\nCWD\n')[0].split('\n').slice(1)
@@ -158,13 +220,13 @@ if (login === 'chatgpt') {
     assert.ok(prompt.indexOf('<transcript>') < prompt.indexOf('Tóm tắt giúp mình.'), 'transcript first, request last')
   })
 
-  await test('Model được truyền bằng -m', async () => {
+  await test('exec: model được truyền bằng -m', async () => {
     await summarize('success', { model: 'gpt-6-luna' })
     const args = fs.readFileSync(LOG, 'utf8').split('\nCWD\n')[0].split('\n')
     assert.equal(args[args.indexOf('-m') + 1], 'gpt-6-luna')
   })
 
-  await test('Tên model lạ không được truyền cho Codex', async () => {
+  await test('exec: tên model lạ không được truyền cho Codex', async () => {
     await summarize('success', { model: '--dangerously-bypass-approvals-and-sandbox' })
     const args = fs.readFileSync(LOG, 'utf8').split('\nCWD\n')[0].split('\n')
     assert.ok(!args.includes('-m'))
@@ -223,7 +285,7 @@ if (login === 'chatgpt') {
     tooLong: /Codex báo lỗi: turn\/start: Input exceeds/
   }
   for (const [scenario, expected] of Object.entries(errors)) {
-    await test(`Lỗi "${scenario}" thành thông báo dễ hiểu`, async () => {
+    await test(`exec: lỗi "${scenario}" thành thông báo dễ hiểu`, async () => {
       const { last } = await summarize(scenario)
       assert.equal(last.type, 'error')
       assert.match(last.message, expected, last.message)
