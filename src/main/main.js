@@ -18,7 +18,7 @@ const os = require('os')
 const PARTITION_NAME = 'persist:zalo'
 const PRELOAD_PATH = path.join(__dirname, 'zenlo-preload.js')
 
-const CLAUDE_MODELS = ['haiku', 'sonnet', 'opus']
+const CLAUDE_MODELS = ['haiku', 'sonnet', 'opus', 'fable']
 const CLAUDE_EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
 
 const GEMINI_EFFORTS = ['low', 'medium', 'high']
@@ -144,8 +144,9 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
 // prompt as its whole instructions, read-only, in an empty folder, without tools, the user's
 // config.toml or project AGENTS.md. (Codex always reads the global $CODEX_HOME/AGENTS.md, if the
 // user has one; no setting turns that off.)
-const CODEX_MODELS = ['gpt-5.5']
-const CODEX_EFFORTS = ['low', 'medium', 'high']
+const CODEX_EFFORTS = ['minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra']
+// A model name as Codex lists them ("gpt-6-luna"); anything else is not passed to -m
+const CODEX_MODEL_ID = /^[a-z0-9][a-z0-9._-]{0,63}$/i
 
 // The codex.exe itself, never npm's .cmd shim (quoting through cmd.exe is unsafe)
 const findCodexExecutable = () => {
@@ -251,6 +252,138 @@ const codexError = (message) => {
   return `Codex báo lỗi: ${text || 'không rõ lý do'}`
 }
 
+// "codex debug models": the catalog Codex refreshes for the logged-in plan (no request to a model,
+// no usage), and with --bundled the one shipped with this Codex. Models are { id, label, efforts,
+// defaultEffort }, in Codex's order. available is null when the refresh failed (e.g. offline).
+const runCodexJSON = (exe, args) => new Promise((resolve) => {
+  let output = ''
+  let done = false
+  const finish = (value) => {
+    if (done) return
+    done = true
+    resolve(value)
+  }
+  let child
+  try {
+    child = spawn(exe, args, { cwd: os.tmpdir(), env: getCodexEnv(), windowsHide: true })
+  } catch (error) {
+    return finish(null)
+  }
+  child.stdout.setEncoding('utf8')
+  child.stdout.on('data', (chunk) => { output += chunk })
+  child.on('error', () => finish(null))
+  child.on('close', (code) => {
+    try {
+      finish(code === 0 ? JSON.parse(output) : null)
+    } catch (error) {
+      finish(null)
+    }
+  })
+  setTimeout(() => {
+    try {
+      child.kill()
+    } catch (error) {}
+    finish(null)
+  }, 20000)
+})
+
+const codexModelList = (data) => {
+  if (!data || !Array.isArray(data.models)) return null
+  return data.models
+    .filter((m) => m && m.visibility === 'list' && CODEX_MODEL_ID.test(String(m.slug || '')))
+    .sort((a, b) => (a.priority || 0) - (b.priority || 0))
+    .map((m) => ({
+      id: m.slug,
+      label: String(m.display_name || m.slug).slice(0, 40),
+      efforts: (m.supported_reasoning_levels || []).map((l) => l && l.effort).filter((e) => CODEX_EFFORTS.includes(e)),
+      defaultEffort: CODEX_EFFORTS.includes(m.default_reasoning_level) ? m.default_reasoning_level : 'medium'
+    }))
+}
+
+const codexCatalog = async () => {
+  const exe = findCodexExecutable()
+  if (!exe) return { error: 'Chưa tìm thấy Codex.' }
+  const [live, bundled] = await Promise.all([runCodexJSON(exe, ['debug', 'models']), runCodexJSON(exe, ['debug', 'models', '--bundled'])])
+  const available = codexModelList(live)
+  const known = codexModelList(bundled) || []
+  if (!available) return { error: 'Không lấy được danh sách model của Codex.', known }
+  return { available, known }
+}
+
+// Claude Code keeps the account's model list in its cache folder (cache/model-catalog, the
+// "-cc" file for the CLI). Only the "main" models are offered, as Claude Code's aliases, with the
+// efforts each one supports. Nothing else in Claude Code's folder is read.
+const claudeVersion = (exe) => new Promise((resolve) => {
+  let output = ''
+  let child
+  try {
+    child = spawn(exe, ['--version'], { cwd: os.tmpdir(), env: getChildEnv(), windowsHide: true })
+  } catch (error) {
+    return resolve(null)
+  }
+  child.stdout.setEncoding('utf8')
+  child.stdout.on('data', (chunk) => { output += chunk })
+  child.on('error', () => resolve(null))
+  child.on('close', () => {
+    const match = output.match(/(\d+)\.(\d+)\.(\d+)/)
+    resolve(match ? match.slice(1).map(Number) : null)
+  })
+  setTimeout(() => {
+    try {
+      child.kill()
+    } catch (error) {}
+    resolve(null)
+  }, 15000)
+})
+
+const olderThan = (version, min) => {
+  const wanted = String(min || '').split('.').map(Number)
+  for (let i = 0; i < 3; i++) {
+    if ((version[i] || 0) !== (wanted[i] || 0)) return (version[i] || 0) < (wanted[i] || 0)
+  }
+  return false
+}
+
+const claudeCatalog = async () => {
+  const exe = findClaudeExecutable()
+  if (!exe) return { error: 'Chưa tìm thấy Claude Code.' }
+  const folder = path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'cache', 'model-catalog')
+  let files = []
+  try {
+    files = fs.readdirSync(folder)
+      .filter((name) => /-cc\.json$/.test(name))
+      .map((name) => ({ file: path.join(folder, name), at: fs.statSync(path.join(folder, name)).mtimeMs }))
+      .sort((a, b) => b.at - a.at)
+  } catch (error) {}
+  let models = null
+  for (const { file } of files) {
+    try {
+      const list = JSON.parse(fs.readFileSync(file, 'utf8')).catalog.config.models
+      if (Array.isArray(list)) {
+        models = list
+        break
+      }
+    } catch (error) {}
+  }
+  if (!models) return { error: 'Claude Code chưa lưu danh sách model trên máy. Mở Claude Code một lần rồi thử lại.' }
+  const version = await claudeVersion(exe)
+  const available = []
+  for (const m of models) {
+    const runtime = m.runtime || {}
+    const family = runtime.family || String(m.short_name || '').toLowerCase()
+    if (m.section !== 'main' || !CLAUDE_MODELS.includes(family) || available.some((a) => a.id === family)) continue
+    if (version && m.min_claude_code_version && olderThan(version, m.min_claude_code_version)) continue
+    const efforts = (runtime.effort_levels || ((m.thinking || {}).effort_options || []).map((o) => o && o.id)).filter((e) => CLAUDE_EFFORTS.includes(e))
+    available.push({
+      id: family,
+      label: String(m.name || m.short_name || family).slice(0, 40),
+      efforts,
+      defaultEffort: CLAUDE_EFFORTS.includes(runtime.default_effort) ? runtime.default_effort : 'medium'
+    })
+  }
+  return { available }
+}
+
 // TOML string for a -c value (JSON strings are valid TOML basic strings for this text)
 const tomlString = (text) => JSON.stringify(String(text))
 
@@ -292,7 +425,7 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
     const args = [
       'exec', '--json', '--ephemeral', '--skip-git-repo-check', '--ignore-user-config', '--ignore-rules',
       '-s', 'read-only', '-C', work,
-      ...(CODEX_MODELS.includes(model) ? ['-m', model] : []),
+      ...(model && model !== 'default' && CODEX_MODEL_ID.test(model) ? ['-m', model] : []),
       ...config.flatMap((item) => ['-c', item]),
       // The prompt comes from stdin
       '-'
@@ -512,6 +645,20 @@ const getGeminiModels = async (keys) => {
   return list
 }
 
+// Where the chain begins for the chosen model: that model, or else the next older one of the same
+// kind (Flash or Flash-Lite), or else the newest
+const geminiStart = (list, model) => {
+  const index = list.indexOf(model)
+  if (index !== -1) return index
+  const wanted = String(model).match(/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/)
+  if (!wanted) return 0
+  const older = list.findIndex((id) => {
+    const m = id.match(/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/)
+    return m && !!m[2] === !!wanted[2] && Number(m[1]) <= Number(wanted[1])
+  })
+  return older === -1 ? 0 : older
+}
+
 // How busy each model usually is. Google publishes no load figures: this is a fixed estimate from
 // Zenlo's measurements (Oct 2026): the two newest Flash versions are crowded, the next one is
 // moderate, older Flash and Flash-Lite are quiet. 3 = đông, 2 = vừa, 1 = thoáng.
@@ -641,7 +788,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
   })
 
   const all = await getGeminiModels(keys)
-  const start = all.indexOf(model)
+  const start = geminiStart(all, model)
   const chain = start > 0 ? all.slice(start) : all
   const failedRecently = (m) => Date.now() - (recentFailures.get(m) || 0) < failureWindow
   const models = [...chain.filter((m) => !failedRecently(m)), ...chain.filter(failedRecently)]
@@ -795,6 +942,20 @@ ipcMain.handle('zenlo:open-external', (event, url) => {
   return true
 })
 
+// A link in a summary (from the messages), when the user clicks it: any http(s) address
+ipcMain.handle('zenlo:open-link', (event, url) => {
+  if (!isTrustedSender(event)) return false
+  let parsed
+  try {
+    parsed = new URL(String(url))
+  } catch (error) {
+    return false
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false
+  shell.openExternal(parsed.href)
+  return true
+})
+
 // The newest Zenlo release, asked only when the user presses "Kiểm tra bản mới" or turned on the
 // daily check in the settings. A plain request to GitHub's public API; nothing about the user is sent.
 const LATEST_RELEASE = 'https://api.github.com/repos/stephitnoob/zenlo/releases/latest'
@@ -838,6 +999,14 @@ ipcMain.handle('zenlo:settings:get', async (event) => {
     },
     encryption: safeStorage.isEncryptionAvailable()
   }
+})
+
+// The models and efforts Claude Code or Codex can use on this machine, for "Kiểm tra kết nối"
+ipcMain.handle('zenlo:models:check', (event, provider) => {
+  if (!isTrustedSender(event)) return null
+  if (provider === 'codex') return codexCatalog()
+  if (provider === 'claude') return claudeCatalog()
+  return null
 })
 
 ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {

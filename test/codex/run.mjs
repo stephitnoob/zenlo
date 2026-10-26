@@ -158,10 +158,58 @@ if (login === 'chatgpt') {
     assert.ok(prompt.indexOf('<transcript>') < prompt.indexOf('Tóm tắt giúp mình.'), 'transcript first, request last')
   })
 
-  await test('Model GPT-5.5 được truyền bằng -m', async () => {
-    await summarize('success', { model: 'gpt-5.5' })
+  await test('Model được truyền bằng -m', async () => {
+    await summarize('success', { model: 'gpt-6-luna' })
     const args = fs.readFileSync(LOG, 'utf8').split('\nCWD\n')[0].split('\n')
-    assert.equal(args[args.indexOf('-m') + 1], 'gpt-5.5')
+    assert.equal(args[args.indexOf('-m') + 1], 'gpt-6-luna')
+  })
+
+  await test('Tên model lạ không được truyền cho Codex', async () => {
+    await summarize('success', { model: '--dangerously-bypass-approvals-and-sandbox' })
+    const args = fs.readFileSync(LOG, 'utf8').split('\nCWD\n')[0].split('\n')
+    assert.ok(!args.includes('-m'))
+    assert.ok(!args.includes('--dangerously-bypass-approvals-and-sandbox'))
+  })
+
+  await test('Kiểm tra model: danh sách của gói, bỏ model ẩn, kèm danh sách Codex biết', async () => {
+    delete process.env.FAKE_CODEX_CATALOG
+    const result = await handlers['zenlo:models:check'](trusted, 'codex')
+    assert.deepEqual(result.available.map((m) => m.id), ['gpt-6-luna', 'gpt-5.6-luna'])
+    assert.deepEqual(result.available[1].efforts, ['low', 'medium', 'high'])
+    assert.equal(result.available[0].label, 'GPT-6-Luna')
+    assert.deepEqual(result.known.map((m) => m.id), ['gpt-6-sol', 'gpt-6-luna', 'gpt-5.6-luna'])
+  })
+
+  await test('Kiểm tra model: không làm mới được thì báo lỗi', async () => {
+    process.env.FAKE_CODEX_CATALOG = 'fail'
+    const result = await handlers['zenlo:models:check'](trusted, 'codex')
+    delete process.env.FAKE_CODEX_CATALOG
+    assert.match(result.error, /Không lấy được danh sách model/)
+    assert.equal(result.known.length, 3)
+  })
+
+  await test('Kiểm tra model Claude: đọc danh sách Claude Code lưu trên máy', async () => {
+    const bin = path.join(empty, '.local', 'bin')
+    const cache = path.join(empty, '.claude', 'cache', 'model-catalog')
+    fs.mkdirSync(bin, { recursive: true })
+    fs.mkdirSync(cache, { recursive: true })
+    // Any program will do: its "--version" prints nothing, so no version limit applies
+    fs.copyFileSync(FAKE, path.join(bin, 'claude.exe'))
+    const model = (id, family, section, efforts) => ({ id, name: id, short_name: family, section, runtime: { family, effort_levels: efforts, default_effort: 'medium' } })
+    fs.writeFileSync(path.join(cache, 'a-cc.json'), JSON.stringify({
+      catalog: {
+        config: {
+          models: [
+            model('claude-opus-5-5', 'opus', 'main', ['low', 'medium', 'high', 'xhigh', 'max']),
+            model('claude-sonnet-5-5', 'sonnet', 'main', ['low', 'medium', 'high']),
+            model('claude-opus-4-6', 'opus', 'overflow', ['low', 'high'])
+          ]
+        }
+      }
+    }))
+    const result = await handlers['zenlo:models:check'](trusted, 'claude')
+    assert.deepEqual(result.available.map((m) => m.id), ['opus', 'sonnet'])
+    assert.deepEqual(result.available[1].efforts, ['low', 'medium', 'high'])
   })
 
   const errors = {
