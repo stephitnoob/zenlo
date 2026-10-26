@@ -1020,3 +1020,151 @@ html.zenlo-dark {
     display: none;
   }
 }
+
+// ---------- Note for the AI ----------
+
+// Grey until the conversation has a note, then the accent colour with a dot
+.zenlo-note-btn {
+  position: relative;
+  color: var(--text-secondary, #5a6981);
+
+  &--on {
+    color: var(--zenlo-accent);
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--zenlo-accent);
+    }
+  }
+}
+
+.zenlo-note {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+  padding: 14px;
+  border: 1px solid var(--zenlo-accent-line);
+  border-radius: 12px;
+  background: var(--layer-background, #fff);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  color: var(--text-primary, #081c36);
+  font-size: 13px;
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &__conv {
+    color: var(--text-secondary, #5a6981);
+  }
+
+  textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border, #d6dbe1);
+    border-radius: 8px;
+    background: var(--layer-background, #fff);
+    color: inherit;
+    font: inherit;
+    resize: vertical;
+
+    &:focus {
+      border-color: var(--zenlo-accent);
+      outline: none;
+    }
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__count {
+    margin-right: auto;
+    color: var(--text-secondary, #5a6981);
+    font-family: var(--zenlo-mono);
+    font-size: 11px;
+  }
+
+  &__hint {
+    color: var(--text-secondary, #5a6981);
+    font-size: 12px;
+  }
+}
+
+// "Ghi chú cho AI: …" under the conversation's name in the summary tab
+.zenlo__note-line {
+  overflow-wrap: anywhere;
+  color: var(--text-secondary, #5a6981);
+  font-size: 12px;
+}
+
+// ---------- Thank-you line under a finished summary or digest ----------
+
+.zenlo__treat {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--zenlo-accent-line);
+  border-radius: 10px;
+  background: var(--zenlo-accent-soft);
+  font-size: 13px;
+
+  &[hidden] {
+    display: none;
+  }
+
+  > span {
+    flex: 1;
+  }
+
+  .zenlo__inline-link {
+    font-size: 13px;
+  }
+}
+
+.zenlo__treat-close {
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary, #5a6981);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.zenlo-settings__check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  input {
+    accent-color: var(--zenlo-accent);
+  }
+}
+
+// A row whose text sits on the buttons' middle line
+.zenlo__actions--center {
+  align-items: center;
+}
+
+// Text that streams in while the AI writes (summary and digest cards): wraps inside the panel
+.zenlo pre {
+  margin: 0;
+  font-family: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

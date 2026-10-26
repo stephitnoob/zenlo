@@ -959,6 +959,22 @@ button {
   font-size: 12.5px;
 }
 
+.panel--note {
+  margin-top: 20px;
+}
+
+.panel--note .choice {
+  flex-wrap: wrap;
+}
+
+.panel--note .choice button {
+  flex: 1 1 160px;
+}
+
+.panel--note .sum {
+  min-height: 0;
+}
+
 .panel .netlog {
   opacity: 1;
   transform: none;

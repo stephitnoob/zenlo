@@ -1,7 +1,7 @@
 {
   "name": "zenlo",
   "description": "Zenlo – trình quản lí hội thoại Zalo PC, tóm tắt hội thoại bằng AI",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "author": "stephit",
   "license": "SEE LICENSE IN LICENSE",
@@ -14,12 +14,11 @@
     "zalo:status": "node installer status",
     "zalo:uninstall": "node installer uninstall",
     "build:setup": "npm run build && node scripts/build-setup.mjs",
-    "site": "node scripts/serve-site.mjs"
+    "site": "node scripts/serve-site.mjs",
+    "test:codex": "npm run build && node test/codex/run.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
-    "postject": "^1.0.0-alpha.6",
-    "rcedit": "^5.0.2",
     "sass": "^1.106.1",
     "standard": "^17.1.2"
   },
