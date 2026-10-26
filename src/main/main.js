@@ -1,3 +1,4 @@
+/* global ZENLO_VERSION */
 /*
   Zenlo – trình quản lí hội thoại Zalo
 
@@ -384,6 +385,166 @@ const claudeCatalog = async () => {
   return { available }
 }
 
+// ---------- Codex, word by word ----------
+
+// "codex exec" sends the answer whole at the end; Codex's app server sends it as it is written.
+// The app server always loads the user's config.toml, so Zenlo turns off what could run or read
+// anything: every MCP server (by name, from config/read), plugins, apps, memories, notify, history.
+// Before the messages are sent it checks a ChatGPT login, that no MCP server runs and that no hook
+// is set. Anything unexpected before that point falls back to "codex exec".
+const CODEX_HANDSHAKE_TIMEOUT = 30 * 1000
+const CODEX_STREAM_CONFIG = [
+  'model_provider="openai"',
+  'notify=[]',
+  'features.memories=false',
+  'memories.use_memories=false',
+  'memories.generate_memories=false',
+  'history.persistence="none"',
+  'analytics.enabled=false',
+  'sandbox_mode="read-only"',
+  'approval_policy="never"'
+]
+
+const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, config, send, finish, fallback, cleanUp }) => {
+  let child
+  try {
+    child = spawn(exe, ['app-server', ...[...config, ...CODEX_STREAM_CONFIG].flatMap((item) => ['-c', item])], { cwd: work, env: getCodexEnv(), windowsHide: true })
+  } catch (error) {
+    return fallback()
+  }
+
+  let buffer = ''
+  let stderr = ''
+  let nextId = 0
+  const pending = new Map()
+  // Once the messages are sent there is no fallback: it would ask a second time
+  let sent = false
+  let over = false
+  let cancelled = false
+  let answer = ''
+  let streamed = ''
+  let lastError = ''
+  let authMode = null
+
+  const stop = () => {
+    over = true
+    clearTimeout(timer)
+    for (const { reject } of pending.values()) reject(new Error('stopped'))
+    pending.clear()
+    try {
+      child.kill()
+    } catch (error) {}
+  }
+  const giveUp = (reason) => {
+    if (over) return
+    stop()
+    if (cancelled) return
+    if (!sent) return fallback()
+    finish({ type: 'error', message: codexError(lastError || reason) })
+  }
+  const timer = setTimeout(() => { if (!sent) giveUp('timeout') }, CODEX_HANDSHAKE_TIMEOUT)
+  running.set(id, () => {
+    cancelled = true
+    stop()
+  })
+
+  const write = (message) => {
+    try {
+      child.stdin.write(JSON.stringify(message) + '\n')
+    } catch (error) {}
+  }
+  const call = (method, params) => new Promise((resolve, reject) => {
+    const requestId = ++nextId
+    pending.set(requestId, { resolve, reject })
+    write({ id: requestId, method, params })
+  })
+
+  const onNotification = (method, params = {}) => {
+    if (method === 'account/updated') {
+      authMode = params.authMode || null
+    } else if (method === 'mcpServer/startupStatus/updated' && params.status !== 'disabled') {
+      giveUp('mcp')
+    } else if (method === 'item/agentMessage/delta' && params.delta) {
+      streamed += params.delta
+      send({ type: 'text', text: params.delta })
+    } else if (method === 'item/completed' && params.item && params.item.type === 'agentMessage' && params.item.text) {
+      answer = params.item.text
+    } else if (method === 'error' && params.error && !params.willRetry) {
+      lastError = params.error.message || lastError
+    } else if (method === 'turn/completed') {
+      const turn = params.turn || {}
+      stop()
+      if (cancelled) return
+      if (turn.status === 'completed' && (answer || streamed)) return finish({ type: 'done', isError: false, result: answer || streamed })
+      finish({ type: 'error', message: codexError((turn.error && turn.error.message) || lastError || `Codex dừng lượt trả lời (${turn.status || 'không rõ'}).`) })
+    }
+  }
+
+  child.stdout.setEncoding('utf8')
+  child.stdout.on('data', (chunk) => {
+    buffer += chunk
+    let newline
+    while ((newline = buffer.indexOf('\n')) !== -1) {
+      const line = buffer.slice(0, newline).trim()
+      buffer = buffer.slice(newline + 1)
+      if (!line || over) continue
+      let message
+      try {
+        message = JSON.parse(line)
+      } catch (error) {
+        continue
+      }
+      if (message.id !== undefined && message.method) {
+        // Approvals, tool calls, questions: never granted
+        write({ id: message.id, error: { code: -32000, message: 'Zenlo không cho phép yêu cầu này.' } })
+      } else if (message.id !== undefined) {
+        const request = pending.get(message.id)
+        if (!request) continue
+        pending.delete(message.id)
+        if (message.error) request.reject(new Error(message.error.message || 'error'))
+        else request.resolve(message.result || {})
+      } else if (message.method) {
+        onNotification(message.method, message.params)
+      }
+    }
+  })
+  child.stderr.setEncoding('utf8')
+  child.stderr.on('data', (chunk) => {
+    stderr += chunk
+  })
+  child.stdin.on('error', () => {})
+  child.on('error', () => giveUp('spawn'))
+  child.on('close', (code) => {
+    if (!over) giveUp(stderr.trim().split(/\r?\n/).pop() || `Codex thoát với mã ${code} mà không trả kết quả.`)
+    if (sent || cancelled) cleanUp()
+  })
+
+  ;(async () => {
+    await call('initialize', { clientInfo: { name: 'zenlo', title: 'Zenlo', version: typeof ZENLO_VERSION === 'string' ? ZENLO_VERSION : 'dev' } })
+    write({ method: 'initialized' })
+    const effective = (await call('config/read', {})).config || {}
+    const off = {}
+    for (const name of Object.keys(effective.mcp_servers || {})) off[name] = { enabled: false }
+    const { thread } = await call('thread/start', {
+      cwd: work,
+      ephemeral: true,
+      sandbox: 'read-only',
+      approvalPolicy: 'never',
+      baseInstructions: systemPrompt,
+      model: model || null,
+      config: { mcp_servers: off, 'features.plugins': false, 'features.apps': false, 'features.memories': false }
+    })
+    if (!thread || !thread.id) throw new Error('no thread')
+    const servers = (await call('mcpServerStatus/list', { threadId: thread.id })).data || []
+    const hooks = (await call('hooks/list', {})).data || []
+    if (authMode !== 'chatgpt' || servers.some((s) => s.runtimeStatus !== 'disabled') || hooks.some((h) => (h.hooks || []).length)) throw new Error('not isolated')
+    if (over) return
+    sent = true
+    clearTimeout(timer)
+    await call('turn/start', { threadId: thread.id, input: [{ type: 'text', text: prompt, text_elements: [] }], effort, model: model || null })
+  })().catch((error) => giveUp(error.message))
+}
+
 // TOML string for a -c value (JSON strings are valid TOML basic strings for this text)
 const tomlString = (text) => JSON.stringify(String(text))
 
@@ -406,8 +567,10 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
       return finish({ type: 'error', message: 'Codex đang đăng nhập bằng API key, sẽ bị tính tiền theo API. Hãy chạy "codex logout" rồi "codex login" và chọn đăng nhập bằng ChatGPT.' })
     }
 
+    const chosenEffort = CODEX_EFFORTS.includes(effort) ? effort : 'medium'
+    const chosenModel = model && model !== 'default' && CODEX_MODEL_ID.test(model) ? model : null
     const config = [
-      `model_reasoning_effort=${tomlString(CODEX_EFFORTS.includes(effort) ? effort : 'medium')}`,
+      `model_reasoning_effort=${tomlString(chosenEffort)}`,
       `instructions=${tomlString(systemPrompt)}`,
       'project_doc_max_bytes=0',
       'web_search="disabled"',
@@ -422,6 +585,12 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
       'include_collaboration_mode_instructions=false',
       'skills.include_instructions=false'
     ]
+    // The transcript first, the request after it, as with Gemini
+    const prompt = `${input}\n\n${instruction}`
+    runCodexStream({ exe, work, id, model: chosenModel, effort: chosenEffort, systemPrompt, prompt, config, send, finish, cleanUp, fallback: () => runCodexExec(config, prompt) })
+  })
+
+  const runCodexExec = (config, prompt) => {
     const args = [
       'exec', '--json', '--ephemeral', '--skip-git-repo-check', '--ignore-user-config', '--ignore-rules',
       '-s', 'read-only', '-C', work,
@@ -487,10 +656,9 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
       finish({ type: 'error', message: message ? codexError(message.replace(/^Error:\s*/, '')) : `Codex thoát với mã ${code} mà không trả kết quả.` })
     })
 
-    // The transcript first, the request after it, as with Gemini
     child.stdin.on('error', () => {})
-    child.stdin.end(`${input}\n\n${instruction}`, 'utf8')
-  })
+    child.stdin.end(prompt, 'utf8')
+  }
 }
 
 // ---------- Gemini ----------
