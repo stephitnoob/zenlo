@@ -1,12 +1,14 @@
 /*
   Zenlo – a stand-in for OpenAI's codex.exe, for testing Zenlo's Codex support without a ChatGPT
-  plan. It answers the two commands Zenlo uses, the way the real CLI does (codex-rs, commit
-  970111f6): "codex login status" and "codex exec --json ... -".
+  plan. It answers the commands Zenlo uses, the way the real CLI does (codex-rs, commit 970111f6;
+  codex-cli 0.160 for the catalog): "codex login status", "codex debug models [--bundled]" and
+  "codex exec --json ... -".
 
   FAKE_CODEX_LOGIN    chatgpt (default) | none | apikey
   FAKE_CODEX_SCENARIO success (default) | usage | usage-plus | upgrade | badmodel | unauthorized |
                       network | crash | tooLong
   FAKE_CODEX_LOG      a file to write the arguments and the prompt read from stdin to
+  FAKE_CODEX_CATALOG  ok (default) | fail: "debug models" without --bundled cannot refresh
 */
 
 using System;
@@ -28,6 +30,23 @@ internal static class FakeCodex
             if (login == "none") { stderr.WriteLine("Not logged in"); return 1; }
             if (login == "apikey") { stderr.WriteLine("API key configured - sk-proj-***ABCD"); return 0; }
             stderr.WriteLine("Logged in using ChatGPT");
+            return 0;
+        }
+
+        if (args.Length >= 2 && args[0] == "debug" && args[1] == "models")
+        {
+            bool bundled = Array.IndexOf(args, "--bundled") != -1;
+            if (!bundled && Environment.GetEnvironmentVariable("FAKE_CODEX_CATALOG") == "fail")
+            {
+                stderr.WriteLine("Error: failed to refresh available models");
+                return 1;
+            }
+            // The refreshed list holds what the plan can use; the bundled one, every model this Codex knows
+            stdout.WriteLine("{\"models\":[" +
+                Model("gpt-reserve", "GPT-Reserve", "hide", 4, "\"low\",\"medium\"") + "," +
+                (bundled ? Model("gpt-6-sol", "GPT-6-Sol", "list", 3, "\"low\",\"medium\",\"high\",\"xhigh\",\"max\",\"ultra\"") + "," : "") +
+                Model("gpt-6-luna", "GPT-6-Luna", "list", 5, "\"low\",\"medium\",\"high\",\"xhigh\",\"max\"") + "," +
+                Model("gpt-5.6-luna", "GPT-5.6-Luna", "list", 9, "\"low\",\"medium\",\"high\"") + "]}");
             return 0;
         }
 
@@ -93,5 +112,17 @@ internal static class FakeCodex
         stdout.WriteLine("{\"type\":\"error\",\"message\":\"" + json + "\"}");
         stdout.WriteLine("{\"type\":\"turn.failed\",\"error\":{\"message\":\"" + json + "\"}}");
         return 1;
+    }
+
+    static string Model(string slug, string name, string visibility, int priority, string efforts)
+    {
+        var levels = new StringBuilder();
+        foreach (string effort in efforts.Split(','))
+        {
+            if (levels.Length > 0) levels.Append(",");
+            levels.Append("{\"effort\":" + effort + ",\"description\":\"\"}");
+        }
+        return "{\"slug\":\"" + slug + "\",\"display_name\":\"" + name + "\",\"visibility\":\"" + visibility +
+            "\",\"priority\":" + priority + ",\"default_reasoning_level\":\"medium\",\"supported_reasoning_levels\":[" + levels + "]}";
     }
 }

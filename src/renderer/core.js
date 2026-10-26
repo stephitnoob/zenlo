@@ -61,7 +61,9 @@
     last: '@Zenlo:LAST:',
     note: '@Zenlo:NOTE:',
     updateCheck: '@Zenlo:UPDATE_CHECK',
-    updateCheckedAt: '@Zenlo:UPDATE_CHECKED_AT'
+    updateCheckedAt: '@Zenlo:UPDATE_CHECKED_AT',
+    // What "Kiểm tra kết nối" found on this machine, per provider: { at, available, known }
+    modelCatalog: '@Zenlo:MODEL_CATALOG:'
   }
 
   // A note the user writes for one conversation, sent to the AI with every summary of it
@@ -72,21 +74,48 @@
     { value: 'codex', label: 'Codex' },
     { value: 'gemini', label: 'Gemini' }
   ]
+  // Claude Code's model aliases (the newest model of each family)
   const MODELS = [
     { value: 'haiku', label: 'Haiku' },
     { value: 'sonnet', label: 'Sonnet' },
-    { value: 'opus', label: 'Opus' }
+    { value: 'opus', label: 'Opus' },
+    { value: 'fable', label: 'Fable' }
   ]
   const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
-  // Codex CLI on the user's ChatGPT plan. "default" lets Codex pick the model of the plan.
-  const CODEX_MODELS = [
-    { value: 'default', label: 'Mặc định của Codex' },
-    { value: 'gpt-5.5', label: 'GPT-5.5' }
-  ]
-  const CODEX_EFFORTS = ['low', 'medium', 'high']
+  // Codex CLI on the user's ChatGPT plan. "default" lets Codex pick the model of the plan. The other
+  // models come from Codex's own list ("codex debug models") when the connection is checked; until
+  // then, the ones Codex 0.160 knows.
+  const CODEX_DEFAULT = { value: 'default', label: 'Mặc định của Codex' }
+  const CODEX_KNOWN = ['gpt-6.1-sol', 'gpt-6-sol', 'gpt-6-astra', 'gpt-6-luna', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna', 'gpt-5.5']
+  const CODEX_EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra']
+
+  // "gpt-6-luna" → "GPT-6-Luna"
+  const codexLabel = (id) => String(id).split('-').map((part) => part === 'gpt' ? 'GPT' : part.charAt(0).toUpperCase() + part.slice(1)).join('-')
+
+  // The models and efforts the last check found for "claude" or "codex", or null before any check
+  function getModelCatalog (provider) {
+    const catalog = readJSON(STORAGE_KEYS.modelCatalog + provider, null)
+    return catalog && Array.isArray(catalog.available) ? catalog : null
+  }
+
+  function setModelCatalog (provider, catalog) {
+    writeJSON(STORAGE_KEYS.modelCatalog + provider, { ...catalog, at: Date.now() })
+  }
+
+  // Codex's model choices: the default, then every model known (the check's list, or Codex 0.160's)
+  function codexModels () {
+    const catalog = getModelCatalog('codex')
+    const known = catalog && catalog.known && catalog.known.length ? catalog.known : CODEX_KNOWN.map((id) => ({ id, label: codexLabel(id) }))
+    const list = [...known]
+    if (catalog) for (const m of catalog.available) if (!list.some((k) => k.id === m.id)) list.push(m)
+    return [CODEX_DEFAULT, ...list.map((m) => ({ value: m.id, label: m.label || codexLabel(m.id) }))]
+  }
   // Gemini models come from Google's list for the user's key (main process). The setting holds a
   // model id to start from, or "auto" for the newest; an overloaded model falls back to older ones.
   const GEMINI_AUTO = 'auto'
+  // The default start: 3.6 Flash. The newest two are the most crowded on free keys (Oct 2026), and
+  // 3.6 is usually less crowded. A key without it starts from the next older model.
+  const GEMINI_DEFAULT = 'gemini-3.6-flash'
 
   function geminiLabel (id) {
     if (!id || id === GEMINI_AUTO) return 'Gemini mới nhất'
@@ -272,7 +301,12 @@
 
   // The Markdown models commonly write: headings, "-"/"*"/"+" and numbered lists, bold, italic,
   // inline code, simple tables, rules; citations become links (class "zenlo-cite", data-times).
+  // Links, [text](url) or a bare address, become "zenlo-link": the text only (the address in its
+  // tooltip), opened in the browser on a click.
   // options.range: { from, to } of the summarized messages, to date citations written without a day.
+  // [text](https://…) or a bare https://… (without the punctuation that ends a sentence)
+  const LINK = /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/(?:(?!&quot;|&gt;|&lt;)[^\s<()])*[^\s<().,;:!?'"\]&])/g
+
   function renderMarkdown (text, { range = null } = {}) {
     const lines = escapeHTML(text).split('\n')
     let html = ''
@@ -280,6 +314,7 @@
     let table = null
 
     const inline = (s) => renderCitations(s
+      .replace(LINK, (m, text, url, bare) => `<a class="zenlo-link" data-url="${url || bare}" title="${url || bare}">${text || bare}</a>`)
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\*\*(.+?)\*\*|__(.+?)__/g, (m, a, b) => `<strong>${a || b}</strong>`)
       .replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\w)/g, '$1<em>$2</em>'), range)
@@ -372,19 +407,23 @@
     } catch (error) {}
   }
 
+  // The Gemini model to start from: a saved one ("auto" or a model id), else 3.6 Flash
+  function getGeminiModel () {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.geminiModel)
+      if (saved && (saved === GEMINI_AUTO || /^gemini-[\w.-]+$/.test(saved))) return saved
+    } catch (error) {}
+    return GEMINI_DEFAULT
+  }
+
   // The AI the user chose in Zenlo's settings, with its model and effort
   function getAISettings () {
     // Gemini by default: most people have no Claude Pro/Max plan with Claude Code installed
     const provider = getSetting(STORAGE_KEYS.provider, PROVIDERS.map((p) => p.value), 'gemini')
     if (provider === 'gemini') {
-      let model = GEMINI_AUTO
-      try {
-        const saved = localStorage.getItem(STORAGE_KEYS.geminiModel)
-        if (saved && /^gemini-[\w.-]+$/.test(saved)) model = saved
-      } catch (error) {}
       return {
         provider,
-        model,
+        model: getGeminiModel(),
         effort: getSetting(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'),
         timeout: Number(getSetting(STORAGE_KEYS.geminiTimeout, GEMINI_TIMEOUTS, '10')) * 1000,
         retryWindow: Number(getSetting(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '5')) * MINUTE
@@ -393,7 +432,7 @@
     if (provider === 'codex') {
       return {
         provider,
-        model: getSetting(STORAGE_KEYS.codexModel, CODEX_MODELS.map((m) => m.value), 'default'),
+        model: getSetting(STORAGE_KEYS.codexModel, codexModels().map((m) => m.value), 'default'),
         effort: getSetting(STORAGE_KEYS.codexEffort, CODEX_EFFORTS, 'medium')
       }
     }
@@ -415,7 +454,7 @@
     const label = provider === 'gemini'
       ? geminiLabel(model)
       : provider === 'codex'
-        ? `Codex${model === 'default' ? '' : ` ${(CODEX_MODELS.find((m) => m.value === model) || {}).label || model}`}`
+        ? `Codex${model === 'default' ? '' : ` ${(codexModels().find((m) => m.value === model) || {}).label || model}`}`
         : (MODELS.find((m) => m.value === model) || {}).label || model
     return `${label} (${effort})`
   }
@@ -1204,6 +1243,14 @@
     fn()
   }
 
+  // A link in a summary or the digest opens in the default browser, never inside Zalo
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest && event.target.closest('.zenlo-link')
+    if (!link) return
+    event.preventDefault()
+    if (window.$zenlo && window.$zenlo.openLink) window.$zenlo.openLink(link.dataset.url)
+  })
+
   // Zalo's unread state is sampled often, so a conversation's count is known just before opening it
   setInterval(trackUnread, 500)
   onDomChange(trackUnread)
@@ -1216,9 +1263,14 @@
     PROVIDERS,
     MODELS,
     EFFORTS,
-    CODEX_MODELS,
+    CODEX_DEFAULT,
     CODEX_EFFORTS,
+    codexModels,
+    codexLabel,
+    getModelCatalog,
+    setModelCatalog,
     GEMINI_AUTO,
+    getGeminiModel,
     geminiLabel,
     describeModelStatus,
     GEMINI_EFFORTS,

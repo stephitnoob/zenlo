@@ -8,7 +8,7 @@
 
 (function () {
   const Z = window.ZenloCore
-  const { STORAGE_KEYS, MODELS, EFFORTS, CODEX_MODELS, CODEX_EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, GEMINI_TIMEOUTS, GEMINI_RETRIES, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
+  const { STORAGE_KEYS, MODELS, EFFORTS, CODEX_EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, GEMINI_TIMEOUTS, GEMINI_RETRIES, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
 
   const EYE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
 
@@ -16,7 +16,8 @@
     .map((item) => {
       const value = typeof item === 'string' ? item : item.value
       const label = typeof item === 'string' ? item : item.label
-      return `<option value="${escapeHTML(value)}"${value === selected ? ' selected' : ''}>${escapeHTML(label)}</option>`
+      const disabled = typeof item === 'object' && item.disabled
+      return `<option value="${escapeHTML(value)}"${value === selected ? ' selected' : ''}${disabled ? ' disabled' : ''}>${escapeHTML(label)}${disabled ? ' · không có' : ''}</option>`
     })
     .join('')
 
@@ -68,6 +69,110 @@
     } catch (error) {
       status.textContent = `Lỗi: ${error.message || error}`
     }
+  }
+
+  // ---------- Claude and Codex: models and efforts on this machine ----------
+
+  // "Kiểm tra kết nối" asks Claude Code (its saved model list) or Codex ("codex debug models") what
+  // this account can use; models and efforts it did not find are greyed out and cannot be chosen.
+  // Before the first check, everything can be chosen.
+  const AI_KEYS = {
+    claude: { model: STORAGE_KEYS.model, effort: STORAGE_KEYS.effort, defaultModel: 'sonnet', efforts: EFFORTS },
+    codex: { model: STORAGE_KEYS.codexModel, effort: STORAGE_KEYS.codexEffort, defaultModel: 'default', efforts: CODEX_EFFORTS }
+  }
+
+  const modelList = (provider) => provider === 'codex' ? Z.codexModels() : MODELS
+
+  function chosenModel (provider) {
+    const keys = AI_KEYS[provider]
+    return Z.getSetting(keys.model, modelList(provider).map((m) => m.value), keys.defaultModel)
+  }
+
+  // The catalog entry of a model; Codex's default is the first model of its list
+  function modelInfo (provider, model) {
+    const catalog = Z.getModelCatalog(provider)
+    if (!catalog) return null
+    return model === 'default' ? catalog.available[0] || null : catalog.available.find((m) => m.id === model) || null
+  }
+
+  function modelChoices (provider) {
+    const catalog = Z.getModelCatalog(provider)
+    // Names as the check found them ("Opus 5.5"); Codex's default says which model it is
+    const found = (id) => catalog && (id === 'default' ? catalog.available[0] : catalog.available.find((a) => a.id === id))
+    return modelList(provider).map((m) => ({
+      value: m.value,
+      label: found(m.value) ? (m.value === 'default' ? `${m.label} (${found(m.value).label})` : found(m.value).label) : m.label,
+      disabled: !!catalog && m.value !== 'default' && !found(m.value)
+    }))
+  }
+
+  function effortChoices (provider, model) {
+    const info = modelInfo(provider, model)
+    return AI_KEYS[provider].efforts.map((e) => ({ value: e, label: e, disabled: !!(info && info.efforts.length && !info.efforts.includes(e)) }))
+  }
+
+  function renderAISelects (provider) {
+    const keys = AI_KEYS[provider]
+    const model = chosenModel(provider)
+    overlay.querySelector(`.js-settings-${provider}-model`).innerHTML = options(modelChoices(provider), model)
+    overlay.querySelector(`.js-settings-${provider}-effort`).innerHTML = options(effortChoices(provider, model), Z.getSetting(keys.effort, keys.efforts, 'medium'))
+  }
+
+  // A chosen model or effort the check did not find moves to one that works; returns what changed
+  function fixChoice (provider) {
+    const keys = AI_KEYS[provider]
+    const catalog = Z.getModelCatalog(provider)
+    const changes = []
+    if (!catalog || !catalog.available.length) return changes
+    let model = chosenModel(provider)
+    if (modelChoices(provider).find((m) => m.value === model).disabled) {
+      const fallback = catalog.available.some((m) => m.id === keys.defaultModel) || keys.defaultModel === 'default' ? keys.defaultModel : catalog.available[0].id
+      const label = (modelList(provider).find((m) => m.value === fallback) || {}).label || fallback
+      changes.push(`Model đổi sang ${label}`)
+      model = fallback
+      Z.setSetting(keys.model, model)
+    }
+    const effort = Z.getSetting(keys.effort, keys.efforts, 'medium')
+    const info = modelInfo(provider, model)
+    if (info && info.efforts.length && !info.efforts.includes(effort)) {
+      const fallback = info.efforts.includes(info.defaultEffort) ? info.defaultEffort : info.efforts[0]
+      changes.push(`effort đổi sang ${fallback}`)
+      Z.setSetting(keys.effort, fallback)
+    }
+    return changes
+  }
+
+  function setModelsNote (provider, text, isError = false) {
+    const el = overlay.querySelector(`.js-settings-${provider}-models`)
+    el.textContent = text
+    el.classList.toggle('zenlo__status--error', isError)
+  }
+
+  function describeCatalog (provider) {
+    const catalog = Z.getModelCatalog(provider)
+    if (!catalog) return ''
+    if (!catalog.available.length) return 'Không thấy model nào dùng được trên máy này.'
+    return `Dùng được trên máy này: ${catalog.available.map((m) => m.label).join(', ')}.`
+  }
+
+  async function checkModels (provider) {
+    if (!AI_KEYS[provider] || !window.$zenlo || !window.$zenlo.checkModels) return
+    let result
+    try {
+      result = await window.$zenlo.checkModels(provider)
+    } catch (error) {
+      result = { error: String(error.message || error) }
+    }
+    if (!result) return
+    if (result.error) {
+      // What an earlier check found stays
+      setModelsNote(provider, `Chưa kiểm tra được model: ${result.error}`, true)
+      return
+    }
+    Z.setModelCatalog(provider, { available: result.available || [], known: result.known || [] })
+    const changes = fixChoice(provider)
+    renderAISelects(provider)
+    setModelsNote(provider, describeCatalog(provider) + (changes.length ? ` ${changes.join(', ')} vì lựa chọn cũ không có trên máy.` : ''))
   }
 
   // ---------- Gemini keys ----------
@@ -157,11 +262,21 @@
     ]
   }
 
+  // The next older model of the same kind (Flash or Flash-Lite), as the main process starts from
+  function geminiFallback (options, current) {
+    const wanted = String(current).match(/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/)
+    if (!wanted) return null
+    return options.find((o) => {
+      const m = String(o.value).match(/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/)
+      return m && !!m[2] === !!wanted[2] && Number(m[1]) <= Number(wanted[1])
+    }) || null
+  }
+
   function renderModelSelect () {
     const select = overlay.querySelector('.js-gemini-model')
     const options = modelOptions()
-    const current = Z.getAISettings().model
-    const chosen = options.find((o) => o.value === current) || options[0]
+    const current = Z.getGeminiModel()
+    const chosen = options.find((o) => o.value === current) || geminiFallback(options, current) || options[0]
     select.querySelector('.zenlo-select__value').innerHTML = `<span>${escapeHTML(chosen.label)}</span>${bar(chosen.level)}`
     select.querySelector('.zenlo-select__list').innerHTML = options.map((o) => `
       <button type="button" class="zenlo-select__option${o.value === chosen.value ? ' zenlo-select__option--active' : ''}" data-value="${escapeHTML(o.value)}" ${o.disabled ? 'disabled' : ''}>
@@ -195,6 +310,7 @@
     button.disabled = true
     tick()
     const timer = setInterval(tick, 1000)
+    const models = checkModels(provider)
     try {
       const call = Z.runAI({
         systemPrompt: 'Chỉ trả lời đúng một chữ: ok',
@@ -212,6 +328,7 @@
       setTestStatus(`Lỗi: ${error.message || error}`, true)
     } finally {
       clearInterval(timer)
+      await models
       button.disabled = false
       if (provider === 'gemini') loadGeminiModels()
     }
@@ -236,18 +353,20 @@
 
         <div class="js-settings-claude">
           <div class="zenlo__grid">
-            <label>Model<select class="js-settings-claude-model">${options(MODELS, get(STORAGE_KEYS.model, MODELS, 'sonnet'))}</select></label>
-            <label>Effort<select class="js-settings-claude-effort">${options(EFFORTS, get(STORAGE_KEYS.effort, EFFORTS, 'medium'))}</select></label>
+            <label>Model<select class="js-settings-claude-model"></select></label>
+            <label>Effort<select class="js-settings-claude-effort"></select></label>
           </div>
+          <div class="zenlo-settings__note js-settings-claude-models"></div>
           <div class="zenlo-settings__note">Cần gói Claude Pro/Max và Claude Code đã đăng nhập.${help('claude')}</div>
           <div class="zenlo__status js-settings-claude-status"></div>
         </div>
 
         <div class="js-settings-codex">
           <div class="zenlo__grid">
-            <label>Model<select class="js-settings-codex-model">${options(CODEX_MODELS, get(STORAGE_KEYS.codexModel, CODEX_MODELS, 'default'))}</select></label>
-            <label>Effort<select class="js-settings-codex-effort">${options(CODEX_EFFORTS, get(STORAGE_KEYS.codexEffort, CODEX_EFFORTS, 'medium'))}</select></label>
+            <label>Model<select class="js-settings-codex-model"></select></label>
+            <label>Effort<select class="js-settings-codex-effort"></select></label>
           </div>
+          <div class="zenlo-settings__note js-settings-codex-models"></div>
           <div class="zenlo-settings__note">Cần gói ChatGPT có Codex (Plus, Pro…) và Codex đã đăng nhập.${help('codex')}</div>
           <div class="zenlo__status js-settings-codex-status"></div>
         </div>
@@ -355,6 +474,13 @@
     bindSelect('.js-settings-claude-effort', STORAGE_KEYS.effort)
     bindSelect('.js-settings-codex-model', STORAGE_KEYS.codexModel)
     bindSelect('.js-settings-codex-effort', STORAGE_KEYS.codexEffort)
+    // Another model may support other efforts
+    for (const provider of ['claude', 'codex']) {
+      el.querySelector(`.js-settings-${provider}-model`).addEventListener('change', () => {
+        fixChoice(provider)
+        renderAISelects(provider)
+      })
+    }
     // The custom model dropdown
     const modelSelect = el.querySelector('.js-gemini-model')
     const modelList = modelSelect.querySelector('.zenlo-select__list')
@@ -472,6 +598,10 @@
       select.value = Z.getLength(select.dataset.feature)
     })
     renderProvider()
+    for (const provider of ['claude', 'codex']) {
+      renderAISelects(provider)
+      setModelsNote(provider, describeCatalog(provider))
+    }
     loadMainSettings()
     loadGeminiModels()
   })

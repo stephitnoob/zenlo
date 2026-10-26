@@ -572,6 +572,13 @@ html.zenlo-dark {
   text-align: center;
 }
 
+// A link the AI wrote: its text only, opened in the browser
+.zenlo .zenlo-link {
+  color: var(--zenlo-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 // Source citation "[dd/mm hh:mm]" in a summary: opens the original message
 .zenlo .zenlo-cite {
   display: inline-block;
@@ -591,15 +598,19 @@ html.zenlo-dark {
   }
 }
 
-// Markdown that models write without being told the format: numbered lists, tables, code, rules
+// Markdown that models write without being told the format: numbered lists, tables, code, rules.
+// Long links and codes break anywhere instead of pushing past the panel.
 .zenlo__result,
 .zenlo-digest__summary {
+  overflow-wrap: anywhere;
+
   ol {
     margin: 4px 0;
     padding-left: 22px;
   }
 
   table {
+    width: 100%;
     margin: 6px 0;
     border-collapse: collapse;
     font-size: 13px;
@@ -623,6 +634,8 @@ html.zenlo-dark {
     background: var(--zenlo-accent-soft);
     font-family: var(--zenlo-mono);
     font-size: 12px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
   hr {

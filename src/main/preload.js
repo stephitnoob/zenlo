@@ -42,11 +42,15 @@ function exposeBridge () {
     setGeminiKeys: (keys) => ipcRenderer.invoke('zenlo:settings:setGeminiKeys', keys),
     // { models: [{ id, label, level, exhausted, resetAt }], keys: [{ masked, exhausted: [{ label, resetAt }] }] }
     geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status'),
+    // What Claude Code or Codex can use here: { available: [{ id, label, efforts, defaultEffort }], known } or { error }
+    checkModels: (provider) => ipcRenderer.invoke('zenlo:models:check', provider),
     // Backup of Zenlo's localStorage in %APPDATA%\Zenlo
     saveStorage: (data) => ipcRenderer.send('zenlo:storage:save', data),
     loadStorage: () => ipcRenderer.invoke('zenlo:storage:load'),
     // Opens an allowed link (AI Studio, Zenlo's site, e-mail) in the default browser
     openExternal: (url) => ipcRenderer.invoke('zenlo:open-external', url),
+    // Opens a link from a summary (http or https) in the default browser
+    openLink: (url) => ipcRenderer.invoke('zenlo:open-link', url),
     // { tag } of the newest release on GitHub, or { error }
     latestRelease: () => ipcRenderer.invoke('zenlo:update:latest')
   })

@@ -246,7 +246,7 @@
         <p>Lượt miễn phí tính theo <b>dự án</b> (project) trên Google, không theo key. Hai key cùng một dự án dùng chung lượt; muốn thêm lượt thì tạo key ở dự án khác. Lượt được làm mới lúc 0 giờ theo giờ Thái Bình Dương, khoảng 14–15 giờ chiều ở Việt Nam.</p>
 
         <h4>Model</h4>
-        <p>Danh sách lấy trực tiếp từ Google theo key của bạn. Chọn <b>Từ Gemini X Flash</b> nghĩa là bắt đầu thử từ model đó; nếu model đang quá tải, Zenlo lần lượt chuyển xuống bản thấp hơn, ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite.</p>
+        <p>Danh sách lấy trực tiếp từ Google theo key của bạn. Mặc định là <b>Từ Gemini 3.6 Flash</b>: hai bản mới nhất thường đông người dùng key miễn phí, 3.6 thường thoáng hơn. Key không có 3.6 thì bắt đầu từ bản thấp hơn kế tiếp. Chọn <b>Từ Gemini X Flash</b> nghĩa là bắt đầu thử từ model đó; nếu model đang quá tải, Zenlo lần lượt chuyển xuống bản thấp hơn, ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite.</p>
         <p>Thanh màu cạnh mỗi model là mức đông người dùng ước lượng, không phải đo trực tiếp. Model bị làm mờ là mọi key của bạn đã hết lượt cho model đó hôm nay.</p>
 
         <h4>Effort</h4>
@@ -261,7 +261,8 @@
 
       <section id="claude">
         <h3>Claude</h3>
-        <p>Zenlo gọi Claude Code đã cài trên máy, dùng lượt của gói Claude Pro hoặc Max, không cần API key. Chọn <b>Model</b> (Haiku nhanh, Sonnet cân bằng, Opus kỹ nhất) và <b>Effort</b>.</p>
+        <p>Zenlo gọi Claude Code đã cài trên máy, dùng lượt của gói Claude Pro hoặc Max, không cần API key. Chọn <b>Model</b> (Haiku nhanh, Sonnet cân bằng, Opus kỹ, Fable mạnh nhất nhưng tốn lượt nhanh hơn hẳn) và <b>Effort</b> (low tới max).</p>
+        <p>Bấm <b>Kiểm tra kết nối</b>, Zenlo đọc danh sách model mà Claude Code lưu trên máy cho tài khoản của bạn. Model và effort không có trong danh sách bị làm mờ, không chọn được.</p>
         <p>Chưa có Claude Code thì cài theo hướng dẫn của Anthropic, mở một lần để đăng nhập, rồi quay lại bấm <b>Kiểm tra kết nối</b>.</p>
       </section>
 
@@ -273,7 +274,7 @@
           <li>Mở Terminal, chạy <code>codex login</code>, chọn đăng nhập bằng tài khoản ChatGPT.</li>
           <li>Trong Cài đặt Zenlo, chọn <b>Codex (ChatGPT)</b>, rồi bấm <b>Kiểm tra kết nối</b>.</li>
         </ol>
-        <p><b>Model</b> để "Mặc định của Codex" là được; <b>Effort</b> cao thì viết kỹ hơn nhưng chậm hơn và tốn lượt hơn. Mỗi lần tóm tắt tính vào giới hạn 5 giờ và giới hạn tuần của gói ChatGPT, giống khi bạn dùng Codex bình thường.</p>
+        <p><b>Model</b> để "Mặc định của Codex" là được. Bấm <b>Kiểm tra kết nối</b>, Zenlo hỏi Codex (lệnh <code>codex debug models</code>, không tốn lượt) gói của bạn dùng được model nào, mỗi model có những mức effort nào; model và effort không có bị làm mờ, không chọn được. <b>Effort</b> cao thì viết kỹ hơn nhưng chậm hơn và tốn lượt hơn. Mỗi lần tóm tắt tính vào giới hạn 5 giờ và giới hạn tuần của gói ChatGPT, giống khi bạn dùng Codex bình thường.</p>
         <div class="tip">Zenlo chạy Codex ở chế độ chỉ đọc, trong một thư mục trống, không cho chạy lệnh hay sửa file, và không nạp cài đặt hay AGENTS.md của dự án. Riêng file <code>AGENTS.md</code> chung trong thư mục <code>.codex</code> của bạn (nếu có) thì Codex luôn đọc, Zenlo không tắt được; nếu file đó dài hoặc không liên quan, bản tóm tắt có thể bị ảnh hưởng.</div>
       </section>
 
