@@ -46,6 +46,8 @@ function exposeBridge () {
     saveStorage: (data) => ipcRenderer.send('zenlo:storage:save', data),
     loadStorage: () => ipcRenderer.invoke('zenlo:storage:load'),
     // Opens an allowed link (AI Studio, Zenlo's site, e-mail) in the default browser
-    openExternal: (url) => ipcRenderer.invoke('zenlo:open-external', url)
+    openExternal: (url) => ipcRenderer.invoke('zenlo:open-external', url),
+    // { tag } of the newest release on GitHub, or { error }
+    latestRelease: () => ipcRenderer.invoke('zenlo:update:latest')
   })
 }

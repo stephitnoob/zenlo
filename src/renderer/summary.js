@@ -25,6 +25,7 @@
   ]
 
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h10"/><path d="M18 3l1.2 2.8L22 7l-2.8 1.2L18 11l-1.2-2.8L14 7l2.8-1.2z"/></svg>'
+  const NOTE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4"/><path d="M8 12h8M8 16h5"/></svg>'
 
   // dd/mm/yyyy hh:mm (24h)
   function toInputValue (ms) {
@@ -118,6 +119,25 @@
     panel.dataset.result = text
   }
 
+  // The thank-you line under a finished summary; × hides it until the next one
+  function showTreat (shown) {
+    panel.querySelector('.zenlo__treat').hidden = !shown
+  }
+
+  // "Ghi chú cho AI: …" under the conversation's name, or an invitation to write one
+  function renderNoteLine () {
+    const note = Z.getNote(panel.dataset.convId)
+    const line = panel.querySelector('.zenlo__note-line')
+    line.textContent = ''
+    const text = document.createElement('span')
+    text.textContent = note ? `Ghi chú cho AI: ${note}` : 'Chưa có ghi chú cho AI.'
+    const edit = document.createElement('button')
+    edit.type = 'button'
+    edit.className = 'zenlo__inline-link js-note-edit'
+    edit.textContent = note ? 'Sửa' : 'Thêm ghi chú'
+    line.append(text, ' ', edit)
+  }
+
   // "Từ" for the unread preset: where Zalo's unread messages started when the user opened this
   // conversation (Zalo marks it read right away). null when nothing was unread then.
   async function getUnreadFrom (convId) {
@@ -139,6 +159,7 @@
     el.innerHTML = `
       <div class="zenlo__empty js-summary-empty">Chọn một hội thoại ở danh sách bên trái để tóm tắt.</div>
       <div class="zenlo__conv-title"></div>
+      <div class="zenlo__note-line"></div>
 
       <div class="zenlo__presets">
         ${PRESETS.map((p, i) => `<button class="zenlo__chip" data-preset="${i}">${p.label}</button>`).join('')}
@@ -168,6 +189,10 @@
       <div class="zenlo__status zenlo__estimate"></div>
       <div class="zenlo__status zenlo__main-status"></div>
       <div class="zenlo__result" hidden></div>
+      <div class="zenlo__treat" hidden>
+        <span>${Z.TREAT_HTML}</span>
+        <button type="button" class="zenlo__treat-close js-treat-close" title="Ẩn">&times;</button>
+      </div>
     `
 
     const fromEl = el.querySelector('.js-summary-from')
@@ -228,7 +253,13 @@
       if (activeJob) activeJob.cancel()
     })
     el.querySelector('.js-summary-copy').addEventListener('click', () => {
-      navigator.clipboard.writeText(el.dataset.result || '').then(() => setStatus('Đã sao chép bản tóm tắt.'))
+      navigator.clipboard.writeText(Z.withCredit(el.dataset.result)).then(() => setStatus('Đã sao chép bản tóm tắt.'))
+    })
+    el.querySelector('.js-treat-link').addEventListener('click', () => Z.openLink(Z.LINKS.treat))
+    el.querySelector('.js-treat-close').addEventListener('click', () => showTreat(false))
+    el.querySelector('.zenlo__note-line').addEventListener('click', (event) => {
+      const edit = event.target.closest('.js-note-edit')
+      if (edit) openNote(el.dataset.convId, el.dataset.convName, edit)
     })
 
     Z.drawer.pane('summary').appendChild(el)
@@ -259,6 +290,7 @@
     panel.dataset.convId = conv.id
     panel.dataset.convName = conv.name
     panel.querySelector('.zenlo__conv-title').textContent = conv.name
+    renderNoteLine()
     renderLength()
 
     if (activeJob) return
@@ -282,6 +314,7 @@
     }
 
     const last = Z.loadLastSummary(conv.id)
+    showTreat(false)
     if (last) {
       showResult(last.text, false, { from: last.from, to: last.to })
       setStatus(`Bản tóm tắt gần nhất (${last.count} tin nhắn, ${formatTime(last.from, true)} – ${formatTime(last.to, true)}).`)
@@ -314,6 +347,8 @@
     }
     setRunning(true)
     showResult('', false)
+    showTreat(false)
+    const note = Z.getNote(convId)
 
     try {
       setStatus('Đang đọc tin nhắn…')
@@ -342,7 +377,7 @@
           setStatus(`Đang tóm tắt phần ${i + 1}/${chunks.length} (${messageCount} tin nhắn).${historyNote}`)
           currentCall = Z.runAI({
             systemPrompt: Z.SUMMARY_PROMPT,
-            instruction: Z.buildPartInstruction({ convName, part: i + 1, parts: chunks.length }),
+            instruction: Z.buildPartInstruction({ convName, part: i + 1, parts: chunks.length, note }),
             input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
           })
           notes.push(`### Phần ${i + 1}\n` + await currentCall.promise)
@@ -358,7 +393,7 @@
       const started = Date.now()
       currentCall = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
-        instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, length, notes: chunks.length > 1 }),
+        instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, length, notes: chunks.length > 1, note }),
         input
       }, (text) => {
         streamed += text
@@ -374,12 +409,92 @@
       const seconds = Math.round((Date.now() - started) / 1000)
       setStatus(`Đã tóm tắt ${messageCount} tin nhắn (${rangeText})${usedModel ? ` bằng ${usedModel}` : ''}, ${seconds} giây.${historyNote}`)
       Z.saveLastSummary(convId, { from: fromMs, to: toMs, text: result, count: messageCount, at: Date.now() })
+      showTreat(true)
     } catch (error) {
       setStatus(cancelled ? 'Đã dừng.' : `Lỗi: ${error.message || error}`, !cancelled)
     } finally {
       activeJob = null
       setRunning(false)
     }
+  }
+
+  // ---------- The note for the AI ----------
+
+  // A small box under the "Ghi chú" button: one note per conversation, sent to the AI with every
+  // summary of it (Tóm tắt and Bản tin)
+  let notePop = null
+
+  function closeNote () {
+    if (notePop) notePop.remove()
+    notePop = null
+  }
+
+  function openNote (convId, convName, anchor) {
+    closeNote()
+    if (!convId) return
+    const pop = document.createElement('div')
+    pop.className = 'zenlo zenlo-note'
+    pop.innerHTML = `
+      <div class="zenlo-note__title">Ghi chú cho AI</div>
+      <div class="zenlo-note__conv"></div>
+      <textarea class="js-note-text" maxlength="${Z.NOTE_MAX}" rows="4" placeholder="Ví dụ: Hoa là sếp mình. Chỉ cần hạn chót và lịch họp."></textarea>
+      <div class="zenlo-note__row">
+        <span class="zenlo-note__count js-note-count"></span>
+        <button type="button" class="zenlo__btn js-note-clear">Xoá</button>
+        <button type="button" class="zenlo__btn zenlo__btn--primary js-note-save">Lưu</button>
+      </div>
+      <div class="zenlo-note__hint">AI đọc ghi chú này mỗi lần tóm tắt hội thoại, cả trong Bản tin.</div>
+    `
+    pop.querySelector('.zenlo-note__conv').textContent = convName || ''
+    const text = pop.querySelector('.js-note-text')
+    const count = pop.querySelector('.js-note-count')
+    const showCount = () => { count.textContent = `${text.value.length}/${Z.NOTE_MAX}` }
+    text.value = Z.getNote(convId)
+    showCount()
+    text.addEventListener('input', showCount)
+
+    const save = (value) => {
+      Z.setNote(convId, value)
+      closeNote()
+      updateNoteButton(true)
+      if (panel && panel.dataset.convId === convId) renderNoteLine()
+    }
+    pop.querySelector('.js-note-save').addEventListener('click', () => save(text.value))
+    pop.querySelector('.js-note-clear').addEventListener('click', () => save(''))
+    pop.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        closeNote()
+      }
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) save(text.value)
+    })
+    pop.addEventListener('mousedown', (event) => event.stopPropagation())
+
+    document.body.appendChild(pop)
+    notePop = pop
+    // Under the button, kept inside the window
+    const box = anchor.getBoundingClientRect()
+    const width = pop.offsetWidth
+    pop.style.top = `${Math.round(box.bottom + 6)}px`
+    pop.style.left = `${Math.round(Math.max(8, Math.min(box.right - width, window.innerWidth - width - 8)))}px`
+    text.focus()
+  }
+
+  // A click anywhere else closes the box without saving
+  document.addEventListener('mousedown', () => closeNote())
+
+  // The button lights up when the open conversation has a note
+  let noteConvId = null
+  function updateNoteButton (force = false) {
+    const button = document.querySelector('#headerBtns .zenlo-note-btn')
+    if (!button) return
+    const conv = Z.getCurrentConversation()
+    const id = conv ? conv.id : ''
+    if (!force && id === noteConvId) return
+    noteConvId = id
+    const note = Z.getNote(id)
+    button.classList.toggle('zenlo-note-btn--on', !!note)
+    button.title = note ? `Zenlo · Ghi chú cho AI: ${note}` : 'Zenlo · Ghi chú cho AI'
   }
 
   function injectHeaderButton () {
@@ -394,13 +509,28 @@
       event.stopPropagation()
       Z.drawer.toggle('summary')
     })
-    headerBtns.prepend(button)
+
+    const noteButton = document.createElement('div')
+    noteButton.className = 'z--btn--v2 btn-tertiary-neutral medium --rounded zenlo-btn zenlo-note-btn'
+    noteButton.title = 'Zenlo · Ghi chú cho AI'
+    noteButton.innerHTML = NOTE_SVG
+    noteButton.addEventListener('click', (event) => {
+      event.stopPropagation()
+      if (notePop) return closeNote()
+      const conv = Z.getCurrentConversation()
+      if (conv) openNote(conv.id, conv.name, noteButton)
+    })
+    noteButton.addEventListener('mousedown', (event) => event.stopPropagation())
+
+    headerBtns.prepend(button, noteButton)
+    noteConvId = null
   }
 
   Z.drawer.onShow('summary', syncPanel)
 
   Z.onDomChange(() => {
     injectHeaderButton()
+    updateNoteButton()
     // Keep the tab in sync when the user picks another conversation in Zalo's list
     if (Z.drawer.isOpen('summary') && !activeJob) {
       const conv = Z.getCurrentConversation()
