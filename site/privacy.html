@@ -28,7 +28,7 @@
       <span>zenlo</span><small class="brand__by">by stephit</small>
     </a>
     <a class="top__link" href="huong-dan.html">Hướng dẫn</a>
-    <a class="top__link top__treat" href="tra-sua.html"><span aria-hidden="true">🧋</span> <span class="top__treat-label">Mời trà sữa</span></a>
+    <a class="top__link" href="phien-ban.html">Phiên bản</a>
     <button class="icon-btn js-theme" type="button">
       <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -71,7 +71,7 @@
       <tr><td><b>Gemini</b> (Google)</td><td>Gửi thẳng tới <code>generativelanguage.googleapis.com</code> bằng API key của bạn</td><td><b>Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm</b>, gồm cả tin nhắn của những người khác trong hội thoại. Với key trả phí thì không</td></tr>
     </tbody>
   </table>
-  <p>Kết nối luôn được mã hoá (HTTPS). Zenlo không gửi dữ liệu tới bất kỳ địa chỉ nào khác, trừ một trường hợp: khi bạn bấm <b>Kiểm tra bản mới</b> trong Cài đặt, hoặc bật tự kiểm tra mỗi ngày (mặc định tắt), Zenlo hỏi GitHub (<code>api.github.com</code>) bản mới nhất là bản nào. Yêu cầu này không chứa tin nhắn, ghi chú hay thông tin nào về bạn. Vì tin nhắn trong nhóm có cả nội dung của người khác, hãy cân nhắc trước khi gửi những hội thoại nhạy cảm tới dịch vụ AI.</p>
+  <p>Kết nối luôn được mã hoá (HTTPS). Zenlo không gửi dữ liệu tới bất kỳ địa chỉ nào khác, trừ một trường hợp: khi bạn bấm <b>Kiểm tra bản mới</b> trong Cài đặt, hoặc đồng ý cho Zenlo tự kiểm tra mỗi ngày (Zenlo hỏi một lần khi mở lần đầu), Zenlo hỏi GitHub (<code>api.github.com</code>) bản mới nhất là bản nào. Yêu cầu này không chứa tin nhắn, ghi chú hay thông tin nào về bạn. Vì tin nhắn trong nhóm có cả nội dung của người khác, hãy cân nhắc trước khi gửi những hội thoại nhạy cảm tới dịch vụ AI.</p>
 
   <h2 id="ket-noi">Mọi kết nối mạng của Zenlo</h2>
   <p>Ngoài các trường hợp dưới đây, ứng dụng Zenlo không kết nối tới đâu cả. Bộ cài <code>Zenlo-Setup.exe</code> không kết nối mạng.</p>
@@ -81,7 +81,7 @@
     <tr><td>Khi bạn bấm <b>Tóm tắt</b> hoặc <b>Tạo bản tin</b></td><td>Dịch vụ AI bạn chọn (Google, Anthropic hoặc OpenAI)</td><td>Tin nhắn cần tóm tắt, lời yêu cầu, ghi chú của bạn (bảng ở trên)</td></tr>
     <tr><td>Khi đã lưu key Gemini: lúc mở Cài đặt hoặc lúc tóm tắt bằng Gemini, tối đa mỗi giờ một lần</td><td><code>generativelanguage.googleapis.com</code>, bằng key của bạn</td><td>Chỉ hỏi danh sách model key của bạn dùng được; không có tin nhắn</td></tr>
     <tr><td>Khi bạn bấm <b>Kiểm tra kết nối</b></td><td>Dịch vụ AI bạn chọn</td><td>Một câu thử ngắn, không có tin nhắn. Với Codex, Zenlo hỏi thêm danh sách model của tài khoản (lệnh <code>codex debug models</code>). Với Claude, Zenlo chỉ đọc danh sách model Claude Code đã lưu trên máy, không gửi gì</td></tr>
-    <tr><td>Khi bạn bấm <b>Kiểm tra bản mới</b>, hoặc mỗi ngày một lần nếu bạn tự bật (mặc định tắt)</td><td><code>api.github.com</code></td><td>Chỉ hỏi số phiên bản mới nhất; không có tin nhắn, ghi chú hay thông tin về bạn. Tắt bằng cách bỏ chọn "Tự kiểm tra bản mới mỗi ngày"</td></tr>
+    <tr><td>Khi bạn bấm <b>Kiểm tra bản mới</b>, hoặc mỗi ngày một lần nếu bạn chọn <b>Có</b> khi Zenlo hỏi "Báo cho bạn khi có Zenlo bản mới?"</td><td><code>api.github.com</code></td><td>Chỉ hỏi số phiên bản mới nhất; không có tin nhắn, ghi chú hay thông tin về bạn. Tắt bằng cách bỏ chọn "Tự kiểm tra bản mới mỗi ngày"</td></tr>
     <tr><td>Khi bạn bấm một link (trong bản tóm tắt, trong Cài đặt)</td><td>Trang web của link đó, mở trong trình duyệt của bạn</td><td>Như khi bạn tự mở link</td></tr>
     </tbody>
   </table>
@@ -127,7 +127,6 @@
       <a href="phien-ban.html">Phiên bản</a>
       <a href="dieu-khoan.html">Điều khoản</a>
       <a href="ky-so.html">Code signing policy</a>
-      <a href="tra-sua.html">Mời trà sữa</a>
       <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
       <a class="js-feedback" href="mailto:stephit.zenlo@outlook.com">Góp ý</a>
     </nav>

@@ -28,7 +28,7 @@
       <span>zenlo</span><small class="brand__by">by stephit</small>
     </a>
     <a class="top__link" href="huong-dan.html">Hướng dẫn</a>
-    <a class="top__link top__treat" href="tra-sua.html"><span aria-hidden="true">🧋</span> <span class="top__treat-label">Mời trà sữa</span></a>
+    <a class="top__link" aria-current="page" href="phien-ban.html">Phiên bản</a>
     <button class="icon-btn js-theme" type="button">
       <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -63,22 +63,15 @@
 
   <h2>Các phiên bản</h2>
 
-  <section class="release release--latest" id="v0.1.1">
+  <section class="release release--latest" id="v0.1.2">
     <div class="release__head">
-      <h2>v0.1.1</h2>
+      <h2>v0.1.2</h2>
       <span class="release__tag">Mới nhất</span>
       <span class="release__date">27/10/2026</span>
     </div>
     <ul>
-      <li><b>Ghi chú cho AI</b>: nút mới cạnh nút Tóm tắt. Viết vài dòng cho từng hội thoại (ví dụ "Hoa là sếp mình", "chỉ cần hạn chót"), AI làm theo mỗi lần tóm tắt, cả trong Bản tin.</li>
-      <li><b>Thêm ChatGPT</b> qua Codex: dùng luôn gói ChatGPT bạn đang có, chữ hiện dần khi AI viết.</li>
-      <li><b>Kiểm tra kết nối</b> cho biết model và effort nào dùng được trên máy (Claude, Codex); cái không có bị làm mờ. Claude có thêm Fable.</li>
-      <li><b>Gemini ổn định hơn</b>: mặc định bắt đầu từ 3.6 Flash, tự thử lại một lần khi máy chủ báo quá tải thoáng qua.</li>
-      <li><b>Nhanh hơn</b>: Claude nhanh hơn 1–2 giây mỗi lần tóm tắt, hội thoại rất dài được tóm tắt các phần cùng lúc.</li>
-      <li>Link trong bản tóm tắt hiện gọn, bấm là mở trình duyệt; chữ dài không còn tràn khung. Bản tin có nút <b>Sao chép</b>.</li>
-      <li><b>Bộ cài mới nhẹ hơn hẳn</b>: khoảng 180 KB thay vì 90 MB, nói rõ sẽ thay đổi gì trước khi cài. Zalo đang mở thì cài xong tự mở lại.</li>
-      <li>Cài đặt cho xem <b>phiên bản đang dùng</b> và có nút <b>Kiểm tra bản mới</b>.</li>
-      <li>Zenlo trở thành <b>phần mềm tự do</b> theo giấy phép GPL-3.0.</li>
+      <li><b>Báo khi có bản mới</b>: Zenlo hỏi bạn một lần; đồng ý thì Windows hiện thông báo mỗi khi có bản mới.</li>
+      <li>Bỏ lời mời trà sữa trong Zenlo.</li>
     </ul>
     <div class="release__get">
       <a class="btn js-download" href="./#cai-dat">
@@ -89,17 +82,27 @@
     </div>
   </section>
 
+  <section class="release" id="v0.1.1">
+    <div class="release__head">
+      <h2>v0.1.1</h2>
+      <span class="release__date">27/10/2026</span>
+    </div>
+    <ul>
+      <li><b>Ghi chú cho AI</b>: dặn AI điều bạn quan tâm, riêng cho từng hội thoại.</li>
+      <li><b>Thêm ChatGPT</b> qua Codex, dùng luôn gói ChatGPT bạn đang có.</li>
+      <li><b>Nhanh và ổn định hơn</b> với cả Gemini, Claude và ChatGPT.</li>
+      <li><b>Bộ cài mới</b> chỉ khoảng 180 KB.</li>
+    </ul>
+  </section>
+
   <section class="release" id="v0.1.0">
     <div class="release__head">
       <h2>v0.1.0</h2>
       <span class="release__date">24/10/2026</span>
     </div>
-    <p>Bản đầu tiên.</p>
     <ul>
-      <li><b>Tóm tắt</b> một hội thoại: chọn khoảng tin (từ tin chưa đọc, từ lần trước, theo giờ), độ dài Ngắn, Vừa hoặc Dài. Phần liên quan tới bạn nằm trên cùng, mỗi ý có mốc giờ bấm vào là tới tin gốc.</li>
-      <li><b>Bản tin</b> gom mọi hội thoại chưa đọc vào một trang, tick chọn và kéo để xếp ưu tiên. Nút Đã đọc đánh dấu luôn trong Zalo.</li>
-      <li>Chọn <b>Gemini</b> (key miễn phí, tối đa 5 key, tự chuyển model khi quá tải) hoặc <b>Claude</b> (gói Pro/Max).</li>
-      <li>Cài bằng <code>Zenlo-Setup.exe</code>. Khi Zalo cập nhật, cài lại từ lối tắt "Zenlo - Cài đặt" trong Start, cài đặt và dữ liệu vẫn còn nguyên.</li>
+      <li>Bản đầu tiên: <b>Tóm tắt</b> một hội thoại và <b>Bản tin</b> gom mọi hội thoại chưa đọc.</li>
+      <li>Dùng <b>Gemini</b> (key miễn phí) hoặc <b>Claude</b>.</li>
     </ul>
   </section>
 </article>
@@ -114,7 +117,6 @@
       <a href="privacy.html">Quyền riêng tư</a>
       <a href="dieu-khoan.html">Điều khoản</a>
       <a href="ky-so.html">Code signing policy</a>
-      <a href="tra-sua.html">Mời trà sữa</a>
       <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
       <a class="js-feedback" href="mailto:stephit.zenlo@outlook.com">Góp ý</a>
     </nav>
