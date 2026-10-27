@@ -27,7 +27,9 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 
 Người dùng: tải `Zenlo-Setup.exe` từ trang web hoặc mục Releases của kho mã này, mở file và chọn "1. Cài Zenlo". Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
 
-Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Các phiên bản](https://stephitnoob.github.io/zenlo/phien-ban.html) · [🧋 Mời trà sữa](https://stephitnoob.github.io/zenlo/tra-sua.html)
+Bộ cài sửa file `resourcespp.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc.
+
+Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html) · [Các phiên bản](https://stephitnoob.github.io/zenlo/phien-ban.html) · [🧋 Mời trà sữa](https://stephitnoob.github.io/zenlo/tra-sua.html)
 
 ## Yêu cầu (để phát triển)
 
@@ -69,8 +71,21 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 | `site/` | Trang web giới thiệu và tải về (GitHub Pages) |
 | `.github/workflows/` | Build và phát hành tự động, đưa trang web lên |
 
+## Code signing policy
+
+Zenlo đang xin chứng chỉ ký số miễn phí của SignPath Foundation; các bản tới nay **chưa được ký số**. Khi được chấp thuận: Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- Chỉ ký `Zenlo-Setup.exe`, do GitHub Actions build từ tag phiên bản ([release.yml](.github/workflows/release.yml)); mỗi yêu cầu ký được duyệt thủ công.
+- Team roles: Authors, Reviewers, Approvers: [stephit](https://github.com/stephitnoob).
+- Quyền riêng tư: [PRIVACY.md](PRIVACY.md), mục "Mọi kết nối mạng của Zenlo".
+- Chi tiết: [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html).
+
 ## Bản quyền
 
-Copyright (c) 2026 stephit. Mã nguồn được công khai để ai cũng kiểm tra được Zenlo làm gì, theo [Zenlo Source-Available License](LICENSE): được xem, kiểm tra và tự build để đối chiếu; không được sửa đổi, phát hành lại hay dùng thương mại. Không nhận pull request; góp ý và báo lỗi qua email ghi ở trang web.
+Copyright (C) 2026 stephit.
+
+Zenlo là phần mềm tự do, phát hành theo [Giấy phép Công cộng GNU phiên bản 3](LICENSE) (GPL-3.0-only). Bạn được dùng, nghiên cứu, sửa đổi và phát hành lại Zenlo, kể cả bản đã sửa, miễn là giữ cùng giấy phép và công khai mã nguồn của bản đó. Zenlo được cung cấp không kèm bảo hành nào; chi tiết trong file [LICENSE](LICENSE).
+
+Zenlo phi lợi nhuận và không có bản trả phí. Nếu phát hành bản sửa đổi, mong bạn đặt tên khác để người dùng không nhầm với bản chính thức. Góp ý, báo lỗi và pull request đều được chào đón.
 
 Zenlo được stephit phát triển cùng Claude (Anthropic). Đây là dự án cá nhân, không liên kết với Zalo hay VNG.

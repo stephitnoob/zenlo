@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code signing policy – Zenlo by Stephit</title>
+<meta name="description" content="Code signing policy của Zenlo: file nào được ký số, ai duyệt, build từ đâu và cách tự kiểm tra.">
+<meta property="og:title" content="Code signing policy – Zenlo by Stephit">
+<meta property="og:url" content="https://stephitnoob.github.io/zenlo/ky-so.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Zenlo by Stephit">
+<meta property="og:image" content="https://stephitnoob.github.io/zenlo/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zenlo: ba trăm tin chưa đọc, đọc trong mười giây">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://stephitnoob.github.io/zenlo/ky-so.html">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=dev">
+<script src="theme.js?v=dev"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top__inner">
+    <a class="brand" href="./" aria-label="Zenlo, trang chủ">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+      <span>zenlo</span><small class="brand__by">by stephit</small>
+    </a>
+    <a class="top__link" href="huong-dan.html">Hướng dẫn</a>
+    <a class="top__link top__treat" href="tra-sua.html"><span aria-hidden="true">🧋</span> <span class="top__treat-label">Mời trà sữa</span></a>
+    <button class="icon-btn js-theme" type="button">
+      <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <a class="btn btn--small" href="./#cai-dat">Tải về</a>
+  </div>
+</header>
+
+<main class="wrap">
+<article class="doc doc--page">
+  <h1>Code signing policy</h1>
+  <p class="lede">Chính sách ký số mã nguồn của Zenlo · cập nhật 27/10/2026</p>
+
+  <div class="tip"><b>Trạng thái:</b> Zenlo đang xin chứng chỉ ký số miễn phí của SignPath Foundation. Các bản đã phát hành tới nay (v0.1.0, v0.1.1) <b>chưa được ký số</b>, nên Windows có thể cảnh báo khi mở. Trang này mô tả cách Zenlo sẽ ký từ bản đầu tiên được chấp thuận.</div>
+
+  <p>Free code signing provided by <a class="link" href="https://signpath.io" rel="noopener">SignPath.io</a>, certificate by <a class="link" href="https://signpath.org" rel="noopener">SignPath Foundation</a>.</p>
+
+  <h2>File nào được ký</h2>
+  <p>Chỉ <code>Zenlo-Setup.exe</code>, bộ cài của Zenlo cho Windows. File này được build hoàn toàn từ <a class="link" href="https://github.com/stephitnoob/zenlo" rel="noopener">mã nguồn công khai</a> của Zenlo, phát hành theo giấy phép <a class="link" href="https://github.com/stephitnoob/zenlo/blob/main/LICENSE" rel="noopener">GPL-3.0</a>. Bộ cài không chứa mã của bên thứ ba ngoài thư viện có sẵn của Windows (.NET Framework).</p>
+
+  <h2>Quy trình</h2>
+  <ol>
+    <li>Mỗi bản phát hành bắt đầu bằng một tag phiên bản (ví dụ <code>v0.1.2</code>) trên kho mã.</li>
+    <li>Máy của GitHub (<a class="link" href="https://github.com/stephitnoob/zenlo/blob/main/.github/workflows/release.yml" rel="noopener">GitHub Actions</a>) tự build <code>Zenlo-Setup.exe</code> từ đúng commit đó. Không có file nào được build hay ký trên máy cá nhân.</li>
+    <li>Bản build được gửi tới SignPath. Mỗi yêu cầu ký phải được người duyệt (Approver) <b>xác nhận thủ công</b> trước khi ký.</li>
+    <li>File đã ký được đăng lên <a class="link" href="https://github.com/stephitnoob/zenlo/releases" rel="noopener">trang phát hành</a> kèm mã SHA-256 tính sau khi ký và giấy chứng thực nguồn gốc build.</li>
+  </ol>
+
+  <h2>Team roles</h2>
+  <table>
+    <thead><tr><th>Vai trò</th><th>Thành viên</th><th>Việc</th></tr></thead>
+    <tbody>
+      <tr><td>Authors</td><td><a class="link" href="https://github.com/stephitnoob" rel="noopener">stephit</a></td><td>Viết và sửa mã nguồn</td></tr>
+      <tr><td>Reviewers</td><td><a class="link" href="https://github.com/stephitnoob" rel="noopener">stephit</a></td><td>Xem xét mọi thay đổi từ người ngoài (pull request) trước khi nhận</td></tr>
+      <tr><td>Approvers</td><td><a class="link" href="https://github.com/stephitnoob" rel="noopener">stephit</a></td><td>Duyệt thủ công từng yêu cầu ký số</td></tr>
+    </tbody>
+  </table>
+  <p>Mọi thành viên dùng xác thực hai lớp (MFA) cho GitHub và SignPath.</p>
+
+  <h2>Quyền riêng tư</h2>
+  <p>Zenlo không gửi thông tin tới hệ thống nào khác ngoài những gì người dùng chọn: tin nhắn chỉ được gửi tới dịch vụ AI người dùng chọn (Gemini, Claude hoặc ChatGPT qua Codex) khi người dùng bấm Tóm tắt hoặc Tạo bản tin; việc hỏi GitHub bản mới nhất chỉ chạy khi người dùng bấm hoặc tự bật. Bộ cài không kết nối mạng. Danh sách đầy đủ mọi kết nối ở trang <a class="link" href="privacy.html#ket-noi">Quyền riêng tư</a>, và được nhắc lại trong bộ cài.</p>
+
+  <h2>Thay đổi trên máy</h2>
+  <p>Bộ cài sửa file <code>resources\app.asar</code> của Zalo để thêm Zenlo, sau khi đã nói rõ điều này trên màn hình. Bản gốc được giữ thành <code>app.asar.bak</code>; chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc. Bộ cài cũng tạo lối tắt "Zenlo - Cài đặt" trong Start, và gỡ Zenlo là xoá luôn lối tắt này.</p>
+
+  <h2>Tự kiểm tra</h2>
+  <ul>
+    <li>Chữ ký số: chuột phải <code>Zenlo-Setup.exe</code> → Properties → Digital Signatures, hoặc chạy <code>Get-AuthenticodeSignature .\Zenlo-Setup.exe</code> trong PowerShell.</li>
+    <li>Mã SHA-256: <code>Get-FileHash .\Zenlo-Setup.exe -Algorithm SHA256</code>, so với trang phát hành.</li>
+    <li>Nguồn gốc build: <code>gh attestation verify .\Zenlo-Setup.exe --repo stephitnoob/zenlo</code>.</li>
+  </ul>
+
+  <h2 lang="en">In English</h2>
+  <div lang="en">
+    <p>Zenlo signs only <code>Zenlo-Setup.exe</code>, built by GitHub Actions from a tagged commit of its public GPL-3.0 repository, with no third-party code besides Windows system libraries. Every signing request is approved manually. Authors, reviewers and approvers: <a class="link" href="https://github.com/stephitnoob" rel="noopener">stephit</a>, who uses MFA. Zenlo sends chats only to the AI service the user picks, when the user asks for a summary; the update check runs only when the user asks or turns it on. Full list of network connections: <a class="link" href="privacy.html#ket-noi">privacy policy</a>. The installer modifies Zalo's <code>app.asar</code> after saying so, keeps the original as a backup, and provides uninstallation. Status: application to SignPath Foundation pending; releases so far are unsigned.</p>
+  </div>
+</article>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__inner">
+    <span>© 2026 stephit · không liên kết với Zalo hay VNG</span>
+    <nav aria-label="Liên kết">
+      <a href="./">Trang chủ</a>
+      <a href="huong-dan.html">Hướng dẫn</a>
+      <a href="phien-ban.html">Phiên bản</a>
+      <a href="privacy.html">Quyền riêng tư</a>
+      <a href="dieu-khoan.html">Điều khoản</a>
+      <a href="ky-so.html">Code signing policy</a>
+      <a href="tra-sua.html">Mời trà sữa</a>
+      <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
+      <a class="js-feedback" href="mailto:stephit.zenlo@outlook.com">Góp ý</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="app.js?v=dev"></script>
+<script src="stats.js?v=dev"></script>
+</body>
+</html>

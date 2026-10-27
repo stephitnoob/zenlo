@@ -33,6 +33,7 @@ namespace Zenlo
         const string ZenloFolder = "zenlo";      // inside Zalo's pc-dist
         const string DevMarker = "zenlo-dev";    // left by the developer's installer in dev mode
         const string ShortcutName = "Zenlo - Cài đặt.lnk";
+        const string PrivacyUrl = "https://stephitnoob.github.io/zenlo/privacy.html";
 
         static readonly string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         static readonly string RoamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -62,6 +63,7 @@ namespace Zenlo
             while (true)
             {
                 Header();
+                Notice();
                 Console.WriteLine("  1. Cài Zenlo (hoặc cài lại sau khi Zalo cập nhật)");
                 Console.WriteLine("  2. Gỡ Zenlo, đưa Zalo về bản gốc");
                 Console.WriteLine("  3. Thoát");
@@ -117,6 +119,22 @@ namespace Zenlo
             {
                 Console.WriteLine("  " + error.Message);
             }
+            Console.WriteLine();
+        }
+
+        // What installing changes on the computer and what Zenlo sends over the network, shown
+        // before the user chooses (SignPath Foundation: warn before system changes, show the privacy
+        // policy during installation)
+        static void Notice()
+        {
+            Console.WriteLine("  Cài Zenlo sẽ:");
+            Console.WriteLine("  - sửa file resources\\app.asar của Zalo để thêm Zenlo. Bản gốc được giữ lại");
+            Console.WriteLine("    thành app.asar.bak; chọn 2 (Gỡ Zenlo) là Zalo về đúng bản gốc;");
+            Console.WriteLine("  - tạo lối tắt \"Zenlo - Cài đặt\" trong Start và giữ một bản bộ cài trong");
+            Console.WriteLine("    %LOCALAPPDATA%\\Zenlo, để cài lại khi Zalo cập nhật.");
+            Console.WriteLine("  Zenlo chỉ gửi tin nhắn tới dịch vụ AI bạn chọn, khi bạn bấm Tóm tắt hoặc Tạo bản tin.");
+            Console.WriteLine("  Kiểm tra bản mới (hỏi GitHub) chỉ chạy khi bạn bấm, hoặc khi bạn tự bật trong Cài đặt.");
+            Console.WriteLine("  Quyền riêng tư: " + PrivacyUrl);
             Console.WriteLine();
         }
 

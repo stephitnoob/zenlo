@@ -4,7 +4,7 @@
   "version": "0.1.1",
   "private": true,
   "author": "stephit",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "GPL-3.0-only",
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "node scripts/build.mjs --watch",
@@ -15,7 +15,8 @@
     "zalo:uninstall": "node installer uninstall",
     "build:setup": "npm run build && node scripts/build-setup.mjs",
     "site": "node scripts/serve-site.mjs",
-    "test:codex": "npm run build && node test/codex/run.mjs"
+    "test:codex": "npm run build && node test/codex/run.mjs",
+    "test:gemini": "npm run build && node test/gemini/run.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

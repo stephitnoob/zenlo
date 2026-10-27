@@ -441,11 +441,59 @@
           <span class="js-soon-label">Extension cho Zalo Web</span>
         </button>
       </div>
-      <p class="small">Trình duyệt và Windows có thể cảnh báo vì Zenlo chưa mua chữ ký số: chọn <b>Keep anyway</b> khi tải, <b>More info → Run anyway</b> khi mở. <a class="link" href="huong-dan.html#canh-bao">Xem hình</a>. Zalo cập nhật làm nút Zenlo biến mất? Mở Start, gõ "Zenlo", chọn <b>Zenlo - Cài đặt</b>. <a class="link" href="huong-dan.html#zalo-cap-nhat">Chi tiết</a></p>
-      <div class="aside aside--install">
-        <p>Zenlo không chứa virus hay mã độc. Mỗi bản phát hành được GitHub tự build từ mã nguồn công khai và có <a class="link" href="https://github.com/stephitnoob/zenlo/attestations" rel="noopener">giấy chứng thực nguồn gốc</a>, chứng minh file bạn tải về đúng là được build từ mã nguồn đó.</p>
-        <p>Zenlo không có máy chủ riêng. Tin nhắn không đi qua và không được lưu ở bất kỳ máy chủ nào của Zenlo; chúng chỉ được gửi tới dịch vụ AI do người dùng chọn. Mã nguồn được công khai để có thể kiểm chứng. Xem thêm tại <a class="link" href="privacy.html">Quyền riêng tư</a> và <a class="link" href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
-        <p>Góp ý và báo lỗi: <a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">gửi e-mail</a>.</p>
+      <p class="guide-link"><a href="huong-dan.html#cai-zenlo">Hướng dẫn cài đặt chi tiết, kèm cách xử lý cảnh báo của trình duyệt và Windows <span aria-hidden="true">→</span></a></p>
+      <div class="aside aside--install trust">
+        <div class="trust__text">
+          <p>Zenlo không chứa virus hay mã độc. Mỗi bản phát hành được GitHub tự build từ mã nguồn công khai và có <a class="link" href="https://github.com/stephitnoob/zenlo/attestations" rel="noopener">giấy chứng thực nguồn gốc</a>, chứng minh file bạn tải về đúng là được build từ mã nguồn đó. Xem <a class="link" href="ky-so.html">Code signing policy</a>.</p>
+          <p>Zenlo không có máy chủ riêng. Tin nhắn không đi qua và không được lưu ở bất kỳ máy chủ nào của Zenlo; chúng chỉ được gửi tới dịch vụ AI do người dùng chọn. Mọi dữ liệu của Zenlo, gồm cài đặt, API key, ghi chú và các bản tóm tắt, chỉ được lưu trên máy tính của người dùng. Mã nguồn mở theo giấy phép GPL-3.0, ai cũng có thể kiểm chứng. Xem thêm tại <a class="link" href="privacy.html">Quyền riêng tư</a> và <a class="link" href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
+          <p>Góp ý và báo lỗi: <a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">gửi e-mail</a>.</p>
+        </div>
+        <figure class="trust__fig">
+          <svg viewBox="0 0 340 286" role="img" aria-labelledby="trust-title">
+            <title id="trust-title">Dữ liệu ở lại trên máy tính; tin nhắn chỉ đi qua HTTPS tới AI đã chọn; không có máy chủ Zenlo</title>
+            <defs>
+              <marker id="trust-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="t-accent-fill"/></marker>
+            </defs>
+            <!-- The computer: Zalo with Zenlo, and everything Zenlo keeps -->
+            <rect x="8" y="8" width="176" height="160" rx="14" class="t-box"/>
+            <text x="96" y="32" class="t-title">Máy tính</text>
+            <rect x="24" y="44" width="144" height="30" rx="8" class="t-chip"/>
+            <text x="96" y="64" class="t-chip-text">Zalo + Zenlo</text>
+            <g class="t-db">
+              <ellipse cx="38" cy="94" rx="12" ry="4.5"/>
+              <path d="M26 94v28c0 2.5 5.4 4.5 12 4.5s12-2 12-4.5V94"/>
+              <path d="M26 108c0 2.5 5.4 4.5 12 4.5s12-2 12-4.5"/>
+            </g>
+            <text x="60" y="99" class="t-small">Cài đặt · API key</text>
+            <text x="60" y="115" class="t-small">Ghi chú · Tóm tắt</text>
+            <text x="24" y="152" class="t-keep">Chỉ lưu tại đây</text>
+            <!-- Messages to the chosen AI over HTTPS -->
+            <line x1="186" y1="96" x2="226" y2="96" class="t-arrow" marker-end="url(#trust-arrow)"/>
+            <g class="t-lock" transform="translate(199 70)">
+              <rect x="0" y="6" width="14" height="10" rx="2"/>
+              <path d="M3.5 6V4a3.5 3.5 0 0 1 7 0v2"/>
+            </g>
+            <text x="206" y="118" class="t-mono">HTTPS</text>
+            <rect x="230" y="8" width="102" height="160" rx="14" class="t-box"/>
+            <text x="281" y="32" class="t-title">AI đã chọn</text>
+            <rect x="242" y="48" width="78" height="26" rx="13" class="t-pill"/>
+            <text x="281" y="65" class="t-pill-text">Gemini</text>
+            <rect x="242" y="82" width="78" height="26" rx="13" class="t-pill"/>
+            <text x="281" y="99" class="t-pill-text">Claude</text>
+            <rect x="242" y="116" width="78" height="26" rx="13" class="t-pill"/>
+            <text x="281" y="133" class="t-pill-text">ChatGPT</text>
+            <text x="281" y="158" class="t-tiny">chọn một</text>
+            <!-- No Zenlo server: nothing goes there -->
+            <line x1="96" y1="170" x2="96" y2="210" class="t-dash"/>
+            <g class="t-cross" transform="translate(96 190)">
+              <circle r="10"/>
+              <path d="M-4 -4L4 4M4 -4L-4 4"/>
+            </g>
+            <rect x="8" y="212" width="324" height="66" rx="14" class="t-ghost"/>
+            <text x="170" y="240" class="t-ghost-title">Máy chủ Zenlo</text>
+            <text x="170" y="261" class="t-small t-center">Không có. Tin nhắn không đi qua, không lưu ở đây.</text>
+          </svg>
+        </figure>
       </div>
     </div>
   </section>
@@ -474,6 +522,7 @@
       <a href="phien-ban.html">Phiên bản</a>
       <a href="privacy.html">Quyền riêng tư</a>
       <a href="dieu-khoan.html">Điều khoản</a>
+      <a href="ky-so.html">Code signing policy</a>
       <a href="tra-sua.html">Mời trà sữa</a>
       <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
       <a class="js-feedback" href="mailto:stephit.zenlo@outlook.com">Góp ý</a>

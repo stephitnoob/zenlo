@@ -14,9 +14,13 @@
   const MINUTE = 60 * 1000
   const DAY = 24 * 60 * MINUTE
   const MAX_RANGE = DAY
-  const PAGE_SIZE = 200
+  // Messages read from Zalo per call: 500 was about 20% faster than 200, larger pages no faster (Oct 2026)
+  const PAGE_SIZE = 500
   // Rough size for one AI request; longer inputs are split
   const CHUNK_CHARS = 300000
+  // AI calls at the same time (the digest, the parts of a long summary). Claude Code handles a few
+  // parallel runs well; Gemini's free tier allows few requests per minute.
+  const PARALLEL = { claude: 3, codex: 2, gemini: 2 }
 
   // Zenlo's public links; an empty one is not shown. Filled in when the site and repository exist.
   const LINKS = {
@@ -146,36 +150,40 @@
     'Cuối mỗi ý ghi mốc tin nhắn gốc dạng [dd/mm hh:mm].'
   ].join('\n')
 
-  // The request for one conversation. kind: "range" (the panel) or "unread" (the digest).
-  // notes: the input is part notes of a long conversation, not the transcript itself.
-  function buildSummaryInstruction ({ convName, isGroup, from, to, count, length, kind = 'range', notes = false, note = '' }) {
+  // The request for one conversation, after the data. kind: "range" (the panel) or "unread" (the
+  // digest). notes: the input is part notes of a long conversation, not the transcript itself.
+  // The rules (length, the user's note) are in the system prompt; the last line points back to
+  // them, since a long transcript pushes the system prompt far from where the answer starts.
+  function buildSummaryInstruction ({ convName, isGroup, from, to, count, kind = 'range', notes = false, hasNote = false }) {
     const type = isGroup === undefined ? '' : isGroup ? ' (nhóm)' : ' (trò chuyện riêng)'
     const what = kind === 'unread' ? 'tin chưa đọc' : 'tin nhắn'
-    const lengthRule = (LENGTHS.find((l) => l.value === length) || LENGTHS[1]).rule
     return [
       `Cuộc trò chuyện Zalo "${convName}"${type}, ${formatTime(from, true)} – ${formatTime(to, true)}, ${count} ${what}.`,
       notes ? 'Dữ liệu là ghi chú đã tóm tắt từng phần, xếp theo thời gian.' : '',
-      noteLine(note),
-      lengthRule,
-      'Tóm tắt giúp mình.'
-    ].filter(Boolean).join(' ')
+      `Tóm tắt giúp mình, theo độ dài${hasNote ? ' và ghi chú' : ''} ở lời nhắn hệ thống.`
+    ].filter(Boolean).join('\n')
   }
 
-  // The user's own note for the conversation: context and what matters to them. It comes from the
-  // user, unlike the transcript, so it goes in the request itself.
+  // The chosen length's rule, a line of the system prompt
+  function lengthLine (length) {
+    if (!length) return ''
+    return (LENGTHS.find((l) => l.value === length) || LENGTHS[1]).rule
+  }
+
+  // The user's own note for the conversation, the last line of the system prompt (runAI), so every
+  // AI gets it in the same place
   function noteLine (note) {
     const text = String(note || '').replace(/\s+/g, ' ').trim().slice(0, NOTE_MAX)
     if (!text) return ''
-    return `Ghi chú của mình về cuộc trò chuyện này, dùng để hiểu bối cảnh và chọn ý cần nêu: ${text}${/[.!?…]$/.test(text) ? '' : '.'}`
+    return `Ghi chú người dùng viết cho cuộc trò chuyện này: ${text}${/[.!?…]$/.test(text) ? '' : '.'}`
   }
 
   // Notes for one part of a conversation too long for one request
-  function buildPartInstruction ({ convName, part, parts, note = '' }) {
+  function buildPartInstruction ({ convName, part, parts, hasNote = false }) {
     return [
       `Đây là phần ${part}/${parts} của cuộc trò chuyện Zalo "${convName}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt.`,
-      noteLine(note),
-      'Ghi lại đầy đủ những gì đáng chú ý trong phần này, mỗi ý kèm mốc.'
-    ].filter(Boolean).join(' ')
+      `Ghi lại đầy đủ những gì đáng chú ý trong phần này, mỗi ý kèm mốc${hasNote ? ', theo ghi chú ở lời nhắn hệ thống' : ''}.`
+    ].join('\n')
   }
 
   // Shared rules about the transcript format, appended to every feature's system prompt
@@ -426,7 +434,7 @@
         model: getGeminiModel(),
         effort: getSetting(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'),
         timeout: Number(getSetting(STORAGE_KEYS.geminiTimeout, GEMINI_TIMEOUTS, '10')) * 1000,
-        retryWindow: Number(getSetting(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '5')) * MINUTE
+        retryWindow: Number(getSetting(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '1')) * MINUTE
       }
     }
     if (provider === 'codex') {
@@ -1181,7 +1189,15 @@
   // the settings' connection check); by default they come from the settings, the clock and Zalo.
   // onStatus({ model, skipped, done }) reports which Gemini model is answering (and which were skipped).
   // cancel() rejects the promise right away with "Đã dừng.", without waiting for the main process.
-  function runAI ({ systemPrompt, instruction, input, provider, model, effort, now = Date.now(), myName = getMyName() }, onText = () => {}, onStatus = () => {}) {
+  // What every AI gets as its system prompt: the feature's prompt and the length chosen, the
+  // transcript rules, the time and the user's name, then the user's note for the conversation.
+  // Commands live here; the data (transcript, the conversation's name, which others can set) stays
+  // in the request.
+  function buildSystemPrompt ({ systemPrompt, length = '', note = '', now = Date.now(), myName = getMyName() }) {
+    return [systemPrompt, lengthLine(length), TRANSCRIPT_RULES, buildContext(now, myName), noteLine(note)].filter(Boolean).join('\n')
+  }
+
+  function runAI ({ systemPrompt, instruction, input, provider, model, effort, length = '', note = '', now = Date.now(), myName = getMyName() }, onText = () => {}, onStatus = () => {}) {
     const bridge = window.$zenlo
     if (!bridge) {
       return {
@@ -1202,7 +1218,7 @@
     let stop = () => {}
     const promise = new Promise((resolve, reject) => {
       stop = () => reject(new Error('Đã dừng.'))
-      const fullSystemPrompt = `${systemPrompt}\n${TRANSCRIPT_RULES}\n${buildContext(now, myName)}`
+      const fullSystemPrompt = buildSystemPrompt({ systemPrompt, length, note, now, myName })
       id = bridge.run({ ...request, instruction, input, systemPrompt: fullSystemPrompt }, (event) => {
         if (event.type === 'text') {
           onText(event.text)
@@ -1270,6 +1286,7 @@
     getModelCatalog,
     setModelCatalog,
     GEMINI_AUTO,
+    PARALLEL,
     getGeminiModel,
     geminiLabel,
     describeModelStatus,
@@ -1323,6 +1340,7 @@
     SUMMARY_PROMPT,
     CITATION_RULE,
     buildSummaryInstruction,
+    buildSystemPrompt,
     buildPartInstruction,
 
     runAI,
