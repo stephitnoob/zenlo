@@ -110,7 +110,8 @@
     .then((release) => {
       const asset = (release.assets || []).find((a) => a.name === 'Zenlo-Setup.exe')
       const sha = ((release.body || '').match(/\b[a-f0-9]{64}\b/) || [])[0]
-      const size = asset ? `${(asset.size / 1048576).toFixed(0)} MB` : '–'
+      // The C# installer is about 180 KB, the old one 90 MB
+      const size = !asset ? '–' : asset.size < 1048576 ? `${Math.round(asset.size / 1024)} KB` : `${Math.round(asset.size / 1048576)} MB`
       setText('.js-version', release.tag_name || '–')
       setText('.js-size', size)
       setText('.js-size-small', `${release.tag_name} · ${size}`)
