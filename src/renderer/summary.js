@@ -119,11 +119,6 @@
     panel.dataset.result = text
   }
 
-  // The thank-you line under a finished summary; × hides it until the next one
-  function showTreat (shown) {
-    panel.querySelector('.zenlo__treat').hidden = !shown
-  }
-
   // "Ghi chú cho AI: …" under the conversation's name, or an invitation to write one
   function renderNoteLine () {
     const note = Z.getNote(panel.dataset.convId)
@@ -189,10 +184,6 @@
       <div class="zenlo__status zenlo__estimate"></div>
       <div class="zenlo__status zenlo__main-status"></div>
       <div class="zenlo__result" hidden></div>
-      <div class="zenlo__treat" hidden>
-        <span>${Z.TREAT_HTML}</span>
-        <button type="button" class="zenlo__treat-close js-treat-close" title="Ẩn">&times;</button>
-      </div>
     `
 
     const fromEl = el.querySelector('.js-summary-from')
@@ -255,8 +246,6 @@
     el.querySelector('.js-summary-copy').addEventListener('click', () => {
       navigator.clipboard.writeText(Z.withCredit(el.dataset.result)).then(() => setStatus('Đã sao chép bản tóm tắt.'))
     })
-    el.querySelector('.js-treat-link').addEventListener('click', () => Z.openLink(Z.LINKS.treat))
-    el.querySelector('.js-treat-close').addEventListener('click', () => showTreat(false))
     el.querySelector('.zenlo__note-line').addEventListener('click', (event) => {
       const edit = event.target.closest('.js-note-edit')
       if (edit) openNote(el.dataset.convId, el.dataset.convName, edit)
@@ -314,7 +303,6 @@
     }
 
     const last = Z.loadLastSummary(conv.id)
-    showTreat(false)
     if (last) {
       showResult(last.text, false, { from: last.from, to: last.to })
       setStatus(`Bản tóm tắt gần nhất (${last.count} tin nhắn, ${formatTime(last.from, true)} – ${formatTime(last.to, true)}).`)
@@ -347,7 +335,6 @@
     }
     setRunning(true)
     showResult('', false)
-    showTreat(false)
     const note = Z.getNote(convId)
 
     try {
@@ -430,7 +417,6 @@
       const seconds = Math.round((Date.now() - started) / 1000)
       setStatus(`Đã tóm tắt ${messageCount} tin nhắn (${rangeText})${usedModel ? ` bằng ${usedModel}` : ''}, ${seconds} giây.${historyNote}`)
       Z.saveLastSummary(convId, { from: fromMs, to: toMs, text: result, count: messageCount, at: Date.now() })
-      showTreat(true)
     } catch (error) {
       setStatus(cancelled ? 'Đã dừng.' : `Lỗi: ${error.message || error}`, !cancelled)
     } finally {

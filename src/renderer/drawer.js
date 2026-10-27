@@ -43,6 +43,13 @@
         <span class="js-drawer-notice-text"></span>
         <button type="button" class="zenlo__inline-link js-drawer-notice-action">Mở Cài đặt</button>
       </div>
+      <div class="zenlo-drawer__notice zenlo-drawer__ask js-drawer-ask" hidden>
+        <span>Báo cho bạn khi có Zenlo bản mới? Zenlo sẽ hỏi GitHub mỗi ngày một lần, không gửi gì về bạn.</span>
+        <span class="zenlo-drawer__ask-actions">
+          <button type="button" class="zenlo__inline-link js-drawer-ask-yes">Có, báo cho tôi</button>
+          <button type="button" class="zenlo__inline-link zenlo-drawer__ask-no js-drawer-ask-no">Không</button>
+        </span>
+      </div>
       <div class="zenlo-drawer__body">
         <div class="zenlo-drawer__pane" data-pane="summary"></div>
         <div class="zenlo-drawer__pane" data-pane="digest"></div>
@@ -53,6 +60,18 @@
     el.querySelector('.js-drawer-notice-action').addEventListener('click', (event) => {
       if (event.target.closest('.zenlo-drawer__notice').dataset.update) Z.openLink(Z.LINKS.versions)
       else open('settings')
+    })
+    el.querySelector('.js-drawer-ask-yes').addEventListener('click', async () => {
+      Z.setSetting(Z.STORAGE_KEYS.updateCheck, 'on')
+      refreshAsk()
+      const result = await Z.checkForUpdate()
+      if (!result.newer) return
+      refreshNotice()
+      Z.notifyUpdate(result.latest)
+    })
+    el.querySelector('.js-drawer-ask-no').addEventListener('click', () => {
+      Z.setSetting(Z.STORAGE_KEYS.updateCheck, 'off')
+      refreshAsk()
     })
     el.querySelector('.zenlo-drawer__tabs').addEventListener('click', (event) => {
       const tab = event.target.closest('[data-tab]')
@@ -92,6 +111,7 @@
     drawer.hidden = false
     updateTheme()
     refreshNotice()
+    refreshAsk()
     if (showHandlers[tab]) showHandlers[tab]()
   }
 
@@ -147,6 +167,13 @@
     notice.querySelector('.js-drawer-notice-action').textContent = update ? 'Xem bản mới' : 'Mở Cài đặt'
     notice.dataset.update = update ? '1' : ''
     notice.hidden = !text || (current === 'settings' && !update)
+  }
+
+  // Asked once, the first time Zenlo opens (also after updating from a version without the
+  // question): whether to look for new versions every day. Either answer can be changed in Cài đặt.
+  function refreshAsk () {
+    if (!drawer) return
+    drawer.querySelector('.js-drawer-ask').hidden = Z.getSetting(Z.STORAGE_KEYS.updateCheck, ['on', 'off'], '') !== ''
   }
 
   // ---------- Theme ----------

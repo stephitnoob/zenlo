@@ -27,7 +27,6 @@
     site: 'https://stephitnoob.github.io/zenlo/',
     guide: 'https://stephitnoob.github.io/zenlo/huong-dan.html',
     versions: 'https://stephitnoob.github.io/zenlo/phien-ban.html',
-    treat: 'https://stephitnoob.github.io/zenlo/tra-sua.html',
     source: 'https://github.com/stephitnoob/zenlo',
     privacy: 'https://stephitnoob.github.io/zenlo/privacy.html',
     terms: 'https://stephitnoob.github.io/zenlo/dieu-khoan.html',
@@ -42,9 +41,6 @@
   // chat says where it came from
   const COPY_CREDIT = `Bản tóm tắt được tạo bởi Zenlo by Stephit – ${LINKS.site}`
   const withCredit = (text) => `${String(text || '').trim()}\n\n${COPY_CREDIT}`
-
-  // The thank-you line under a finished summary or digest
-  const TREAT_HTML = 'Thấy Zenlo có ích thì <button type="button" class="zenlo__inline-link js-treat-link">mời mình ly trà sữa</button> để mình có thêm động lực phát triển nha 🧋'
 
   function openLink (url) {
     if (url && window.$zenlo && window.$zenlo.openExternal) window.$zenlo.openExternal(url)
@@ -66,6 +62,8 @@
     note: '@Zenlo:NOTE:',
     updateCheck: '@Zenlo:UPDATE_CHECK',
     updateCheckedAt: '@Zenlo:UPDATE_CHECKED_AT',
+    // The newest version a Windows notification was already shown for
+    updateNotified: '@Zenlo:UPDATE_NOTIFIED',
     // What "Kiểm tra kết nối" found on this machine, per provider: { at, available, known }
     modelCatalog: '@Zenlo:MODEL_CATALOG:'
   }
@@ -515,6 +513,19 @@
       else localStorage.removeItem('@Zenlo:UPDATE_AVAILABLE')
     } catch (error) {}
     return { latest: result.tag, newer }
+  }
+
+  // A Windows notification for a newer version, once per version
+  function notifyUpdate (tag) {
+    const bridge = window.$zenlo
+    if (!tag || !bridge || !bridge.notifyUpdate) return
+    try {
+      if (localStorage.getItem(STORAGE_KEYS.updateNotified) === tag) return
+      localStorage.setItem(STORAGE_KEYS.updateNotified, tag)
+    } catch (error) {
+      return
+    }
+    bridge.notifyUpdate(tag)
   }
 
   // The newer version found by the last check, if it is still newer than this one
@@ -1349,8 +1360,8 @@
     openLink,
     VERSION,
     checkForUpdate,
+    notifyUpdate,
     availableUpdate,
-    withCredit,
-    TREAT_HTML
+    withCredit
   }
 })()

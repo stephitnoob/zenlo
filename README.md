@@ -21,7 +21,7 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 - **Gọi Gemini** bằng API key của bạn (tối đa 5 key), lưu mã hoá bằng Windows (`safeStorage`) trên máy. Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện.
 - **Dữ liệu của Zenlo** (cài đặt, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm một bản sao lưu cùng key và hạn mức trong `%APPDATA%\Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
 - **Cài vào Zalo** bằng cách giải nén `app.asar`, thêm Zenlo, giữ bản gốc ở `app.asar.bak`.
-- **Kiểm tra bản mới** chỉ khi bạn bấm nút trong Cài đặt, hoặc mỗi ngày một lần nếu bạn bật (mặc định tắt): hỏi GitHub bản mới nhất là bản nào, không gửi gì về bạn.
+- **Báo bản mới**: lần đầu mở, Zenlo hỏi có muốn được báo khi có bản mới không. Chọn Có thì mỗi ngày Zenlo hỏi GitHub một lần và hiện thông báo của Windows khi có bản mới; không gửi gì về bạn. Đổi được trong Cài đặt.
 
 ## Tải về
 
@@ -29,7 +29,7 @@ Người dùng: tải `Zenlo-Setup.exe` từ trang web hoặc mục Releases c�
 
 Bộ cài sửa file `resourcespp.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc.
 
-Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html) · [Các phiên bản](https://stephitnoob.github.io/zenlo/phien-ban.html) · [🧋 Mời trà sữa](https://stephitnoob.github.io/zenlo/tra-sua.html)
+Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html) · [Các phiên bản](https://stephitnoob.github.io/zenlo/phien-ban.html)
 
 ## Yêu cầu (để phát triển)
 

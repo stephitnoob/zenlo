@@ -1007,6 +1007,16 @@ html.zenlo-dark {
   }
 }
 
+// "Báo cho bạn khi có Zenlo bản mới?" with its two answers
+.zenlo-drawer__ask-actions {
+  display: flex;
+  gap: 14px;
+}
+
+.zenlo-drawer__ask-no {
+  color: var(--text-secondary, #5a6981);
+}
+
 .zenlo-settings__guide {
   padding: 10px 12px;
   border: 1px solid var(--zenlo-accent-line);
@@ -1121,41 +1131,6 @@ html.zenlo-dark {
   overflow-wrap: anywhere;
   color: var(--text-secondary, #5a6981);
   font-size: 12px;
-}
-
-// ---------- Thank-you line under a finished summary or digest ----------
-
-.zenlo__treat {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--zenlo-accent-line);
-  border-radius: 10px;
-  background: var(--zenlo-accent-soft);
-  font-size: 13px;
-
-  &[hidden] {
-    display: none;
-  }
-
-  > span {
-    flex: 1;
-  }
-
-  .zenlo__inline-link {
-    font-size: 13px;
-  }
-}
-
-.zenlo__treat-close {
-  padding: 0 2px;
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary, #5a6981);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
 }
 
 .zenlo-settings__check {

@@ -435,7 +435,7 @@
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">Về Zenlo</div>
         <div class="zenlo-settings__links">
-          ${[['guide', 'Hướng dẫn sử dụng'], ['site', 'Trang chủ'], ['versions', 'Các phiên bản'], ['privacy', 'Quyền riêng tư'], ['terms', 'Điều khoản sử dụng'], ['source', 'Mã nguồn'], ['feedback', 'Góp ý & báo lỗi'], ['treat', '🧋 Mời trà sữa']]
+          ${[['guide', 'Hướng dẫn sử dụng'], ['site', 'Trang chủ'], ['versions', 'Các phiên bản'], ['privacy', 'Quyền riêng tư'], ['terms', 'Điều khoản sử dụng'], ['source', 'Mã nguồn'], ['feedback', 'Góp ý & báo lỗi']]
             .filter(([key]) => Z.LINKS[key])
             .map(([key, label]) => `<button type="button" class="zenlo__inline-link" data-link="${key}">${label}</button>`).join('')}
         </div>
@@ -598,6 +598,8 @@
       select.value = Z.getLength(select.dataset.feature)
     })
     renderProvider()
+    // The first-run question in the drawer may have changed it
+    overlay.querySelector('.js-settings-update-auto').checked = Z.getSetting(STORAGE_KEYS.updateCheck, ['on'], '') === 'on'
     for (const provider of ['claude', 'codex']) {
       renderAISelects(provider)
       setModelsNote(provider, describeCatalog(provider))
@@ -606,9 +608,10 @@
     loadGeminiModels()
   })
 
-  // "Tự kiểm tra bản mới mỗi ngày" (off unless the user turns it on): once a day, a minute after
-  // Zalo starts, ask GitHub; a newer version shows in the line above the drawer's tabs
-  setTimeout(async () => {
+  // "Tự kiểm tra bản mới mỗi ngày" (only when the user said yes): once a day, the first time a
+  // minute after Zalo starts, then looked at every hour while Zalo stays open. A newer version shows
+  // in the line above the drawer's tabs and once as a Windows notification.
+  async function dailyUpdateCheck () {
     if (Z.getSetting(STORAGE_KEYS.updateCheck, ['on'], '') !== 'on') return
     let last = 0
     try {
@@ -616,6 +619,10 @@
     } catch (error) {}
     if (Date.now() - last < Z.DAY) return
     const result = await Z.checkForUpdate()
-    if (result.newer) Z.drawer.refreshNotice()
-  }, 60 * 1000)
+    if (!result.newer) return
+    Z.drawer.refreshNotice()
+    Z.notifyUpdate(result.latest)
+  }
+  setTimeout(dailyUpdateCheck, 60 * 1000)
+  setInterval(dailyUpdateCheck, 60 * 60 * 1000)
 })()

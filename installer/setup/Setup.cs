@@ -133,7 +133,7 @@ namespace Zenlo
             Console.WriteLine("  - tạo lối tắt \"Zenlo - Cài đặt\" trong Start và giữ một bản bộ cài trong");
             Console.WriteLine("    %LOCALAPPDATA%\\Zenlo, để cài lại khi Zalo cập nhật.");
             Console.WriteLine("  Zenlo chỉ gửi tin nhắn tới dịch vụ AI bạn chọn, khi bạn bấm Tóm tắt hoặc Tạo bản tin.");
-            Console.WriteLine("  Kiểm tra bản mới (hỏi GitHub) chỉ chạy khi bạn bấm, hoặc khi bạn tự bật trong Cài đặt.");
+            Console.WriteLine("  Kiểm tra bản mới (hỏi GitHub) chỉ chạy khi bạn bấm, hoặc khi bạn đồng ý lúc Zenlo hỏi.");
             Console.WriteLine("  Quyền riêng tư: " + PrivacyUrl);
             Console.WriteLine();
         }

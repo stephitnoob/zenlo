@@ -189,6 +189,14 @@ button {
   color: var(--text);
 }
 
+.top__link {
+  white-space: nowrap;
+}
+
+.top__link[aria-current="page"] {
+  color: var(--accent);
+}
+
 .icon-btn {
   display: inline-flex;
   align-items: center;
@@ -1496,15 +1504,7 @@ button {
   font-size: 15.5px;
 }
 
-/* Tea (donate) page */
-
-.top__treat {
-  white-space: nowrap;
-}
-
-.top__treat[aria-current="page"] {
-  color: var(--accent);
-}
+/* Tea (donate) page: no longer linked, kept for links in Zenlo v0.1.1 */
 
 .treat__pay {
   display: grid;
@@ -1834,12 +1834,21 @@ button {
 }
 
 @media (max-width: 560px) {
-  /* Room in the top bar: the tea link keeps only its emoji, the "by stephit" tag goes */
+  /* Room in the top bar: the "by stephit" tag goes, links and the button get a little smaller */
   .top__inner {
-    gap: 12px;
+    gap: 10px;
   }
 
-  .top__treat-label,
+  .top__link {
+    font-size: 14px;
+  }
+
+  .top__inner .btn {
+    padding-left: 12px;
+    padding-right: 12px;
+    white-space: nowrap;
+  }
+
   .brand__by {
     display: none;
   }

@@ -8,7 +8,7 @@
   - Gemini: the Gemini API with the user's own API key, kept encrypted with Windows' safeStorage
 */
 
-const { app, session, ipcMain, safeStorage, shell } = require('electron')
+const { app, session, ipcMain, safeStorage, shell, Notification } = require('electron')
 const { spawn } = require('child_process')
 const https = require('https')
 const crypto = require('crypto')
@@ -1138,6 +1138,19 @@ ipcMain.handle('zenlo:open-link', (event, url) => {
   }
   if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false
   shell.openExternal(parsed.href)
+  return true
+})
+
+// A Windows notification for a newer Zenlo, shown once per version by the page; a click opens the
+// versions page. The text and the link are fixed here, only the version comes from the page.
+const VERSIONS_PAGE = 'https://stephitnoob.github.io/zenlo/phien-ban.html'
+let updateNotification = null
+
+ipcMain.handle('zenlo:update:notify', (event, tag) => {
+  if (!isTrustedSender(event) || !/^v?\d+(\.\d+){1,3}$/.test(String(tag)) || !Notification.isSupported()) return false
+  updateNotification = new Notification({ title: `Đã có Zenlo ${tag}`, body: 'Bấm để xem có gì mới và tải về.' })
+  updateNotification.on('click', () => shell.openExternal(VERSIONS_PAGE))
+  updateNotification.show()
   return true
 })
 

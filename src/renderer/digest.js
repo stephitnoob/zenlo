@@ -406,7 +406,6 @@
     }
     const stopButton = overlay.querySelector('.js-digest-stop')
     stopButton.hidden = false
-    showTreat(false)
     overlay.querySelector('.js-digest-copy').hidden = true
     setStatus(`Đang tạo bản tin bằng ${Z.getAILabel()}…`)
     renderItems()
@@ -436,12 +435,6 @@
     renderItems()
     const done = items.some((item) => item.status === 'done' && item.summary)
     overlay.querySelector('.js-digest-copy').hidden = !done
-    if (!cancelled && done) showTreat(true)
-  }
-
-  // The thank-you line under a finished digest; × hides it until the next one
-  function showTreat (shown) {
-    overlay.querySelector('.zenlo__treat').hidden = !shown
   }
 
   // Every summarized conversation as plain text, with where it came from
@@ -484,16 +477,10 @@
         <button class="zenlo-digest__link js-digest-auto-order" title="Xoá thứ tự bạn đã kéo, quay về sắp xếp tự động">Sắp xếp tự động</button>
       </div>
       <div class="zenlo-digest__list"></div>
-      <div class="zenlo__treat" hidden>
-        <span>${Z.TREAT_HTML}</span>
-        <button type="button" class="zenlo__treat-close js-treat-close" title="Ẩn">&times;</button>
-      </div>
     `
 
     el.querySelector('.js-digest-run').addEventListener('click', runDigest)
     el.querySelector('.js-digest-copy').addEventListener('click', copyDigest)
-    el.querySelector('.js-treat-link').addEventListener('click', () => Z.openLink(Z.LINKS.treat))
-    el.querySelector('.js-treat-close').addEventListener('click', () => showTreat(false))
     el.querySelector('.js-digest-stop').addEventListener('click', () => {
       if (running) running.cancel()
     })
