@@ -371,17 +371,36 @@
       let input = `<transcript>\n${lines.join('\n')}\n</transcript>`
 
       if (chunks.length > 1) {
+        // The parts at the same time, a few at once as in the digest
         const notes = []
-        for (let i = 0; i < chunks.length; i++) {
-          if (cancelled) throw new Error('Đã dừng.')
-          setStatus(`Đang tóm tắt phần ${i + 1}/${chunks.length} (${messageCount} tin nhắn).${historyNote}`)
-          currentCall = Z.runAI({
-            systemPrompt: Z.SUMMARY_PROMPT,
-            instruction: Z.buildPartInstruction({ convName, part: i + 1, parts: chunks.length, note }),
-            input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
-          })
-          notes.push(`### Phần ${i + 1}\n` + await currentCall.promise)
+        const calls = new Set()
+        currentCall = { cancel: () => calls.forEach((call) => call.cancel()) }
+        let next = 0
+        let finished = 0
+        setStatus(`Đang tóm tắt ${chunks.length} phần (${messageCount} tin nhắn).${historyNote}`)
+        const worker = async () => {
+          while (next < chunks.length) {
+            if (cancelled) throw new Error('Đã dừng.')
+            const i = next++
+            const call = Z.runAI({
+              systemPrompt: Z.SUMMARY_PROMPT,
+              instruction: Z.buildPartInstruction({ convName, part: i + 1, parts: chunks.length, hasNote: !!note }),
+              note,
+              input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
+            })
+            calls.add(call)
+            notes[i] = `### Phần ${i + 1}\n` + await call.promise
+            calls.delete(call)
+            finished++
+            if (!cancelled) setStatus(`Đang tóm tắt ${chunks.length} phần: xong ${finished}/${chunks.length} (${messageCount} tin nhắn).${historyNote}`)
+          }
         }
+        await Promise.all(Array.from({ length: Math.min(Z.PARALLEL[Z.getAISettings().provider] || 2, chunks.length) }, worker))
+          .catch((error) => {
+            // One part failed: the others are not needed any more
+            calls.forEach((call) => call.cancel())
+            throw error
+          })
         input = `<notes>\n${notes.join('\n\n')}\n</notes>`
       }
 
@@ -393,7 +412,9 @@
       const started = Date.now()
       currentCall = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
-        instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, length, notes: chunks.length > 1, note }),
+        instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, notes: chunks.length > 1, hasNote: !!note }),
+        length,
+        note,
         input
       }, (text) => {
         streamed += text

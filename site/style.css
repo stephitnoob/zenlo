@@ -1226,6 +1226,75 @@ button {
   line-height: 1.65;
 }
 
+/* The trust text with a picture of where the data goes */
+.trust {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 40px;
+  align-items: center;
+  max-width: none;
+}
+
+.trust__fig {
+  margin: 0;
+}
+
+.trust__fig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--sans);
+}
+
+.trust__fig .t-box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.trust__fig .t-title { fill: var(--text); font-size: 14px; font-weight: 600; text-anchor: middle; }
+.trust__fig .t-chip { fill: var(--accent-soft); stroke: var(--accent-line); }
+.trust__fig .t-chip-text { fill: var(--accent); font-size: 13px; font-weight: 600; text-anchor: middle; }
+.trust__fig .t-db { fill: none; stroke: var(--accent); stroke-width: 1.6; }
+.trust__fig .t-small { fill: var(--muted); font-size: 11.5px; }
+.trust__fig .t-center { text-anchor: middle; }
+.trust__fig .t-keep { fill: var(--accent); font-size: 12.5px; font-weight: 700; }
+.trust__fig .t-arrow { stroke: var(--accent); stroke-width: 2; }
+.trust__fig .t-accent-fill { fill: var(--accent); }
+.trust__fig .t-lock { fill: none; stroke: var(--accent); stroke-width: 1.6; }
+.trust__fig .t-mono { fill: var(--accent); font-family: var(--mono); font-size: 10.5px; font-weight: 600; text-anchor: middle; }
+.trust__fig .t-pill { fill: var(--bg-2); stroke: var(--line); }
+.trust__fig .t-pill-text { fill: var(--text); font-size: 12px; text-anchor: middle; }
+.trust__fig .t-tiny { fill: var(--faint); font-size: 10.5px; text-anchor: middle; }
+.trust__fig .t-dash { stroke: var(--faint); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.trust__fig .t-cross circle { fill: var(--bg); stroke: var(--faint); stroke-width: 1.5; }
+.trust__fig .t-cross path { stroke: var(--faint); stroke-width: 1.8; stroke-linecap: round; }
+.trust__fig .t-ghost { fill: none; stroke: var(--faint); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.trust__fig .t-ghost-title { fill: var(--faint); font-size: 14px; font-weight: 600; text-anchor: middle; text-decoration: line-through; }
+
+@media (max-width: 860px) {
+  .trust {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .trust__fig {
+    max-width: 380px;
+  }
+}
+
+/* One big link to the detailed install guide, under the download buttons */
+.guide-link {
+  margin: 26px 0 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.guide-link a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.guide-link a:hover {
+  text-decoration: underline;
+}
+
 /* ---------- Footer ---------- */
 
 .foot {

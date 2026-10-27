@@ -44,7 +44,7 @@ fs.writeFileSync(buildInfo, `using System.Reflection;
 [assembly: AssemblyDescription("Cài đặt Zenlo – trình quản lí hội thoại Zalo")]
 [assembly: AssemblyProduct("Zenlo")]
 [assembly: AssemblyCompany("stephit")]
-[assembly: AssemblyCopyright("Copyright (c) 2026 stephit")]
+[assembly: AssemblyCopyright("Copyright (C) 2026 stephit. GPL-3.0-only")]
 [assembly: AssemblyVersion("${version}.0")]
 [assembly: AssemblyFileVersion("${version}.0")]
 [assembly: AssemblyInformationalVersion("${version}")]

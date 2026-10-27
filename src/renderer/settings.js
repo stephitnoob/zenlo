@@ -393,7 +393,7 @@
               <select class="js-settings-gemini-timeout">${options(GEMINI_TIMEOUTS.map((v) => ({ value: v, label: `${v} giây` })), get(STORAGE_KEYS.geminiTimeout, GEMINI_TIMEOUTS, '10'))}</select>
             </label>
             <label title="Model vừa quá tải bị xếp xuống cuối trong thời gian này, rồi mới được thử lại đầu tiên">Thử lại model quá tải sau
-              <select class="js-settings-gemini-retry">${options(GEMINI_RETRIES.map((v) => ({ value: v, label: v === '0' ? 'Luôn thử lại' : `${v} phút` })), get(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '5'))}</select>
+              <select class="js-settings-gemini-retry">${options(GEMINI_RETRIES.map((v) => ({ value: v, label: v === '0' ? 'Luôn thử lại' : `${v} phút` })), get(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '1'))}</select>
             </label>
           </div>
           <div class="zenlo-settings__note zenlo-settings__note--warn">Key miễn phí: Google có thể dùng nội dung gửi lên để cải thiện sản phẩm.</div>

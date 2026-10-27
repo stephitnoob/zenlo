@@ -40,7 +40,7 @@
 <main class="wrap">
 <article class="doc doc--page">
   <h1>Chính sách quyền riêng tư</h1>
-  <p class="lede">Cập nhật 26/10/2026</p>
+  <p class="lede">Cập nhật 27/10/2026</p>
   <p>Zenlo là một tiện ích cho Zalo, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.</p>
 
   <h2>Tóm tắt</h2>
@@ -72,6 +72,20 @@
     </tbody>
   </table>
   <p>Kết nối luôn được mã hoá (HTTPS). Zenlo không gửi dữ liệu tới bất kỳ địa chỉ nào khác, trừ một trường hợp: khi bạn bấm <b>Kiểm tra bản mới</b> trong Cài đặt, hoặc bật tự kiểm tra mỗi ngày (mặc định tắt), Zenlo hỏi GitHub (<code>api.github.com</code>) bản mới nhất là bản nào. Yêu cầu này không chứa tin nhắn, ghi chú hay thông tin nào về bạn. Vì tin nhắn trong nhóm có cả nội dung của người khác, hãy cân nhắc trước khi gửi những hội thoại nhạy cảm tới dịch vụ AI.</p>
+
+  <h2 id="ket-noi">Mọi kết nối mạng của Zenlo</h2>
+  <p>Ngoài các trường hợp dưới đây, ứng dụng Zenlo không kết nối tới đâu cả. Bộ cài <code>Zenlo-Setup.exe</code> không kết nối mạng.</p>
+  <table>
+    <thead><tr><th>Khi nào</th><th>Tới đâu</th><th>Gửi gì</th></tr></thead>
+    <tbody>
+    <tr><td>Khi bạn bấm <b>Tóm tắt</b> hoặc <b>Tạo bản tin</b></td><td>Dịch vụ AI bạn chọn (Google, Anthropic hoặc OpenAI)</td><td>Tin nhắn cần tóm tắt, lời yêu cầu, ghi chú của bạn (bảng ở trên)</td></tr>
+    <tr><td>Khi đã lưu key Gemini: lúc mở Cài đặt hoặc lúc tóm tắt bằng Gemini, tối đa mỗi giờ một lần</td><td><code>generativelanguage.googleapis.com</code>, bằng key của bạn</td><td>Chỉ hỏi danh sách model key của bạn dùng được; không có tin nhắn</td></tr>
+    <tr><td>Khi bạn bấm <b>Kiểm tra kết nối</b></td><td>Dịch vụ AI bạn chọn</td><td>Một câu thử ngắn, không có tin nhắn. Với Codex, Zenlo hỏi thêm danh sách model của tài khoản (lệnh <code>codex debug models</code>). Với Claude, Zenlo chỉ đọc danh sách model Claude Code đã lưu trên máy, không gửi gì</td></tr>
+    <tr><td>Khi bạn bấm <b>Kiểm tra bản mới</b>, hoặc mỗi ngày một lần nếu bạn tự bật (mặc định tắt)</td><td><code>api.github.com</code></td><td>Chỉ hỏi số phiên bản mới nhất; không có tin nhắn, ghi chú hay thông tin về bạn. Tắt bằng cách bỏ chọn "Tự kiểm tra bản mới mỗi ngày"</td></tr>
+    <tr><td>Khi bạn bấm một link (trong bản tóm tắt, trong Cài đặt)</td><td>Trang web của link đó, mở trong trình duyệt của bạn</td><td>Như khi bạn tự mở link</td></tr>
+    </tbody>
+  </table>
+  <p>Claude Code và Codex là chương trình của Anthropic và OpenAI cài trên máy bạn; chúng tự kết nối tới máy chủ của hãng theo chính sách của hãng. Khi Zenlo gọi chúng, Zenlo tắt thống kê và các kết nối không cần thiết mà chúng cho phép tắt.</p>
 
   <h2>Zenlo lưu gì, ở đâu</h2>
   <table>
@@ -112,6 +126,7 @@
       <a href="huong-dan.html">Hướng dẫn</a>
       <a href="phien-ban.html">Phiên bản</a>
       <a href="dieu-khoan.html">Điều khoản</a>
+      <a href="ky-so.html">Code signing policy</a>
       <a href="tra-sua.html">Mời trà sữa</a>
       <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
       <a class="js-feedback" href="mailto:stephit.zenlo@outlook.com">Góp ý</a>

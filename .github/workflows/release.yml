@@ -1,7 +1,13 @@
 # Builds Zenlo-Setup.exe on GitHub's own machines when a version tag (v0.1.0, …) is pushed,
-# checks it, attests where it was built from, and publishes it with its SHA-256.
+# checks it, has it signed by SignPath (once the project is set up there), attests where it was
+# built from, and publishes it with its SHA-256.
 # Anyone can then check that a download was built from this repository:
 #   gh attestation verify Zenlo-Setup.exe --repo <owner>/<repo>
+#
+# Code signing (SignPath Foundation, https://signpath.org): the signing steps run only when the
+# repository variable SIGNPATH_ORGANIZATION_ID is set. They also need the variables
+# SIGNPATH_PROJECT_SLUG, SIGNPATH_SIGNING_POLICY_SLUG and SIGNPATH_ARTIFACT_CONFIGURATION_SLUG and
+# the secret SIGNPATH_API_TOKEN. Every signing request waits for a manual approval in SignPath.
 name: Release
 
 on:
@@ -10,12 +16,14 @@ on:
 
 permissions:
   contents: write       # create the release
+  actions: read         # let SignPath read this run's artifact
   id-token: write       # sign the build provenance
   attestations: write   # store the build provenance
 
 jobs:
   release:
     runs-on: windows-latest
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +44,46 @@ jobs:
       - name: Check the embedded files
         run: build/setup/Zenlo-Setup.exe --check
 
+      # ---------- Code signing (SignPath) ----------
+
+      - name: Upload the unsigned build for signing
+        id: upload-unsigned
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zenlo-Setup-unsigned
+          path: build/setup/Zenlo-Setup.exe
+          if-no-files-found: error
+
+      - name: Sign with SignPath (waits for manual approval)
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          # The approver may take a while; the job itself stops after 6 hours
+          wait-for-completion-timeout-in-seconds: 20000
+          output-artifact-directory: build/signed
+
+      - name: Use the signed build
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        shell: pwsh
+        run: |
+          $signature = Get-AuthenticodeSignature build/signed/Zenlo-Setup.exe
+          if ($signature.Status -ne 'Valid') { throw "The signed file is not valid: $($signature.Status) $($signature.StatusMessage)" }
+          Copy-Item build/signed/Zenlo-Setup.exe build/setup/Zenlo-Setup.exe -Force
+          # The SHA-256 of the file people download, so after signing
+          $hash = (Get-FileHash build/setup/Zenlo-Setup.exe -Algorithm SHA256).Hash.ToLower()
+          [IO.File]::WriteAllText("build/setup/SHA256.txt", "$hash  Zenlo-Setup.exe`n")
+          build/setup/Zenlo-Setup.exe --check
+
+      # ---------- Publish ----------
+
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v2
         with:
@@ -52,4 +100,6 @@ jobs:
             --notes "SHA-256 của Zenlo-Setup.exe: \`$hash\`
 
           Kiểm tra file tải về: \`Get-FileHash .\\Zenlo-Setup.exe -Algorithm SHA256\`
-          Kiểm tra nguồn gốc build: \`gh attestation verify .\\Zenlo-Setup.exe --repo $GITHUB_REPOSITORY\`"
+          Kiểm tra nguồn gốc build: \`gh attestation verify .\\Zenlo-Setup.exe --repo $GITHUB_REPOSITORY\`
+
+          Code signing policy: https://stephitnoob.github.io/zenlo/ky-so.html"

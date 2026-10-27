@@ -11,9 +11,8 @@
   const Z = window.ZenloCore
   const { formatTime, escapeHTML, LENGTHS } = Z
 
-  // Conversations summarized at the same time. Claude Code handles a few parallel runs well;
-  // Gemini's free tier allows few requests per minute.
-  const PARALLEL = { claude: 3, codex: 2, gemini: 2 }
+  // Conversations summarized at the same time (ZenloCore.PARALLEL)
+  const { PARALLEL } = Z
 
   // Kinds of messages that automated accounts send (account notices, cards, bank cards)
   const AUTOMATED_KINDS = ['chat.list.action', 'chat.webcontent', 'chat.ecard']
@@ -345,7 +344,8 @@
         for (let i = 0; i < chunks.length; i++) {
           const call = Z.runAI({
             systemPrompt: Z.SUMMARY_PROMPT,
-            instruction: Z.buildPartInstruction({ convName: item.name, part: i + 1, parts: chunks.length, note: Z.getNote(item.convId) }),
+            instruction: Z.buildPartInstruction({ convName: item.name, part: i + 1, parts: chunks.length, hasNote: !!Z.getNote(item.convId) }),
+            note: Z.getNote(item.convId),
             input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
           })
           calls.add(call)
@@ -357,16 +357,17 @@
 
       const call = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
+        note: Z.getNote(item.convId),
+        length,
         instruction: Z.buildSummaryInstruction({
-          note: Z.getNote(item.convId),
           convName: item.name,
           isGroup: item.isGroup,
           from: item.start,
           to: item.lastTime,
           count: item.count,
-          length,
           kind: 'unread',
-          notes: chunks.length > 1
+          notes: chunks.length > 1,
+          hasNote: !!Z.getNote(item.convId)
         }),
         input
       }, (text) => {

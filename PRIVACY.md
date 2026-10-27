@@ -1,6 +1,6 @@
 # Chính sách quyền riêng tư của Zenlo
 
-Cập nhật: 26/10/2026
+Cập nhật: 27/10/2026
 
 Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
 
@@ -35,6 +35,20 @@ Zenlo chỉ gửi đi phần tin nhắn cần tóm tắt, kèm lời yêu cầu 
 Kết nối luôn được mã hoá (HTTPS). Zenlo không gửi dữ liệu tới bất kỳ địa chỉ nào khác, trừ một trường hợp: khi bạn bấm **Kiểm tra bản mới** trong Cài đặt, hoặc bật tự kiểm tra mỗi ngày (mặc định tắt), Zenlo hỏi GitHub (`api.github.com`) bản mới nhất là bản nào. Yêu cầu này không chứa tin nhắn, ghi chú hay thông tin nào về bạn.
 
 Vì tin nhắn trong nhóm có cả nội dung của người khác, hãy cân nhắc trước khi gửi những hội thoại nhạy cảm tới dịch vụ AI.
+
+## Mọi kết nối mạng của Zenlo
+
+Ngoài các trường hợp dưới đây, ứng dụng Zenlo không kết nối tới đâu cả. Bộ cài `Zenlo-Setup.exe` không kết nối mạng.
+
+| Khi nào | Tới đâu | Gửi gì |
+|---|---|---|
+| Khi bạn bấm **Tóm tắt** hoặc **Tạo bản tin** | Dịch vụ AI bạn chọn (Google, Anthropic hoặc OpenAI) | Tin nhắn cần tóm tắt, lời yêu cầu, ghi chú của bạn (bảng ở trên) |
+| Khi đã lưu key Gemini: lúc mở Cài đặt hoặc lúc tóm tắt bằng Gemini, tối đa mỗi giờ một lần | `generativelanguage.googleapis.com`, bằng key của bạn | Chỉ hỏi danh sách model key của bạn dùng được; không có tin nhắn |
+| Khi bạn bấm **Kiểm tra kết nối** | Dịch vụ AI bạn chọn | Một câu thử ngắn, không có tin nhắn. Với Codex, Zenlo hỏi thêm danh sách model của tài khoản (lệnh `codex debug models`). Với Claude, Zenlo chỉ đọc danh sách model Claude Code đã lưu trên máy, không gửi gì |
+| Khi bạn bấm **Kiểm tra bản mới**, hoặc mỗi ngày một lần nếu bạn tự bật (mặc định tắt) | `api.github.com` | Chỉ hỏi số phiên bản mới nhất; không có tin nhắn, ghi chú hay thông tin về bạn. Tắt bằng cách bỏ chọn "Tự kiểm tra bản mới mỗi ngày" |
+| Khi bạn bấm một link (trong bản tóm tắt, trong Cài đặt) | Trang web của link đó, mở trong trình duyệt của bạn | Như khi bạn tự mở link |
+
+Claude Code và Codex là chương trình của Anthropic và OpenAI cài trên máy bạn; chúng tự kết nối tới máy chủ của hãng theo chính sách của hãng. Khi Zenlo gọi chúng, Zenlo tắt thống kê và các kết nối không cần thiết mà chúng cho phép tắt.
 
 ## Zenlo lưu gì, ở đâu
 
