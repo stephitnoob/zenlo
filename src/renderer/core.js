@@ -14,6 +14,8 @@
   const MINUTE = 60 * 1000
   const DAY = 24 * 60 * MINUTE
   const MAX_RANGE = DAY
+  // How far back the digest reads a conversation that mentions the user
+  const MENTION_LOOKBACK = 30 * DAY
   // Messages read from Zalo per call: 500 was about 20% faster than 200, larger pages no faster (Oct 2026)
   const PAGE_SIZE = 500
   // Rough size for one AI request; longer inputs are split
@@ -702,8 +704,9 @@
   // before the count-th latest message from someone else (sent before `before`). A conversation
   // marked unread with no count starts after the user's own last message. Never further back than
   // the lookback setting.
-  async function getUnreadStart (convId, { count, marked }, before = Date.now()) {
-    const floor = before - getLookback()
+  async function getUnreadStart (convId, { count, marked, mentions = 0 }, before = Date.now()) {
+    // A conversation that mentions the user is never left out for being old
+    const floor = before - (mentions > 0 ? MENTION_LOOKBACK : getLookback())
     const latest = await getLatestMessages(convId, Math.max(count, 1) + 200)
     const fromOthers = latest.filter((m) => Number(m.sendDttm) <= before && m.fromUid !== '0' && m.msgType !== -4 && describeContent(m))
     let start
@@ -723,7 +726,10 @@
   function markReadInZalo (convIds) {
     const convs = convIds.map((id) => getConvInfoManager().getConvByIdSync(id) || { userId: id })
     getUnreadManager().onClearUnreadConversations(convs)
-    for (const id of convIds) recentUnread.delete(id)
+    for (const id of convIds) {
+      recentUnread.delete(id)
+      mentionedByScan.delete(id)
+    }
   }
 
   // ---------- Zalo internals ----------
@@ -844,6 +850,35 @@
     return previews
       .filter((p) => p && p.convId)
       .map((p) => ({ convId: p.convId, time: Number(p.messageTime) || 0, fromMe: p.fromUid === '0' }))
+  }
+
+  // Messages that mention the user by tag, or everyone (@Tất cả). Zalo's own mention counter is
+  // not always set for a conversation it shows with "@", so the digest also looks at the messages.
+  function mentionsMe (messages, myUid = getMyUid()) {
+    const isMe = (uid) => uid !== undefined && uid !== null && (String(uid) === '0' || (!!myUid && String(uid) === String(myUid)))
+    return messages.some((m) => m && m.fromUid !== '0' && Array.isArray(m.mentions) &&
+      m.mentions.some((x) => x && (isMe(x.uid) || String(x.uid) === '-1')))
+  }
+
+  // Unread conversations found to mention the user by the last digest scan, so the left-bar badge
+  // counts the same conversations the digest marks "@ nhắc bạn"
+  const mentionedByScan = new Set()
+
+  function noteMention (convId, mentioned) {
+    if (mentioned) mentionedByScan.add(convId)
+    else mentionedByScan.delete(convId)
+  }
+
+  // Unread conversations that mention the user: Zalo's counter, or the last digest scan
+  function countMentionedConversations () {
+    const unread = readZaloUnread()
+    // A conversation read since the scan is forgotten, so new unread messages start clean
+    for (const convId of mentionedByScan) if (!unread.has(convId)) mentionedByScan.delete(convId)
+    let count = 0
+    for (const [convId, state] of unread) {
+      if (state.mentions > 0 || mentionedByScan.has(convId)) count++
+    }
+    return count
   }
 
   // Unread @mention counts by conversation id, from Zalo's own unread data
@@ -1336,6 +1371,9 @@
     getConvName,
     getConversationPreviews,
     getMentionCounts,
+    mentionsMe,
+    noteMention,
+    countMentionedConversations,
     openConversation,
     getCurrentConversation,
     waitForConversation,

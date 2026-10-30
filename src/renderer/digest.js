@@ -83,11 +83,13 @@
 
       const fromOthers = messages.filter((m) => m.fromUid !== '0' && Z.describeContent(m))
       const lastTime = Number(messages[messages.length - 1].sendDttm)
+      const mentioned = state.mentions > 0 || Z.mentionsMe(messages)
+      Z.noteMention(convId, mentioned)
       const item = {
         convId,
         name: Z.getConvName(convId),
         isGroup: convId.startsWith('g'),
-        mentions: state.mentions,
+        mentions: mentioned ? Math.max(state.mentions, 1) : 0,
         start,
         count: state.count || fromOthers.length,
         lastTime,
@@ -606,4 +608,28 @@
     if (!overlay) overlay = buildOverlay()
     if (!running) refresh()
   })
+
+  // While the digest is open, a newly unread conversation or a new mention scans the list again
+  // (not every new message: a busy group would make the list flicker), at most every 20 seconds
+  const unreadShape = () => {
+    try {
+      return [...Z.readZaloUnread()].map(([convId, state]) => `${convId}:${state.mentions > 0 ? 1 : 0}`).sort().join(',')
+    } catch (error) {
+      return ''
+    }
+  }
+  let lastShape = ''
+  let lastAutoRefresh = 0
+  setInterval(() => {
+    if (!overlay || running || !Z.drawer.isOpen('digest')) {
+      lastShape = ''
+      return
+    }
+    const shape = unreadShape()
+    if (!lastShape) lastShape = shape
+    if (shape === lastShape || Date.now() - lastAutoRefresh < 20 * 1000) return
+    lastShape = shape
+    lastAutoRefresh = Date.now()
+    refresh()
+  }, 3000)
 })()
