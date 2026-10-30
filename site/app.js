@@ -102,13 +102,20 @@
   const fileUrl = `https://github.com/${REPO}/releases/latest/download/Zenlo-Setup.exe`
   setDownload(fileUrl, 'Tải Zenlo miễn phí cho Windows')
 
-  // Only the home page and the versions page show the release facts
-  if (!document.querySelector('.js-version, .js-size-small, .js-sha')) return
-
   fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
     .then((response) => (response.ok ? response.json() : Promise.reject(new Error(response.status))))
     .then((release) => {
-      const asset = (release.assets || []).find((a) => a.name === 'Zenlo-Setup.exe')
+      // From v0.1.3 a release also has the installer in a zip, which browsers warn less about
+      const zip = (release.assets || []).find((a) => a.name === 'Zenlo-Setup.zip')
+      if (zip) {
+        setDownload(`https://github.com/${REPO}/releases/latest/download/Zenlo-Setup.zip`, 'Tải Zenlo miễn phí cho Windows')
+        setText('.js-file-name', 'Zenlo-Setup.zip')
+        setText('.js-download-step', 'Tải, giải nén, mở file')
+      }
+
+      // Only the home page and the versions page show the release facts
+      if (!document.querySelector('.js-version, .js-size-small, .js-sha')) return
+      const asset = zip || (release.assets || []).find((a) => a.name === 'Zenlo-Setup.exe')
       const sha = ((release.body || '').match(/\b[a-f0-9]{64}\b/) || [])[0]
       // The C# installer is about 180 KB, the old one 90 MB
       const size = !asset ? '–' : asset.size < 1048576 ? `${Math.round(asset.size / 1024)} KB` : `${Math.round(asset.size / 1048576)} MB`

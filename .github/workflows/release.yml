@@ -84,10 +84,17 @@ jobs:
 
       # ---------- Publish ----------
 
+      # Browsers warn far less about a zip than an exe while downloading
+      - name: Pack Zenlo-Setup.zip
+        shell: pwsh
+        run: Compress-Archive -Path build/setup/Zenlo-Setup.exe -DestinationPath build/setup/Zenlo-Setup.zip -Force
+
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: build/setup/Zenlo-Setup.exe
+          subject-path: |
+            build/setup/Zenlo-Setup.exe
+            build/setup/Zenlo-Setup.zip
 
       - name: Publish the release
         shell: bash
@@ -95,9 +102,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           hash=$(cut -d' ' -f1 build/setup/SHA256.txt)
-          gh release create "$GITHUB_REF_NAME" build/setup/Zenlo-Setup.exe build/setup/SHA256.txt \
+          gh release create "$GITHUB_REF_NAME" build/setup/Zenlo-Setup.zip build/setup/Zenlo-Setup.exe build/setup/SHA256.txt \
             --title "Zenlo $GITHUB_REF_NAME" \
             --notes "SHA-256 của Zenlo-Setup.exe: \`$hash\`
+          Zenlo-Setup.zip chứa đúng file Zenlo-Setup.exe này.
 
           Kiểm tra file tải về: \`Get-FileHash .\\Zenlo-Setup.exe -Algorithm SHA256\`
           Kiểm tra nguồn gốc build: \`gh attestation verify .\\Zenlo-Setup.exe --repo $GITHUB_REPOSITORY\`
