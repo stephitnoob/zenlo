@@ -162,7 +162,6 @@
       if (busy) return
       busy = true
       run.disabled = true
-      run.classList.remove('zp__btn--pulse')
       hint.textContent = 'Đang đọc 35 tin…'
       log.classList.remove('show')
       out.textContent = ''
