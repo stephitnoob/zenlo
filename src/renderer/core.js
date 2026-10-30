@@ -1368,6 +1368,9 @@
     getUnreadStart,
     markReadInZalo,
 
+    isZaloReady,
+    findExport,
+    getReactionCache,
     getConvName,
     getConversationPreviews,
     getMentionCounts,
