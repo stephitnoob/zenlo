@@ -212,7 +212,7 @@
     if (!badge) return
     let count = 0
     try {
-      for (const state of Z.readZaloUnread().values()) if (state.mentions > 0) count++
+      count = Z.countMentionedConversations()
     } catch (error) {
       return
     }
