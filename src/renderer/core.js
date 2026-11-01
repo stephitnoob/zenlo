@@ -791,10 +791,7 @@
   function markReadInZalo (convIds) {
     const convs = convIds.map((id) => getConvInfoManager().getConvByIdSync(id) || { userId: id })
     getUnreadManager().onClearUnreadConversations(convs)
-    for (const id of convIds) {
-      recentUnread.delete(id)
-      mentionedByScan.delete(id)
-    }
+    for (const id of convIds) recentUnread.delete(id)
   }
 
   // ---------- Zalo internals ----------
@@ -923,27 +920,6 @@
     const isMe = (uid) => uid !== undefined && uid !== null && (String(uid) === '0' || (!!myUid && String(uid) === String(myUid)))
     return messages.some((m) => m && m.fromUid !== '0' && Array.isArray(m.mentions) &&
       m.mentions.some((x) => x && (isMe(x.uid) || String(x.uid) === '-1')))
-  }
-
-  // Unread conversations found to mention the user by the last digest scan, so the left-bar badge
-  // counts the same conversations the digest marks "@ nhắc bạn"
-  const mentionedByScan = new Set()
-
-  function noteMention (convId, mentioned) {
-    if (mentioned) mentionedByScan.add(convId)
-    else mentionedByScan.delete(convId)
-  }
-
-  // Unread conversations that mention the user: Zalo's counter, or the last digest scan
-  function countMentionedConversations () {
-    const unread = readZaloUnread()
-    // A conversation read since the scan is forgotten, so new unread messages start clean
-    for (const convId of mentionedByScan) if (!unread.has(convId)) mentionedByScan.delete(convId)
-    let count = 0
-    for (const [convId, state] of unread) {
-      if (state.mentions > 0 || mentionedByScan.has(convId)) count++
-    }
-    return count
   }
 
   // Unread @mention counts by conversation id, from Zalo's own unread data
@@ -1496,8 +1472,6 @@
     getConversationPreviews,
     getMentionCounts,
     mentionsMe,
-    noteMention,
-    countMentionedConversations,
     openConversation,
     getCurrentConversation,
     waitForConversation,

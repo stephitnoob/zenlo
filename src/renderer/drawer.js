@@ -191,34 +191,20 @@
 
   // ---------- Left bar ----------
 
-  // One Zenlo button above "Zalo Cloud"; the badge counts unread conversations that mention you
+  // One Zenlo button above "Zalo Cloud"
   function injectNavButton () {
     const bottom = document.querySelector('#main-tab .nav__tabs__bottom')
     if (!bottom || bottom.querySelector('.zenlo-nav-btn')) return
     const tab = document.createElement('div')
     tab.className = 'clickable leftbar-tab flx flx-col flx-al-c flx-center rel zenlo-nav-btn'
     tab.title = 'Zenlo'
-    tab.innerHTML = `<div class="mmi-icon-wr zenlo-nav-btn__icon">${LOGO_SVG}<span class="zenlo-nav-btn__badge" hidden></span></div><div class="lb-tab-title truncate">Zenlo</div>`
+    tab.innerHTML = `<div class="mmi-icon-wr zenlo-nav-btn__icon">${LOGO_SVG}</div><div class="lb-tab-title truncate">Zenlo</div>`
     tab.addEventListener('click', (event) => {
       event.stopPropagation()
       // The left-bar button is the way to the digest; the title-bar button is the way to the summary
       toggle('digest')
     })
     bottom.prepend(tab)
-  }
-
-  function updateBadge () {
-    const badge = document.querySelector('.zenlo-nav-btn__badge')
-    if (!badge) return
-    let count = 0
-    try {
-      count = Z.countMentionedConversations()
-    } catch (error) {
-      return
-    }
-    badge.hidden = !count
-    badge.textContent = count > 9 ? '9+' : String(count)
-    badge.closest('.zenlo-nav-btn').title = count ? `Zenlo · ${count} hội thoại nhắc bạn` : 'Zenlo'
   }
 
   document.addEventListener('keydown', (event) => {
@@ -230,7 +216,6 @@
     if (isOpen()) attach()
   })
   setInterval(() => {
-    updateBadge()
     if (isOpen()) updateTheme()
   }, 2000)
 

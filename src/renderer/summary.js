@@ -91,7 +91,9 @@
       if (!count) return setEstimate('Không có tin nhắn nào trong khoảng này.')
       const chars = lines.join('\n').length + Z.SUMMARY_PROMPT.length
       const parts = Z.splitIntoChunks(lines).length
-      setEstimate(`${count} tin · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token đầu vào` +
+      // A long conversation costs one request per part, plus one to merge them
+      const requests = parts > 1 ? parts + 1 : 1
+      setEstimate(`${count} tin · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token đầu vào, ${requests} lần request` +
         (parts > 1 ? ` · chia ${parts} phần` : '') + ` · ${Z.getAILabel()}`)
     } catch (error) {
       if (myId === estimateId) setEstimate('')

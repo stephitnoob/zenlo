@@ -33,33 +33,6 @@ html.zenlo-dark {
   color: var(--zenlo-accent);
 }
 
-// The one Zenlo button in Zalo's left bar, in the same color as Zalo's own icons there
-.zenlo-nav-btn__icon {
-  position: relative;
-}
-
-.zenlo-nav-btn__badge {
-  position: absolute;
-  top: -4px;
-  right: -8px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  box-sizing: border-box;
-  border-radius: 8px;
-  background: var(--zenlo-accent);
-  color: var(--zenlo-accent-ink);
-  font-family: var(--zenlo-mono);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 16px;
-  text-align: center;
-
-  &[hidden] {
-    display: none;
-  }
-}
-
 // ---------- Drawer ----------
 
 // Docked as the last column of Zalo's window row: the chat narrows, nothing is covered
