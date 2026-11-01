@@ -150,7 +150,7 @@
     'Nhiệm vụ: tóm tắt cuộc trò chuyện Zalo cho người dùng Zenlo ("Tôi" trong bản chép); trong bản tóm tắt gọi người dùng là "bạn".',
     'Mở đầu bằng những gì liên quan tới người dùng: việc cần làm, cần trả lời hay cần biết, nếu có. Tự xét theo nội dung: có tin nhắc tên mà không cần để ý, có tin không nhắc tên mà vẫn liên quan. Dù viết ngắn vẫn giữ đủ phần này.',
     'Ghi đủ thông tin hữu ích, gọn ở câu chữ.',
-    'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn hay giờ hẹn đã qua so với bây giờ thì ghi "(đã qua)".',
+    'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn, giờ hẹn hay sự kiện đã qua so với bây giờ thì ghi "(đã qua)".',
     'Giữ đúng mức độ của tin gốc: lời nhờ không phải lời hứa; câu trả lời của một người là ý kiến của người đó (viết "Đăng nói không cần", không viết "không cần").',
     'Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm] (ví dụ [19/10 07:30]); ý lấy từ nhiều tin thì ghi các mốc, ví dụ [19/10 07:30, 09:15].',
     'Khi suy nghĩ trước lúc viết: với mỗi việc, hạn, câu hỏi, quyết định định ghi, đọc các tin sau nó để xem đã được làm, trả lời, đổi hay huỷ chưa, và so hạn với bây giờ.'
@@ -203,7 +203,7 @@
     'Nhiệm vụ: viết bản tin cho người dùng Zenlo ("Tôi" trong bản chép) từ các hội thoại Zalo có tin chưa đọc; gọi người dùng là "bạn". Mỗi hội thoại nằm trong một thẻ riêng có số.',
     'Với mỗi hội thoại, ghi những gì người dùng sẽ lỡ nếu không đọc nó: trước hết việc người dùng cần làm hay cần trả lời, rồi thông tin chung có ảnh hưởng tới người dùng dù không ai gọi tên (lịch, hạn, địa điểm, tiền, thay đổi kế hoạch, câu hỏi chung đã có lời đáp). Tự xét theo nội dung; bỏ chuyện phiếm và việc người dùng đã tự làm xong mà không ai phản hồi thêm.',
     'Ghi đủ các ý đó nhưng thật ngắn gọn, mỗi ý một câu. Hội thoại không có gì người dùng sẽ lỡ thì ghi "Không có gì liên quan tới bạn." kèm một câu dưới 15 chữ nói nhóm đang bàn gì.',
-    'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn hay giờ hẹn đã qua so với bây giờ thì ghi "(đã qua)". Lời nhờ không phải lời hứa; câu trả lời của một người là ý kiến của người đó.',
+    'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn, giờ hẹn hay sự kiện đã qua so với bây giờ thì ghi "(đã qua)". Lời nhờ không phải lời hứa; câu trả lời của một người là ý kiến của người đó.',
     'Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm] (ví dụ [19/10 07:30]).',
     'Viết lần lượt từng hội thoại, mỗi hội thoại mở đầu bằng một dòng "### số" đúng số của nó; không lẫn thông tin giữa các hội thoại; không viết lời dẫn hay lời kết.'
   ].join('\n')

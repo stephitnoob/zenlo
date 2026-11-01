@@ -12,10 +12,13 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { CHATS } from './chats.mjs'
+import { CHATS as BASE } from './chats.mjs'
+
+// Chat D (the long chat) has chat A's facts and traps
+const CHATS = { ...BASE, D: BASE.A }
 
 const [mode, OUT, only] = process.argv.slice(2)
-const results = fs.readdirSync(OUT).filter((f) => /^[ABC]-[A-E]-.+-r\d+\.json$/.test(f))
+const results = fs.readdirSync(OUT).filter((f) => /^[A-D]-[A-E]-.+-r\d+\.json$/.test(f))
   .map((f) => ({ file: f, ...JSON.parse(fs.readFileSync(path.join(OUT, f), 'utf8')) }))
   .filter((r) => r.text)
 

@@ -1,6 +1,6 @@
 /*
   Zenlo – the digest ("Bản tin") before and after, on the real Gemini API. Keys as in run.mjs.
-  - old: as Zenlo shipped it (core.js from git HEAD): one request per conversation, the summary
+  - old: as Zenlo shipped it before v3 (core.js at OLD_COMMIT): one request per conversation, the summary
     panel's prompt, length "Ngắn"
   - v3: several conversations in one request (v3.mjs DIGEST_PROMPT_V3), a time per message
 
@@ -14,7 +14,7 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { loadCore } from './load-core.mjs'
-import { CHATS, MY_UID, MY_NAME } from './chats.mjs'
+import { MY_UID, MY_NAME, DIGEST_CONVERSATIONS, OLD_COMMIT } from './chats.mjs'
 import * as V2 from './v2.mjs'
 import * as V3 from './v3.mjs'
 
@@ -33,44 +33,10 @@ const KEYS = fs.readFileSync(keyFile, 'utf8').split('\n').map((k) => k.trim()).f
 const NOW = new Date(2026, 9, 30, 23, 0).getTime()
 
 const Z = loadCore()
-const OLD = loadCore(execSync('git show HEAD:src/renderer/core.js', { cwd: ROOT, encoding: 'utf8' }))
+const OLD = loadCore(execSync(`git show ${OLD_COMMIT}:src/renderer/core.js`, { cwd: ROOT, encoding: 'utf8' }))
 fs.mkdirSync(OUT, { recursive: true })
 
-// Two small conversations next to chats A and B: a direct chat that concerns the user, and a group
-// where nothing does
-function small (name, isGroup, script) {
-  const messages = script.map(([at, who, text], i) => {
-    const [h, m] = at.split(':').map(Number)
-    return {
-      msgId: `${name}-${i}`,
-      sendDttm: String(new Date(2026, 9, 30, h, m).getTime()),
-      fromUid: who === 'Tôi' ? '0' : '2000',
-      dName: who === 'Tôi' ? MY_NAME : who,
-      msgType: 1,
-      originMsgType: 'webchat',
-      message: text
-    }
-  })
-  return { convName: name, isGroup, messages, from: Number(messages[0].sendDttm), to: Number(messages[messages.length - 1].sendDttm) }
-}
-
-const conversations = [
-  CHATS.A,
-  small('Mẹ', false, [
-    ['17:05', 'Mẹ', 'Tối nay về sớm ăn cơm nhé con, có bác Tư sang chơi'],
-    ['17:06', 'Mẹ', 'Tiện đường mua giúp mẹ 2 hộp sữa tươi không đường'],
-    ['18:40', 'Mẹ', 'Con đến đâu rồi?']
-  ]),
-  CHATS.B,
-  small('CLB Nhiếp ảnh Hà Nội', true, [
-    ['09:00', 'Admin Tuấn Anh', 'Thứ 7 này CLB đi chụp phố cổ, ai đăng ký thì comment nhé'],
-    ['09:12', 'Hồng Nhung', 'em đăng ký ạ'],
-    ['09:30', 'Văn Minh', 'cho mình 1 suất'],
-    ['10:15', 'Admin Tuấn Anh', 'đã đủ 20 người, chốt danh sách nhé'],
-    ['14:00', 'Lê Hoa', 'ảnh hôm trước đẹp quá mọi người ơi'],
-    ['14:05', 'Văn Minh', 'chuẩn']
-  ])
-]
+const conversations = DIGEST_CONVERSATIONS
 const minutesOf = conversations.map((c) => V3.transcriptV3(Z, c.messages, { myUid: MY_UID, myName: MY_NAME, now: NOW }).minutes)
 const srcMinutes = conversations.map((c) => Z.buildTranscript(c.messages, { myUid: MY_UID, now: NOW }).minutes)
 

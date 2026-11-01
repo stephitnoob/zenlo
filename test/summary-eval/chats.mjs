@@ -255,3 +255,48 @@ function chatB () {
 
 // Chat C: chat A's facts in a much busier day (about 1,800 messages), for long-chat handling
 export const CHATS = { A: chatA(), B: chatB(), C: { ...chatA(1450, 23), convName: '12A5 – Cả lớp' } }
+
+// Chat D: chat A's facts in about 15,000 messages, past Zenlo's 300,000-character part size, so the
+// summary is made from part notes. Built on demand: it is slow to build.
+export const longChat = () => ({ ...chatA(15000, 31), convName: '12A5 – Cả lớp' })
+
+// A short conversation on 30/10 from a script of [time, who, text]
+function small (convName, isGroup, script) {
+  const messages = script.map(([at, who, text], i) => {
+    const [h, m] = at.split(':').map(Number)
+    return {
+      msgId: `${convName}-${i}`,
+      sendDttm: String(new Date(2026, 9, 30, h, m).getTime()),
+      fromUid: who === 'Tôi' ? '0' : '2000',
+      dName: who === 'Tôi' ? MY_NAME : who,
+      msgType: 1,
+      originMsgType: 'webchat',
+      message: text
+    }
+  })
+  return { convName, isGroup, messages, from: Number(messages[0].sendDttm), to: Number(messages[messages.length - 1].sendDttm) }
+}
+
+// The digest's four conversations: chats A and B, a direct chat that concerns the user, and a group
+// where nothing does. Now: 30/10/2026 23:00.
+export const DIGEST_NOW = new Date(2026, 9, 30, 23, 0).getTime()
+export const DIGEST_CONVERSATIONS = [
+  CHATS.A,
+  small('Mẹ', false, [
+    ['17:05', 'Mẹ', 'Tối nay về sớm ăn cơm nhé con, có bác Tư sang chơi'],
+    ['17:06', 'Mẹ', 'Tiện đường mua giúp mẹ 2 hộp sữa tươi không đường'],
+    ['18:40', 'Mẹ', 'Con đến đâu rồi?']
+  ]),
+  CHATS.B,
+  small('CLB Nhiếp ảnh Hà Nội', true, [
+    ['09:00', 'Admin Tuấn Anh', 'Thứ 7 này CLB đi chụp phố cổ, ai đăng ký thì comment nhé'],
+    ['09:12', 'Hồng Nhung', 'em đăng ký ạ'],
+    ['09:30', 'Văn Minh', 'cho mình 1 suất'],
+    ['10:15', 'Admin Tuấn Anh', 'đã đủ 20 người, chốt danh sách nhé'],
+    ['14:00', 'Lê Hoa', 'ảnh hôm trước đẹp quá mọi người ơi'],
+    ['14:05', 'Văn Minh', 'chuẩn']
+  ])
+]
+
+// The last commit with the prompts from before v3 (1/11/2026), for "old" in the comparisons
+export const OLD_COMMIT = 'ef36b8f'
