@@ -2,14 +2,15 @@
   Zenlo – trình quản lí hội thoại Zalo
 
   Digest ("Bản tin" tab of the Zenlo drawer, renderer): lists every conversation Zalo counts
-  as unread and summarizes the ticked ones, each with the same prompt as the summary panel.
+  as unread and summarizes the ticked ones: short, only what concerns the user, several
+  conversations per AI request (ZenloCore.DIGEST_PROMPT).
   Messages are read from the local store, so making a digest sends no "seen" receipt; only the
   "Đã đọc" buttons mark conversations read in Zalo.
 */
 
 (function () {
   const Z = window.ZenloCore
-  const { formatTime, escapeHTML, LENGTHS } = Z
+  const { formatTime, escapeHTML } = Z
 
   // Conversations summarized at the same time (ZenloCore.PARALLEL)
   const { PARALLEL } = Z
@@ -75,7 +76,7 @@
 
       const start = await Z.getUnreadStart(convId, state, now)
       const { messages } = await Z.loadMessagesInRange(convId, start, now)
-      const { lines, count } = await Z.prepareTranscript(messages)
+      const { lines, count, minutes } = await Z.prepareTranscript(messages)
       if (!count) {
         tooOld++
         continue
@@ -94,6 +95,7 @@
         count: state.count || fromOthers.length,
         lastTime,
         lines,
+        minutes,
         summary: '',
         status: 'pending',
         error: '',
@@ -254,9 +256,16 @@
     const pending = items.filter((item) => item.status !== 'done')
     const selected = pending.filter((item) => item.selected)
     const total = selected.reduce((sum, item) => sum + item.count, 0)
-    const chars = selected.reduce((sum, item) => sum + item.lines.join('\n').length + Z.SUMMARY_PROMPT.length, 0)
+    const batches = packBatches(selected)
+    const chars = selected.reduce((sum, item) => sum + itemChars(item), 0) + batches.length * Z.DIGEST_PROMPT.length
+    // A conversation too long for one request costs one request per part, plus the digest itself
+    const requests = batches.reduce((sum, batch) => {
+      const parts = batch.length === 1 ? Z.splitIntoChunks(batch[0].lines).length : 1
+      return sum + (parts > 1 ? parts + 1 : 1)
+    }, 0)
     overlay.querySelector('.zenlo-digest__summary-line').textContent = pending.length
-      ? `Đã chọn ${selected.length}/${pending.length} hội thoại · ${total} tin chưa đọc · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token · ${Z.getAILabel()}`
+      ? `Đã chọn ${selected.length}/${pending.length} hội thoại · ${total} tin chưa đọc · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token` +
+        (requests ? `, ${requests} lần gọi AI` : '') + ` · ${Z.getAILabel()}`
       : ''
     overlay.querySelector('.js-digest-run').disabled = !selected.length || locked
     overlay.querySelector('.js-digest-read-all').disabled = !items.length || locked
@@ -264,7 +273,6 @@
     overlay.querySelectorAll('.zenlo-digest__select button').forEach((button) => {
       button.disabled = locked
     })
-    renderLength()
   }
 
   // Streaming text arrives many times a second from several conversations: render once per frame
@@ -275,14 +283,6 @@
     requestAnimationFrame(() => {
       renderScheduled = false
       renderItems()
-    })
-  }
-
-  function renderLength () {
-    const current = Z.getLength('digest')
-    overlay.querySelectorAll('[data-length]').forEach((button) => {
-      button.classList.toggle('zenlo__segment-btn--active', button.dataset.length === current)
-      button.disabled = !!running
     })
   }
 
@@ -330,64 +330,121 @@
     renderItems()
   }
 
-  // Summarizes one conversation with the summary panel's prompt
-  async function summarizeItem (item, length, calls) {
-    item.status = 'running'
-    item.summary = ''
-    item.error = ''
-    item.model = ''
-    scheduleRender()
+  // Conversations per request: as many as fit, in priority order. One request instead of one per
+  // conversation saves the user's quota (a free Gemini key allows few requests a day). The size
+  // stays well under what a weak model reads reliably; a conversation too long for one request
+  // (over CHUNK_CHARS) goes alone, as part notes.
+  const BATCH_CHARS = 60000
+  const BATCH_MAX = 12
 
-    try {
-      const chunks = Z.splitIntoChunks(item.lines)
-      let input = `<transcript>\n${item.lines.join('\n')}\n</transcript>`
-      if (chunks.length > 1) {
-        const notes = []
-        for (let i = 0; i < chunks.length; i++) {
-          const call = Z.runAI({
-            systemPrompt: Z.SUMMARY_PROMPT,
-            instruction: Z.buildPartInstruction({ convName: item.name, part: i + 1, parts: chunks.length, hasNote: !!Z.getNote(item.convId) }),
-            note: Z.getNote(item.convId),
-            input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
-          })
-          calls.add(call)
-          notes.push(`### Phần ${i + 1}\n` + await call.promise)
-          calls.delete(call)
-        }
-        input = `<notes>\n${notes.join('\n\n')}\n</notes>`
+  const itemChars = (item) => item.lines.reduce((sum, line) => sum + line.length + 1, 0)
+
+  function packBatches (list) {
+    const batches = []
+    let current = []
+    let size = 0
+    for (const item of list) {
+      const chars = itemChars(item)
+      if (Z.splitIntoChunks(item.lines).length > 1) {
+        batches.push([item])
+        continue
       }
+      if (current.length && (size + chars > BATCH_CHARS || current.length >= BATCH_MAX)) {
+        batches.push(current)
+        current = []
+        size = 0
+      }
+      current.push(item)
+      size += chars
+    }
+    if (current.length) batches.push(current)
+    return batches
+  }
 
+  // Notes for each part of a conversation too long for one request (the summary panel's prompt)
+  async function partNotes (item, chunks, calls) {
+    const notes = []
+    for (let i = 0; i < chunks.length; i++) {
       const call = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
+        instruction: Z.buildPartInstruction({ convName: item.name, part: i + 1, parts: chunks.length }),
         note: Z.getNote(item.convId),
-        length,
-        instruction: Z.buildSummaryInstruction({
-          convName: item.name,
-          isGroup: item.isGroup,
-          from: item.start,
-          to: item.lastTime,
-          count: item.count,
-          kind: 'unread',
-          notes: chunks.length > 1,
-          hasNote: !!Z.getNote(item.convId)
-        }),
-        input
+        input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
+      })
+      calls.add(call)
+      notes.push(`### Phần ${i + 1}\n` + await call.promise)
+      calls.delete(call)
+    }
+    return notes.join('\n\n')
+  }
+
+  // Summarizes the conversations of one batch in a single request. The answer has one "### n"
+  // section per conversation; each card shows its own section as the answer streams in.
+  async function summarizeBatch (batch, calls) {
+    for (const item of batch) {
+      item.status = 'running'
+      item.summary = ''
+      item.error = ''
+      item.model = ''
+    }
+    scheduleRender()
+
+    const show = (text) => {
+      const sections = Z.splitDigest(text)
+      batch.forEach((item, i) => {
+        if (sections[i + 1] !== undefined) item.summary = Z.cleanAnswer(sections[i + 1])
+      })
+      scheduleRender()
+    }
+
+    try {
+      const entries = []
+      for (const item of batch) {
+        const chunks = Z.splitIntoChunks(item.lines)
+        const entry = { name: item.name, isGroup: item.isGroup, from: item.start, to: item.lastTime, count: item.count }
+        if (chunks.length > 1) entry.notes = await partNotes(item, chunks, calls)
+        else entry.lines = item.lines
+        entries.push(entry)
+      }
+
+      let streamed = ''
+      const call = Z.runAI({
+        systemPrompt: Z.DIGEST_PROMPT,
+        instruction: Z.buildDigestInstruction({ count: batch.length, notes: batch.map((item) => Z.getNote(item.convId)) }),
+        input: Z.buildDigestInput(entries)
       }, (text) => {
-        item.summary += text
-        scheduleRender()
+        streamed += text
+        show(streamed)
       }, (modelStatus) => {
-        item.model = Z.describeModelStatus(modelStatus)
+        const model = Z.describeModelStatus(modelStatus)
+        for (const item of batch) item.model = model
         scheduleRender()
       })
       calls.add(call)
-      item.summary = await call.promise
+      const answer = await call.promise
       calls.delete(call)
-      item.status = 'done'
-      item.selected = false
-      rememberSummary(item)
+
+      const sections = Z.splitDigest(answer)
+      // A lone conversation answered without its "### 1" line: the whole answer is its summary
+      if (batch.length === 1 && !Object.keys(sections).length && answer.trim()) sections[1] = answer
+      batch.forEach((item, i) => {
+        const text = sections[i + 1] && Z.cleanAnswer(sections[i + 1], item.minutes)
+        if (text) {
+          item.summary = text
+          item.status = 'done'
+          item.selected = false
+          rememberSummary(item)
+        } else {
+          item.status = 'error'
+          item.summary = ''
+          item.error = 'AI bỏ sót hội thoại này. Bấm "Tạo bản tin" để thử lại.'
+        }
+      })
     } catch (error) {
-      item.status = 'error'
-      item.error = error.message || String(error)
+      for (const item of batch) {
+        item.status = 'error'
+        item.error = error.message || String(error)
+      }
     }
     scheduleRender()
   }
@@ -396,7 +453,6 @@
     const chosen = items.filter((item) => item.status !== 'done' && item.selected)
     if (running || !chosen.length) return
 
-    const length = Z.getLength('digest')
     const { provider } = Z.getAISettings()
     const calls = new Set()
     let cancelled = false
@@ -412,12 +468,12 @@
     setStatus(`Đang tạo bản tin bằng ${Z.getAILabel()}…`)
     renderItems()
 
-    // A few conversations at a time, in priority order
-    const queue = chosen.slice()
+    // Batches of conversations, in priority order, a few requests at a time
+    const queue = packBatches(chosen)
     const worker = async () => {
       while (queue.length) {
         if (cancelled) return
-        await summarizeItem(queue.shift(), length, calls)
+        await summarizeBatch(queue.shift(), calls)
       }
     }
     await Promise.all(Array.from({ length: Math.min(PARALLEL[provider] || 2, queue.length) }, worker))
@@ -463,13 +519,6 @@
         <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc trong Zalo mọi hội thoại trong danh sách">Đã đọc hết</button>
       </div>
 
-      <div class="zenlo__length">
-        <span>Độ dài</span>
-        <span class="zenlo__segment">
-          ${LENGTHS.map((l) => `<button type="button" class="zenlo__segment-btn" data-length="${l.value}">${l.label}</button>`).join('')}
-        </span>
-      </div>
-
       <div class="zenlo__status zenlo-digest__summary-line"></div>
       <div class="zenlo__status zenlo-digest__status"></div>
 
@@ -490,12 +539,6 @@
     el.querySelector('.js-digest-read-all').addEventListener('click', () => {
       if (!items.length) return
       if (markRead(items.map((item) => item.convId))) setStatus('Đã đánh dấu đã đọc trong Zalo.')
-    })
-    el.querySelectorAll('[data-length]').forEach((button) => {
-      button.addEventListener('click', () => {
-        Z.setLength('digest', button.dataset.length)
-        renderLength()
-      })
     })
 
     el.querySelector('.js-digest-select-all').addEventListener('click', () => setAllSelected(true))

@@ -408,8 +408,7 @@
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">Tóm tắt và Bản tin${help('mac-dinh')}</div>
         <div class="zenlo__grid">
-          <label>Độ dài Tóm tắt<select class="js-settings-length" data-feature="summary">${options(LENGTHS, Z.getLength('summary'))}</select></label>
-          <label>Độ dài Bản tin<select class="js-settings-length" data-feature="digest">${options(LENGTHS, Z.getLength('digest'))}</select></label>
+          <label>Độ dài Tóm tắt<select class="js-settings-length" data-feature="summary">${options([{ value: '', label: 'AI tự quyết' }, ...LENGTHS], Z.getLength('summary'))}</select></label>
           <label>Tìm tin chưa đọc lùi tối đa<select class="js-settings-lookback">${LOOKBACK_DAYS.map((d) => `<option value="${d}"${String(Z.getLookback() / Z.DAY) === d ? ' selected' : ''}>${d} ngày</option>`).join('')}</select></label>
         </div>
       </section>

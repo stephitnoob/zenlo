@@ -168,10 +168,10 @@
         <h3>Ngắn, Vừa, Dài</h3>
         <ul>
           <li><b>Ngắn</b>: khoảng 3 ý, mỗi ý một câu. Để liếc qua.</li>
-          <li><b>Vừa</b>: đủ các ý đáng chú ý, viết gọn. Mặc định của Tóm tắt.</li>
+          <li><b>Vừa</b>: đủ các ý đáng chú ý, viết gọn.</li>
           <li><b>Dài</b>: đủ chi tiết, ai nói gì. Khi cần nắm kỹ một cuộc bàn bạc.</li>
         </ul>
-        <p>Đổi ngay trong khung Tóm tắt; mức mặc định đặt trong <a class="link" href="#mac-dinh">Cài đặt</a>.</p>
+        <p>Không chọn nút nào thì AI tự quyết độ dài; đây là mặc định. Bấm lại nút đang chọn để bỏ chọn. Đổi ngay trong khung Tóm tắt; mức chọn sẵn đặt trong <a class="link" href="#mac-dinh">Cài đặt</a>.</p>
       </section>
 
       <section id="moc-gio">
@@ -190,7 +190,7 @@
           <li>Mở hội thoại, bấm nút <b>Ghi chú</b> (hình tờ giấy) ngay cạnh nút Tóm tắt trên thanh trên cùng khung chat.</li>
           <li>Viết ghi chú, tối đa 300 ký tự, rồi bấm <b>Lưu</b> (hoặc <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span>). Bấm <b>Xoá</b> để bỏ ghi chú.</li>
         </ol>
-        <p>Mỗi hội thoại một ghi chú riêng. AI đọc nó mỗi lần tóm tắt hội thoại đó, cả trong Bản tin. Hội thoại nào có ghi chú thì nút Ghi chú sáng màu tím, và khung Tóm tắt hiện dòng "Ghi chú cho AI: …" dưới tên hội thoại.</p>
+        <p>Mỗi hội thoại một ghi chú riêng. AI đọc nó mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên làm theo ghi chú hơn cách viết mặc định. Hội thoại nào có ghi chú thì nút Ghi chú sáng màu tím, và khung Tóm tắt hiện dòng "Ghi chú cho AI: …" dưới tên hội thoại.</p>
         <div class="tip">Ví dụ: "Hoa là sếp mình." · "Mình phụ trách khách ABC." · "Chỉ cần hạn chót và lịch họp, bỏ qua chuyện phiếm."</div>
         <p>Ghi chú được lưu trên máy bạn và được gửi tới AI cùng tin nhắn, giống phần còn lại của bản tóm tắt.</p>
       </section>
@@ -212,6 +212,7 @@
           <li>Giữ <b>⋮⋮</b> và kéo để xếp hội thoại quan trọng lên đầu.</li>
           <li>Bấm <b>Tạo bản tin</b>. Mỗi hội thoại một thẻ, tóm tắt hiện dần. Bấm <b>Dừng</b> để ngắt giữa chừng.</li>
         </ol>
+        <p>Zenlo gửi nhiều hội thoại trong cùng một lần gọi AI, nên một bản tin thường chỉ tốn một lượt của key Gemini.</p>
         <p>Xong thì <b>Sao chép</b> lấy cả bản tin, mỗi hội thoại một đoạn có tên ở đầu, kèm một dòng ghi nguồn Zenlo ở cuối.</p>
         <p>Zenlo nhớ ô tick và thứ tự bạn kéo cho lần sau. <b>Sắp xếp tự động</b> xoá thứ tự đã kéo; <b>Chọn hết</b> và <b>Bỏ chọn hết</b> đổi mọi ô tick một lần; <b>Làm mới</b> tải lại danh sách.</p>
         <p>Hội thoại đã tóm tắt có dấu <b>✓</b>. Bấm Tạo bản tin lần nữa chỉ tóm tắt những hội thoại chưa có.</p>
@@ -227,7 +228,7 @@
         </table>
         <p><b>Đã đọc hết</b> ở đầu danh sách đánh dấu đã đọc mọi hội thoại trong danh sách.</p>
         <p>Tạo bản tin không đánh dấu gì là đã đọc. Hội thoại vẫn hiện chưa đọc trong Zalo cho tới khi bạn mở nó hoặc bấm Đã đọc.</p>
-        <div class="tip">Độ dài mặc định của Bản tin là Ngắn, để cả danh sách đọc được trong một lần cuộn. Cần kỹ hơn cho một hội thoại thì bấm Tóm tắt chi tiết.</div>
+        <div class="tip">Bản tin luôn viết ngắn và chỉ ghi những gì bạn sẽ lỡ nếu không đọc: việc cần làm, câu cần trả lời, và cả thông tin chung như lịch, hạn, tiền dù không ai gọi tên bạn. Hội thoại không có gì như vậy chỉ hiện "Không có gì liên quan tới bạn." kèm một câu nói nhóm đang bàn gì. Cần kỹ hơn cho một hội thoại thì bấm Tóm tắt chi tiết.</div>
       </section>
     </section>
 
@@ -294,7 +295,7 @@
       <section id="mac-dinh">
         <h3>Độ dài mặc định, lùi tối đa</h3>
         <ul>
-          <li><b>Độ dài Tóm tắt</b> và <b>Độ dài Bản tin</b>: mức chọn sẵn mỗi lần mở.</li>
+          <li><b>Độ dài Tóm tắt</b>: mức chọn sẵn mỗi lần mở. Mặc định là AI tự quyết.</li>
           <li><b>Tìm tin chưa đọc lùi tối đa</b> (1, 3 hoặc 7 ngày, mặc định 3): Bản tin chỉ lấy tin chưa đọc trong khoảng này. Hội thoại có tin chưa đọc cũ hơn được bỏ qua, và Zenlo báo số hội thoại bị bỏ.</li>
         </ul>
       </section>

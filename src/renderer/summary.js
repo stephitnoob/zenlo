@@ -169,7 +169,7 @@
       </div>
 
       <div class="zenlo__length">
-        <span>Độ dài</span>
+        <span title="Không chọn: AI tự quyết. Bấm lại nút đang chọn để bỏ chọn.">Độ dài</span>
         <span class="zenlo__segment">
           ${LENGTHS.map((l) => `<button type="button" class="zenlo__segment-btn" data-length="${l.value}">${l.label}</button>`).join('')}
         </span>
@@ -232,9 +232,10 @@
         .catch((error) => setStatus(`Lỗi: ${error.message || error}`, true))
     })
 
+    // A length is optional: clicking the chosen one again clears it, and the AI decides
     el.querySelectorAll('[data-length]').forEach((button) => {
       button.addEventListener('click', () => {
-        Z.setLength('summary', button.dataset.length)
+        Z.setLength('summary', Z.getLength('summary') === button.dataset.length ? '' : button.dataset.length)
         renderLength()
       })
     })
@@ -339,7 +340,7 @@
 
     try {
       setStatus('Đang đọc tin nhắn…')
-      const { messages, localHistoryStart, lines, count: messageCount } = await loadRange(convId, fromMs, toMs, (count, oldest) => {
+      const { messages, localHistoryStart, lines, minutes, count: messageCount } = await loadRange(convId, fromMs, toMs, (count, oldest) => {
         setStatus(`Đang đọc tin nhắn… ${count} tin (đã lùi tới ${formatTime(oldest, true)})`)
       })
       if (cancelled) throw new Error('Đã dừng.')
@@ -371,7 +372,7 @@
             const i = next++
             const call = Z.runAI({
               systemPrompt: Z.SUMMARY_PROMPT,
-              instruction: Z.buildPartInstruction({ convName, part: i + 1, parts: chunks.length, hasNote: !!note }),
+              instruction: Z.buildPartInstruction({ convName, part: i + 1, parts: chunks.length }),
               note,
               input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
             })
@@ -399,19 +400,19 @@
       const started = Date.now()
       currentCall = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
-        instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, notes: chunks.length > 1, hasNote: !!note }),
+        instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, notes: chunks.length > 1 }),
         length,
         note,
         input
       }, (text) => {
         streamed += text
-        showResult(streamed, true)
+        showResult(Z.cleanAnswer(streamed), true)
       }, (modelStatus) => {
         // Gemini: which model is answering, and which ones were skipped
         usedModel = Z.describeModelStatus(modelStatus)
         if (!modelStatus.done) setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
       })
-      const result = await currentCall.promise
+      const result = Z.cleanAnswer(await currentCall.promise, minutes)
 
       showResult(result, false, { from: fromMs, to: toMs })
       const seconds = Math.round((Date.now() - started) / 1000)
