@@ -12,7 +12,7 @@
   --line: #e3e6ea;
   --text: #081c36;
   --muted: #5a6981;
-  --faint: #8a94a0;
+  --faint: #667080;
   --accent: #7c3aed;
   --accent-ink: #ffffff;
   --accent-soft: rgba(124, 58, 237, 0.09);
@@ -26,7 +26,7 @@
   --z-bubble: #f1f3f5;
   --z-me: #dbeafe;
   --z-text: #1f2329;
-  --z-muted: #6b7380;
+  --z-muted: #5f6773;
 
   --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   --display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -41,7 +41,7 @@
   --line: #2c3138;
   --text: #e4e6eb;
   --muted: #a3abb6;
-  --faint: #6f7782;
+  --faint: #8a94a0;
   --accent: #a78bfa;
   --accent-ink: #160f2b;
   --accent-soft: rgba(167, 139, 250, 0.13);
@@ -65,7 +65,7 @@
     --line: #2c3138;
     --text: #e4e6eb;
     --muted: #a3abb6;
-    --faint: #6f7782;
+    --faint: #8a94a0;
     --accent: #a78bfa;
     --accent-ink: #160f2b;
     --accent-soft: rgba(167, 139, 250, 0.13);
@@ -764,6 +764,15 @@ button {
   text-decoration: underline;
 }
 
+/* A citation of a chat that is not on the page: a label, not a button */
+.cite--static {
+  cursor: default;
+}
+
+.cite--static:hover {
+  text-decoration: none;
+}
+
 .caret {
   display: inline-block;
   width: 7px;
@@ -1095,7 +1104,7 @@ button {
 }
 
 .vis__rail svg {
-  color: #a78bfa;
+  color: #e4e6eb;
 }
 
 .download {
@@ -1867,6 +1876,25 @@ button {
     display: none;
   }
 
+  /* Small phones (360px): a little less room between the items, or the button pushes past the edge.
+     Under 360px "Phiên bản" goes too; it is in the footer of every page. */
+  @media (max-width: 359px) {
+    .top__link + .top__link {
+      display: none;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .top__inner {
+      gap: 6px;
+    }
+
+    .top__inner .btn {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  }
+
   /* Long words (domain names, addresses) wrap instead of widening the page */
   .doc td,
   .doc th,
@@ -1874,8 +1902,16 @@ button {
     overflow-wrap: anywhere;
   }
 
+  /* Wide tables scroll sideways on their own instead of squeezing every column to a few letters */
   .doc table {
+    display: block;
+    overflow-x: auto;
     font-size: 14px;
+  }
+
+  .doc th,
+  .doc td {
+    min-width: 8.5em;
   }
 
   .doc th,

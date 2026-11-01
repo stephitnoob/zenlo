@@ -53,7 +53,7 @@
     </div>
 
     <h1>Hướng dẫn sử dụng</h1>
-    <p class="lede">Zenlo có hai việc chính: <b>Tóm tắt</b> một hội thoại, và <b>Bản tin</b> gom mọi hội thoại chưa đọc lại một chỗ. Trang này nói cách dùng từng thứ, khi nào nên dùng, và từng mục trong Cài đặt.</p>
+    <p class="lede">Zenlo có hai việc chính: <b>Tóm tắt</b> một hội thoại, và <b>Bản tin</b> gom mọi hội thoại chưa đọc lại một chỗ. Ngoài ra, Zenlo cho thả mọi cảm xúc Zalo có, không chỉ 6 cái trên thanh. Trang này nói cách dùng từng thứ, khi nào nên dùng, và từng mục trong Cài đặt.</p>
 
     <section class="part" id="bat-dau">
       <h2>Bắt đầu</h2>
@@ -65,7 +65,7 @@
           <li>Tải Zenlo ở <a class="link" href="./#cai-dat">trang chủ</a>. File tải về là <code>Zenlo-Setup.zip</code>: chuột phải vào file → <b>Extract All</b> (Giải nén tất cả) → <b>Extract</b>, rồi mở <code>Zenlo-Setup.exe</code> trong thư mục vừa giải nén. Nếu tải được <code>Zenlo-Setup.exe</code> (bản cũ) thì mở luôn. Windows có thể hiện cảnh báo, xem <a class="link" href="#canh-bao">cách bỏ qua</a> ngay bên dưới.</li>
           <li>Cửa sổ cài đặt hiện ba lựa chọn: gõ <code>1</code> rồi Enter để cài.</li>
           <li>Nếu Zalo đang mở, bộ cài hỏi có tắt Zalo trong lúc cài không: gõ <code>c</code> rồi Enter. Cài xong, Zalo tự mở lại. Zalo đang tắt thì bộ cài làm luôn, không hỏi.</li>
-          <li>Thanh bên trái của Zalo có thêm nút Zenlo màu tím. Zalo chưa mở thì mở Zalo lên.</li>
+          <li>Thanh bên trái của Zalo có thêm nút <b>Zenlo</b>, ngay trên nút Zalo Cloud. Zalo chưa mở thì mở Zalo lên.</li>
         </ol>
         <p>Bộ cài giữ lại một bản trên máy và tạo lối tắt <b>Zenlo - Cài đặt</b> trong Start, dùng khi <a class="link" href="#zalo-cap-nhat">Zalo cập nhật</a>. File vừa tải về có thể xoá.</p>
         <div class="tip">Muốn chắc file tải về đúng là file đã phát hành: mở PowerShell ở thư mục chứa file, chạy <code>Get-FileHash .\Zenlo-Setup.exe</code>, so dãy số với dòng SHA-256 ở trang chủ hoặc trang <a class="link" href="https://github.com/stephitnoob/zenlo/releases" rel="noopener">phát hành</a>.</div>
@@ -116,7 +116,7 @@
           <li>Mở <a class="link" href="https://aistudio.google.com/apikey" rel="noopener" target="_blank">aistudio.google.com/apikey</a> và đăng nhập Google.</li>
           <li>Bấm <b>Create API key</b> (tiếng Việt: <b>Tạo khóa API</b>). Nếu được hỏi chọn dự án, chọn tạo dự án mới.</li>
           <li>Sao chép key vừa tạo. Key bắt đầu bằng <code>AIza</code>.</li>
-          <li>Trong Zalo: bấm nút Zenlo tím → bánh răng (Cài đặt) → dán vào ô <b>API key Gemini</b>, key được lưu ngay → bấm <b>Kiểm tra kết nối</b>.</li>
+          <li>Trong Zalo: bấm nút Zenlo ở thanh trái → bánh răng (Cài đặt) → dán vào ô <b>API key Gemini</b>, key được lưu ngay → bấm <b>Kiểm tra kết nối</b>.</li>
         </ol>
         <p>Lần đầu mở Zenlo khi chưa có key, đầu khung Zenlo có dòng nhắc kèm nút <b>Mở Cài đặt</b>, bấm vào là tới đúng chỗ dán key.</p>
         <div class="tip">Giữ key như mật khẩu, đừng gửi cho ai. Zenlo lưu key trên máy bạn, được Windows mã hoá bằng tài khoản Windows của bạn.</div>
@@ -126,7 +126,7 @@
       <section id="mo-zenlo">
         <h3>Mở và đóng Zenlo</h3>
         <ul>
-          <li><b>Nút tím ở thanh bên trái</b> mở tab <b>Bản tin</b>.</li>
+          <li><b>Nút Zenlo ở thanh bên trái</b> mở tab <b>Bản tin</b>.</li>
           <li><b>Nút Tóm tắt ở thanh trên cùng khung chat</b> mở tab <b>Tóm tắt</b> cho hội thoại đang mở. Nút <b>Ghi chú</b> nằm ngay cạnh, xem <a class="link" href="#ghi-chu">Ghi chú cho AI</a>.</li>
           <li><b>Bánh răng</b> trong khung Zenlo mở Cài đặt.</li>
           <li>Đóng: bấm <b>×</b>, bấm lại đúng nút đã mở, hoặc nhấn <span class="kbd">Esc</span>.</li>
@@ -207,8 +207,8 @@
       <section id="ban-tin-cach-lam">
         <h3>Cách làm</h3>
         <ol>
-          <li>Bấm nút tím ở thanh bên trái. Zenlo liệt kê các hội thoại có tin chưa đọc.</li>
-          <li>Bỏ tick hội thoại không cần tóm tắt. Tài khoản tự động (thông báo, thẻ, ngân hàng) mặc định bỏ tick.</li>
+          <li>Bấm nút Zenlo ở thanh bên trái. Zenlo liệt kê các hội thoại có tin chưa đọc; hội thoại có người nhắc tên bạn hoặc @All có nhãn <b>@ nhắc bạn</b>.</li>
+          <li>Bỏ tick hội thoại không cần tóm tắt. Hội thoại mà mọi tin chưa đọc đều là thông báo tự động (thông báo tài khoản, thẻ) mặc định bỏ tick; tự tick lại thì Zenlo nhớ.</li>
           <li>Giữ <b>⋮⋮</b> và kéo để xếp hội thoại quan trọng lên đầu.</li>
           <li>Bấm <b>Tạo bản tin</b>. Mỗi hội thoại một thẻ, tóm tắt hiện dần. Bấm <b>Dừng</b> để ngắt giữa chừng.</li>
         </ol>
@@ -230,6 +230,16 @@
         <p>Tạo bản tin không đánh dấu gì là đã đọc. Hội thoại vẫn hiện chưa đọc trong Zalo cho tới khi bạn mở nó hoặc bấm Đã đọc.</p>
         <div class="tip">Bản tin luôn viết ngắn và chỉ ghi những gì bạn sẽ lỡ nếu không đọc: việc cần làm, câu cần trả lời, và cả thông tin chung như lịch, hạn, tiền dù không ai gọi tên bạn. Hội thoại không có gì như vậy chỉ hiện "Không có gì liên quan tới bạn." kèm một câu nói nhóm đang bàn gì. Cần kỹ hơn cho một hội thoại thì bấm Tóm tắt chi tiết.</div>
       </section>
+    </section>
+
+    <section class="part" id="cam-xuc">
+      <h2>Thả cảm xúc</h2>
+      <p>Thanh cảm xúc của Zalo trên mỗi tin chỉ có 6 cái, trong khi Zalo có khoảng 80. Zenlo thêm một nút <b>+</b> ở cuối thanh đó.</p>
+      <ul>
+        <li>Bấm <b>+</b> để mở bảng mọi cảm xúc Zalo có, những cái bạn vừa dùng nằm ở mục <b>Gần đây</b> trên cùng. Bấm một cái là thả cho tin đó, y như bấm trên thanh của Zalo, người khác thấy như bình thường.</li>
+        <li><b>Sửa thanh nhanh</b> trong bảng đó chọn 6 cảm xúc hiện sẵn trên thanh: bấm emoji bên dưới để thêm, bấm emoji ở hàng trên để bỏ, rồi bấm <b>Lưu</b>. <b>Mặc định của Zalo</b> đưa thanh về như cũ.</li>
+      </ul>
+      <p>Danh sách và hình emoji lấy từ chính Zalo, nên cảm xúc mới hay theo mùa của Zalo tự có trong bảng. Phần này không gửi gì tới AI.</p>
     </section>
 
     <section class="part" id="cai-dat">
@@ -296,7 +306,7 @@
         <h3>Độ dài mặc định, lùi tối đa</h3>
         <ul>
           <li><b>Độ dài Tóm tắt</b>: mức chọn sẵn mỗi lần mở. Mặc định là AI tự quyết.</li>
-          <li><b>Tìm tin chưa đọc lùi tối đa</b> (1, 3 hoặc 7 ngày, mặc định 3): Bản tin chỉ lấy tin chưa đọc trong khoảng này. Hội thoại có tin chưa đọc cũ hơn được bỏ qua, và Zenlo báo số hội thoại bị bỏ.</li>
+          <li><b>Tìm tin chưa đọc lùi tối đa</b> (1, 3 hoặc 7 ngày, mặc định 3): Bản tin chỉ lấy tin chưa đọc trong khoảng này. Hội thoại có tin chưa đọc cũ hơn được bỏ qua, và Zenlo báo số hội thoại bị bỏ. Hội thoại có người nhắc tên bạn thì luôn được lùi tới 30 ngày.</li>
         </ul>
       </section>
 
@@ -325,7 +335,7 @@
       <ol>
         <li>Mở Start, gõ <b>Zenlo</b>, chọn <b>Zenlo - Cài đặt</b>.</li>
         <li>Gõ <code>1</code>, Enter. Zalo đang mở thì gõ thêm <code>c</code>, Enter để đồng ý tắt Zalo; cài xong Zalo tự mở lại.</li>
-        <li>Bấm nút Zenlo màu tím như thường.</li>
+        <li>Bấm nút Zenlo ở thanh trái như thường.</li>
       </ol>
       <p>Cài đặt, API key, bản tóm tắt, ô tick và thứ tự trong Bản tin vẫn còn nguyên. Xoá mất lối tắt hoặc đổi máy thì tải lại <code>Zenlo-Setup.exe</code> ở trang chủ, kết quả y như vậy.</p>
     </section>

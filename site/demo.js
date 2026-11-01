@@ -54,10 +54,10 @@
       { h: 'Liên quan tới bạn' },
       { li: 'Khách ABC muốn đổi logo sang xanh đậm, đây là lần đổi thứ 4.', cite: ['19/10 09:10'] },
       { li: 'Quang cần file ảnh sản phẩm gốc ngay tối nay vì khách cần gấp.', cite: ['19/10 17:45'] },
-      { li: 'Ra mắt chốt thứ 6 (23/10); Quang làm việc lại với khách.', cite: ['19/10 11:40'] },
-      { h: 'Còn lại' },
       { li: 'Gửi chị Hoa bản slide trước 9h sáng mai.', cite: ['19/10 08:30'] },
-      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] }
+      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
+      { h: 'Còn lại' },
+      { li: 'Ra mắt chốt thứ 6 (23/10); Quang làm việc lại với khách.', cite: ['19/10 11:40'] }
     ]
   }
 
@@ -93,6 +93,16 @@
   // Types a summary out a few characters at a time, the way the model's answer arrives
   async function stream (box, blocks, isStopped = () => false) {
     if (still) return render(box, blocks)
+    // Screen readers read the finished text once instead of every few letters
+    box.setAttribute('aria-busy', 'true')
+    try {
+      await streamInto(box, blocks, isStopped)
+    } finally {
+      box.removeAttribute('aria-busy')
+    }
+  }
+
+  async function streamInto (box, blocks, isStopped) {
     box.textContent = ''
     const caret = document.createElement('span')
     caret.className = 'caret'
@@ -179,12 +189,12 @@
   // ---------- 2. Digest ----------
 
   const DIGEST = {
-    team: { text: 'Gửi chị Hoa slide trước 9h mai, gửi Quang ảnh sản phẩm tối nay.', cite: '19/10 08:30', count: 35 },
-    ph: { text: 'Họp phụ huynh 19h thứ 5; nộp quỹ lớp 200k trước thứ 6.', cite: '20/10 20:05', count: 37 },
-    run: { text: 'Chạy sáng chủ nhật 5h30 ở biển Mỹ Khê; đăng ký giải 10K trước thứ 6.', cite: '19/10 20:15', count: 52 },
-    nha: { text: 'Cuối tuần về quê ăn giỗ ông, đi lúc 6h sáng thứ 7.', cite: '20/10 16:40', count: 4 },
-    cc: { text: 'Cúp nước 8h–12h sáng thứ 4 để sửa đường ống.', cite: '20/10 09:12', count: 23 },
-    shop: { text: 'Đơn hàng đang giao, kèm mã giảm 10%.', cite: '20/10 10:12', count: 6 }
+    team: { text: 'Gửi chị Hoa slide trước 9h mai, gửi Quang ảnh gốc tối nay; cả nhóm nộp báo cáo trước 12h trưa mai.', cite: ['19/10 08:30', '19/10 17:45', '19/10 17:30'], chat: 'demo-summary', count: 35 },
+    ph: { text: 'Họp phụ huynh 19h thứ 5; nộp quỹ lớp 200k trước thứ 6.', cite: ['19/10 20:05'], count: 37 },
+    run: { text: 'Chạy sáng chủ nhật 5h30 ở biển Mỹ Khê; đăng ký giải 10K trước thứ 6.', cite: ['19/10 20:15'], count: 52 },
+    nha: { text: 'Giỗ ông trưa chủ nhật, 9h cả nhà về quê.', cite: ['19/10 16:40'], count: 4 },
+    cc: { text: 'Cúp nước 8h–12h sáng thứ 4 để sửa đường ống.', cite: ['19/10 09:12'], count: 23 },
+    shop: { text: 'Đơn hàng đang giao, kèm mã giảm 10%.', cite: ['19/10 10:12'], count: 6 }
   }
 
   function setupDigest () {
@@ -211,25 +221,40 @@
       const caret = document.createElement('span')
       caret.className = 'caret'
       box.append(node, caret)
+      const unticked = () => !card.querySelector('.dcard__check').checked
       for (let i = 0; i < item.text.length; i += 3) {
-        if (mine !== round) return
+        if (mine !== round || unticked()) return
         node.data = item.text.slice(0, i + 3)
         await wait(16)
       }
       caret.remove()
-      box.appendChild(citeButton(item.cite))
+      if (unticked()) return
+      for (const label of item.cite) {
+        // Only the Team Marketing chat is on the page: its citations scroll it; the others are labels
+        if (item.chat) {
+          const button = citeButton(label)
+          button.dataset.chat = item.chat
+          box.appendChild(button)
+        } else {
+          const span = document.createElement('span')
+          span.className = 'cite cite--static'
+          span.textContent = label
+          box.appendChild(span)
+        }
+      }
     }
 
     async function make () {
       const mine = ++round
       cards.querySelectorAll('.dcard__sum').forEach((box) => { box.textContent = '' })
       const chosen = ticked()
-      // Two at a time, like Zenlo does with Gemini
+      // Zenlo writes the whole digest in one answer; two cards at a time keeps the demo short
       let next = 0
       const worker = async () => {
         while (next < chosen.length) {
           if (mine !== round) return
           const card = chosen[next++]
+          if (!card.querySelector('.dcard__check').checked) continue
           await wait(350)
           await fill(card, mine)
         }
@@ -238,6 +263,25 @@
     }
 
     run.addEventListener('click', make)
+    // A citation on the Team Marketing card scrolls to that chat and to the message
+    cards.addEventListener('click', (event) => {
+      const cite = event.target.closest('.cite[data-chat]')
+      const win = cite && document.getElementById(cite.dataset.chat)
+      if (!win) return
+      const box = win.getBoundingClientRect()
+      window.scrollTo({ top: window.scrollY + box.top - Math.max(16, (window.innerHeight - box.height) / 2), behavior: still ? 'auto' : 'smooth' })
+      setTimeout(() => jump(win, cite.dataset.t), still ? 0 : 450)
+    })
+    // Alt + ↑/↓ moves the focused card, for keyboards and phones where dragging does not work
+    cards.addEventListener('keydown', (event) => {
+      if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return
+      const card = event.target.closest('.dcard')
+      if (!card) return
+      event.preventDefault()
+      if (event.key === 'ArrowUp' && card.previousElementSibling) cards.insertBefore(card, card.previousElementSibling)
+      if (event.key === 'ArrowDown' && card.nextElementSibling) cards.insertBefore(card.nextElementSibling, card)
+      event.target.focus()
+    })
     cards.addEventListener('change', (event) => {
       const card = event.target.closest('.dcard')
       if (!card) return

@@ -1,6 +1,6 @@
 # Chính sách quyền riêng tư của Zenlo
 
-Cập nhật: 27/10/2026
+Cập nhật: 01/11/2026
 
 Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
 
@@ -12,7 +12,7 @@ Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính c�
 
 ## Zenlo đọc gì
 
-Khi bạn bấm **Tóm tắt** hoặc **Tạo bản tin**, Zenlo đọc từ dữ liệu Zalo đã lưu trên máy bạn:
+Khi bạn mở khung Zenlo (để đếm tin và ước lượng trước khi gửi) và khi bấm **Tóm tắt** hoặc **Tạo bản tin**, Zenlo đọc từ dữ liệu Zalo đã lưu trên máy bạn. Việc đọc chỉ diễn ra trên máy; chỉ khi bạn bấm nút thì tin nhắn mới được gửi đi (mục dưới).
 
 - nội dung các tin nhắn trong khoảng thời gian bạn chọn (hoặc các tin chưa đọc), tên hiển thị của người gửi, thời gian gửi;
 - số người thả cảm xúc cho từng tin, và tin nào nhắc tới bạn;
@@ -21,6 +21,8 @@ Khi bạn bấm **Tóm tắt** hoặc **Tạo bản tin**, Zenlo đọc từ d�
 - số tin chưa đọc mà Zalo ghi nhận.
 
 Zenlo không đọc ảnh, video, tệp đính kèm hay tin nhắn thoại; chỉ đọc tên tệp và chú thích ảnh nếu có. Việc đọc này không làm Zalo gửi trạng thái "Đã xem" cho ai.
+
+Để thả cảm xúc bằng nút **+**, Zenlo đọc danh sách cảm xúc và hình emoji từ chính Zalo; cảm xúc bạn chọn được gửi bằng đúng cách Zalo gửi khi bạn bấm trên thanh cảm xúc của Zalo.
 
 ## Zenlo gửi gì, gửi đi đâu
 
@@ -56,7 +58,7 @@ Mọi thứ chỉ nằm trên máy bạn:
 
 | Dữ liệu | Nơi lưu |
 |---|---|
-| Cài đặt, ghi chú cho AI, bản tóm tắt gần nhất của từng hội thoại, kết quả Bản tin, thứ tự và ô tick trong Bản tin | Bộ nhớ của Zalo trên máy (`%APPDATA%\ZaloData`) |
+| Cài đặt, ghi chú cho AI, bản tóm tắt gần nhất của từng hội thoại, kết quả Bản tin, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây và thanh cảm xúc nhanh | Bộ nhớ của Zalo trên máy (`%APPDATA%\ZaloData`) |
 | Bản sao lưu của mục trên | `%APPDATA%\Zenlo\storage-backup.json` |
 | API key Gemini | `%APPDATA%\Zenlo\secrets.json`, **được mã hoá bằng Windows** (chỉ tài khoản Windows của bạn giải mã được) |
 | Ghi nhận model nào hết lượt trong ngày | `%APPDATA%\Zenlo\gemini-quota.json` |
@@ -72,7 +74,9 @@ Trang web của Zenlo (stephitnoob.github.io/zenlo) đếm lượt xem bằng [G
 
 - **Được gửi đi:** địa chỉ trang đang xem, tiêu đề trang, trang web dẫn bạn tới đây (nếu có), và việc bạn bấm nút Tải về.
 - **GoatCounter lưu** từng lượt xem ở dạng ẩn danh: thời gian, trang được xem, trang dẫn tới, loại trình duyệt, hệ điều hành và quốc gia. Địa chỉ IP không được lưu. Để không đếm trùng khi một người tải lại trang, GoatCounter dùng một mã phiên ẩn danh chỉ tồn tại tối đa 8 giờ.
-- **Không có:** cookie, mã định danh lâu dài, quảng cáo, hay dữ liệu nào được lưu trong trình duyệt của bạn.
+- **Không có:** cookie, mã định danh lâu dài hay quảng cáo. Trình duyệt chỉ nhớ một thứ: giao diện sáng hay tối, khi bạn bấm nút đổi giao diện (lưu ngay trên trình duyệt, không gửi đi).
+
+Để hiện số phiên bản, dung lượng và nút tải đúng file, trang web hỏi `api.github.com` về bản phát hành mới nhất. Như với mọi trang web, GitHub thấy địa chỉ IP và loại trình duyệt của bạn; yêu cầu không mang gì khác.
 
 Việc đếm này chỉ có trên trang web, không có trong ứng dụng Zenlo. Toàn bộ mã đếm nằm trong [`site/stats.js`](site/stats.js).
 

@@ -128,6 +128,7 @@
         $$('.js-virustotal').forEach((a) => {
           a.href = `https://www.virustotal.com/gui/file/${sha}`
         })
+        $$('.js-virustotal-line').forEach((el) => { el.hidden = false })
       }
     })
     .catch(() => {

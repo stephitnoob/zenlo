@@ -32,14 +32,14 @@ Ngoài phạm vi: lỗ hổng của chính Zalo, Claude Code, Codex, Gemini API;
 - **Claude Code:** chạy không có công cụ nào (`--tools ""`), không nạp cài đặt, plugin hay MCP của người dùng; các biến môi trường có thể chuyển hướng dữ liệu, đổi nhà cung cấp, hạ TLS hay chèn mã (`ANTHROPIC_BASE_URL`, `NODE_OPTIONS`, `NODE_TLS_REJECT_UNAUTHORIZED`…) bị loại bỏ.
 - **Codex:** chạy `codex app-server` để chữ hiện dần. Vì app-server luôn đọc `config.toml`, Zenlo tắt từng MCP server (tên lấy từ `config/read`), plugin, app, bộ nhớ, `notify`, lịch sử, và trước khi gửi tin nhắn kiểm tra: đăng nhập bằng ChatGPT, không MCP server nào chạy, không có hook; sai một điều thì dừng app-server và dùng `codex exec --ignore-user-config`. Cả hai cách đều chạy chỉ đọc (`-s read-only`) trong một thư mục tạm rỗng, tắt công cụ chạy lệnh, tìm web, plugin và app, không nạp `config.toml` hay AGENTS.md của dự án; bỏ `CODEX_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL` và các biến tương tự khỏi môi trường, và không chạy khi Codex đăng nhập bằng API key.
 - **Chống chèn lệnh qua tin nhắn:** tin nhắn chỉ là dữ liệu trong lời gọi AI; AI không có công cụ nào để hành động, chỉ trả về văn bản.
-- **Hiển thị:** mọi nội dung từ tin nhắn và từ AI được escape trước khi đưa lên giao diện.
+- **Hiển thị:** mọi nội dung từ tin nhắn và từ AI được escape trước khi đưa lên giao diện. Link trong bản tóm tắt chỉ bấm được khi địa chỉ có đúng trong tin nhắn gốc của hội thoại đó, để một tin nhắn không thể dụ AI tạo link mang nội dung hội thoại ra ngoài; mỗi thẻ Bản tin chỉ nhận phần trả lời đầu tiên mang số của nó.
 - **IPC:** tiến trình chính chỉ nhận yêu cầu từ trang nội bộ của Zalo (`file://`).
 - **API key:** mã hoá bằng Windows DPAPI (`safeStorage`), lưu ngoài thư mục của Zalo.
 - **Không tự cập nhật ngầm.** Bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc (build provenance) để ai cũng kiểm chứng được.
 
 ## Kiểm chứng một bản tải về
 
-So SHA-256 của file với giá trị trong ghi chú phát hành:
+Tải `Zenlo-Setup.zip` thì giải nén trước; trong zip chỉ có đúng file `Zenlo-Setup.exe` được phát hành cùng. So SHA-256 của file `.exe` với giá trị trong ghi chú phát hành:
 
 ```powershell
 Get-FileHash .\Zenlo-Setup.exe -Algorithm SHA256
