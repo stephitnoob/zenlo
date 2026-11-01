@@ -21,7 +21,13 @@ const TYPES = {
 }
 
 http.createServer((request, response) => {
-  let name = decodeURIComponent(new URL(request.url, 'http://localhost').pathname)
+  let name
+  try {
+    name = decodeURIComponent(new URL(request.url, 'http://localhost').pathname)
+  } catch (error) {
+    response.writeHead(400).end()
+    return
+  }
   if (name.endsWith('/')) name += 'index.html'
   const file = path.join(ROOT, name)
   // Nothing outside site/

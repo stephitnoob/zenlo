@@ -68,15 +68,24 @@
     const saved = new Map(loadSavedDigest().map((entry) => [entry.convId, entry]))
     const found = []
     let tooOld = 0
+    let failed = 0
 
     for (let i = 0; i < unread.length; i++) {
       if (myScan !== scanId) return null
       const [convId, state] = unread[i]
       onProgress(i + 1, unread.length)
 
-      const start = await Z.getUnreadStart(convId, state, now)
-      const { messages } = await Z.loadMessagesInRange(convId, start, now)
-      const { lines, count, minutes } = await Z.prepareTranscript(messages)
+      // One conversation Zalo cannot read is left out, not the whole list
+      let start, messages, lines, count, minutes
+      try {
+        start = await Z.getUnreadStart(convId, state, now)
+        ;({ messages } = await Z.loadMessagesInRange(convId, start, now))
+        ;({ lines, count, minutes } = await Z.prepareTranscript(messages))
+      } catch (error) {
+        Z.log('digest: cannot read', convId, error)
+        failed++
+        continue
+      }
       if (!count) {
         tooOld++
         continue
@@ -110,7 +119,8 @@
       }
       found.push(item)
     }
-    return { items: sortItems(found), tooOld }
+    if (myScan !== scanId) return null
+    return { items: sortItems(found), tooOld, failed }
   }
 
   // ---------- Ticks ----------
@@ -319,10 +329,13 @@
     setStatus('Đang tìm hội thoại chưa đọc…')
     try {
       const result = await collectUnread((done, total) => setStatus(`Đang đọc tin chưa đọc… ${done}/${total} hội thoại`))
-      if (!result) return
+      // A newer scan started, or a digest started while this one was reading
+      if (!result || running) return
       items = result.items
       const old = result.tooOld ? `${result.tooOld} hội thoại có tin chưa đọc cũ hơn ${Z.getLookback() / Z.DAY} ngày nên không đưa vào (đổi trong Cài đặt Zenlo).` : ''
-      setStatus(items.length ? old : old || 'Không có hội thoại nào chưa đọc.')
+      const unreadable = result.failed ? `${result.failed} hội thoại không đọc được nên không đưa vào.` : ''
+      const note = [old, unreadable].filter(Boolean).join(' ')
+      setStatus(items.length ? note : note || 'Không có hội thoại nào chưa đọc.')
     } catch (error) {
       setStatus(`Lỗi: ${error.message || error}`, true)
     }
@@ -371,7 +384,8 @@
         input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
       })
       calls.add(call)
-      notes.push(`### Phần ${i + 1}\n` + await call.promise)
+      // Written from untrusted messages: must not close the <notes> tag of the digest request
+      notes.push(`### Phần ${i + 1}\n` + Z.neutralizeTags(await call.promise))
       calls.delete(call)
     }
     return notes.join('\n\n')
@@ -391,7 +405,7 @@
     const show = (text) => {
       const sections = Z.splitDigest(text)
       batch.forEach((item, i) => {
-        if (sections[i + 1] !== undefined) item.summary = Z.cleanAnswer(sections[i + 1])
+        if (sections[i + 1] !== undefined) item.summary = Z.cleanAnswer(sections[i + 1], null, item.lines.join('\n'))
       })
       scheduleRender()
     }
@@ -417,6 +431,11 @@
       }, (modelStatus) => {
         const model = Z.describeModelStatus(modelStatus)
         for (const item of batch) item.model = model
+        if (!modelStatus.done) {
+          // Another model (or key) starts over: drop what a failed one had written
+          streamed = ''
+          for (const item of batch) item.summary = ''
+        }
         scheduleRender()
       })
       calls.add(call)
@@ -427,7 +446,7 @@
       // A lone conversation answered without its "### 1" line: the whole answer is its summary
       if (batch.length === 1 && !Object.keys(sections).length && answer.trim()) sections[1] = answer
       batch.forEach((item, i) => {
-        const text = sections[i + 1] && Z.cleanAnswer(sections[i + 1], item.minutes)
+        const text = sections[i + 1] && Z.cleanAnswer(sections[i + 1], item.minutes, item.lines.join('\n'))
         if (text) {
           item.summary = text
           item.status = 'done'
@@ -501,7 +520,8 @@
       .map((item) => `## ${item.name}\n${String(item.summary).trim()}`)
       .join('\n\n')
     if (!text) return
-    navigator.clipboard.writeText(Z.withCredit(text)).then(() => setStatus('Đã sao chép bản tin.'))
+    navigator.clipboard.writeText(Z.withCredit(text))
+      .then(() => setStatus('Đã sao chép bản tin.'), () => setStatus('Không sao chép được, thử lại.', true))
   }
 
   function buildOverlay () {
@@ -660,15 +680,16 @@
       return ''
     }
   }
-  let lastShape = ''
+  let lastShape = null
   let lastAutoRefresh = 0
   setInterval(() => {
     if (!overlay || running || !Z.drawer.isOpen('digest')) {
-      lastShape = ''
+      lastShape = null
       return
     }
     const shape = unreadShape()
-    if (!lastShape) lastShape = shape
+    // null: no shape yet ('' is a real one: nothing unread)
+    if (lastShape === null) lastShape = shape
     if (shape === lastShape || Date.now() - lastAutoRefresh < 20 * 1000) return
     lastShape = shape
     lastAutoRefresh = Date.now()

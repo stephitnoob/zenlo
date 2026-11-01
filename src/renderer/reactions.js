@@ -60,8 +60,7 @@
 
   // The send handler of the message whose bar was hovered, found on Zalo's React component
   function findSendReaction (el) {
-    const key = Object.keys(el).find((k) => k.startsWith('__reactInternalInstance'))
-    let fiber = key && el[key]
+    let fiber = Z.reactFiberOf(el)
     for (let depth = 0; fiber && depth < 15; depth++) {
       const props = fiber.memoizedProps
       if (props && typeof props.sendReaction === 'function') return props.sendReaction

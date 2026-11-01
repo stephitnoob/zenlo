@@ -32,7 +32,7 @@ function reply (callback, answer) {
   callback(response)
   setTimeout(() => {
     if (answer.status !== 200) {
-      response.emit('data', JSON.stringify({ error: { message: 'busy' } }))
+      response.emit('data', answer.body || JSON.stringify({ error: { message: 'busy' } }))
     } else {
       const event = { candidates: [{ content: { parts: [{ text: answer.text }] } }] }
       response.emit('data', `data: ${JSON.stringify(event)}\n\n`)
@@ -173,6 +173,22 @@ await test('Model vừa quá tải bị xếp cuối trong 1 phút', async () =>
   script = {}
   await summarize({ retryWindow: 60 * 1000 })
   assert.equal(calls[0].model, 'gemini-3.5-flash')
+})
+
+await test('Lỗi riêng của một model (404): sang model kế tiếp, vẫn dùng key đó', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 404, body: JSON.stringify({ error: { message: 'models/gemini-3.6-flash is not found' } }) }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'done')
+  assert.deepEqual(calls.map((c) => c.model), ['gemini-3.6-flash', 'gemini-3.5-flash'])
+})
+
+await test('Key không hợp lệ: dừng, báo đúng lý do, không đổ cho hết lượt', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 400, body: JSON.stringify({ error: { message: 'API key not valid. Please pass a valid API key.' } }) }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'error')
+  assert.equal(calls.length, 1)
+  assert.match(last.message, /không hợp lệ/)
+  assert.doesNotMatch(last.message, /hết lượt/)
 })
 
 console.log('\n[Gemini]')

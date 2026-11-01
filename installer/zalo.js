@@ -127,12 +127,18 @@ function install ({ dev = false, source = DIST } = {}) {
 
   log('Đang giải nén Zalo…')
   const appDir = path.join(work, 'app')
-  asar.extractAll(app, appDir)
+  try {
+    asar.extractAll(app, appDir)
 
-  log(dev ? 'Đang liên kết Zenlo (chế độ phát triển)…' : 'Đang chép Zenlo…')
-  addZenloFiles(appDir, dev, source)
-  patchPage(appDir)
-  patchBootstrap(appDir)
+    log(dev ? 'Đang liên kết Zenlo (chế độ phát triển)…' : 'Đang chép Zenlo…')
+    addZenloFiles(appDir, dev, source)
+    patchPage(appDir)
+    patchBootstrap(appDir)
+  } catch (error) {
+    // Zalo is untouched so far; only the extracted copy (hundreds of MB) is left to remove
+    fs.rmSync(work, { recursive: true, force: true })
+    throw error
+  }
 
   fs.renameSync(app, backup)
   try {

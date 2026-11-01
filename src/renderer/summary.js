@@ -247,7 +247,8 @@
       if (activeJob) activeJob.cancel()
     })
     el.querySelector('.js-summary-copy').addEventListener('click', () => {
-      navigator.clipboard.writeText(Z.withCredit(el.dataset.result)).then(() => setStatus('Đã sao chép bản tóm tắt.'))
+      navigator.clipboard.writeText(Z.withCredit(el.dataset.result))
+        .then(() => setStatus('Đã sao chép bản tóm tắt.'), () => setStatus('Không sao chép được, thử lại.', true))
     })
     el.querySelector('.zenlo__note-line').addEventListener('click', (event) => {
       const edit = event.target.closest('.js-note-edit')
@@ -285,7 +286,6 @@
     renderNoteLine()
     renderLength()
 
-    if (activeJob) return
     scheduleEstimate(0)
 
     // "Đến" always starts at now; "Từ" is kept while the panel stays on the same conversation
@@ -358,7 +358,8 @@
       Z.log('messages', messages.length, 'lines', lines.length)
 
       const chunks = Z.splitIntoChunks(lines)
-      let input = `<transcript>\n${lines.join('\n')}\n</transcript>`
+      const source = lines.join('\n')
+      let input = `<transcript>\n${source}\n</transcript>`
 
       if (chunks.length > 1) {
         // The parts at the same time, a few at once as in the digest
@@ -379,7 +380,8 @@
               input: `<transcript>\n${chunks[i].join('\n')}\n</transcript>`
             })
             calls.add(call)
-            notes[i] = `### Phần ${i + 1}\n` + await call.promise
+            // Written from untrusted messages: must not close the <notes> tag of the final request
+            notes[i] = `### Phần ${i + 1}\n` + Z.neutralizeTags(await call.promise)
             calls.delete(call)
             finished++
             if (!cancelled) setStatus(`Đang tóm tắt ${chunks.length} phần: xong ${finished}/${chunks.length} (${messageCount} tin nhắn).${historyNote}`)
@@ -408,13 +410,16 @@
         input
       }, (text) => {
         streamed += text
-        showResult(Z.cleanAnswer(streamed), true)
+        showResult(Z.cleanAnswer(streamed, null, source), true)
       }, (modelStatus) => {
         // Gemini: which model is answering, and which ones were skipped
         usedModel = Z.describeModelStatus(modelStatus)
-        if (!modelStatus.done) setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
+        if (modelStatus.done) return
+        // Another model (or key) starts over: drop what a failed one had written
+        streamed = ''
+        setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
       })
-      const result = Z.cleanAnswer(await currentCall.promise, minutes)
+      const result = Z.cleanAnswer(await currentCall.promise, minutes, source)
 
       showResult(result, false, { from: fromMs, to: toMs })
       const seconds = Math.round((Date.now() - started) / 1000)

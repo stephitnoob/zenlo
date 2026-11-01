@@ -156,11 +156,11 @@ namespace Zenlo
             Console.WriteLine("Xong. Cài đặt, bản tóm tắt và Bản tin của bạn vẫn được giữ nguyên.");
             if (wasRunning && StartZalo())
             {
-                Console.WriteLine("Zalo đang được mở lại. Bấm nút Zenlo màu tím ở thanh bên trái để bắt đầu.");
+                Console.WriteLine("Zalo đang được mở lại. Bấm nút Zenlo ở thanh bên trái để bắt đầu.");
             }
             else
             {
-                Console.WriteLine("Mở Zalo, rồi bấm nút Zenlo màu tím ở thanh bên trái để bắt đầu.");
+                Console.WriteLine("Mở Zalo, rồi bấm nút Zenlo ở thanh bên trái để bắt đầu.");
             }
             if (kept)
             {

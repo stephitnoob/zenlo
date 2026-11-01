@@ -231,13 +231,15 @@
   }
 
   // The digest answer split by its "### n" lines -> { n: text }. Works on a partial answer while it
-  // streams. Also accepts "### Hội thoại 2", "### 2. Tên", "**2. Tên**".
+  // streams. Also accepts "### Hội thoại 2", "### 2. Tên", "**2. Tên**". The first heading of a
+  // number wins and a later one is text of the section it is in, so a message in one conversation
+  // cannot get the AI to write over another conversation's card.
   function splitDigest (text) {
     const sections = {}
     let current = null
     for (const line of String(text).split('\n')) {
       const head = line.match(/^\s*(?:#{1,6}\s*(?:hội thoại\s*)?\[?(\d{1,3})\]?(?![\d/:])|\*\*\s*(?:hội thoại\s*)?(\d{1,3})[.):]?[^*\n]*\*\*\s*$)/i)
-      if (head) {
+      if (head && sections[Number(head[1] || head[2])] === undefined) {
         current = Number(head[1] || head[2])
         sections[current] = ''
         continue
@@ -386,11 +388,21 @@
     let list = null
     let table = null
 
-    const inline = (s) => renderCitations(s
-      .replace(LINK, (m, text, url, bare) => `<a class="zenlo-link" data-url="${url || bare}" title="${url || bare}">${text || bare}</a>`)
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\*\*(.+?)\*\*|__(.+?)__/g, (m, a, b) => `<strong>${a || b}</strong>`)
-      .replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\w)/g, '$1<em>$2</em>'), range)
+    // Links are set aside while the rest is rendered, so no citation, code or bold lands inside an
+    // address (a "[12:30]" in a URL would otherwise close its data-url early)
+    const inline = (s) => {
+      const links = []
+      const out = renderCitations(s
+        .replace(//g, '')
+        .replace(LINK, (m, text, url, bare) => {
+          links.push(`<a class="zenlo-link" data-url="${url || bare}" title="${url || bare}">${text || bare}</a>`)
+          return `${links.length - 1}`
+        })
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*(.+?)\*\*|__(.+?)__/g, (m, a, b) => `<strong>${a || b}</strong>`)
+        .replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\w)/g, '$1<em>$2</em>'), range)
+      return out.replace(/(\d+)/g, (m, i) => links[i])
+    }
 
     const closeList = () => {
       if (list) html += `</${list}>`
@@ -550,8 +562,20 @@
     return readJSON(STORAGE_KEYS.last + convId, null)
   }
 
+  // The latest summary of each conversation is kept, for its newest LAST_SUMMARIES_MAX conversations:
+  // Zenlo shares the page's storage quota with Zalo itself, so it must not grow without end
+  const LAST_SUMMARIES_MAX = 300
+
   function saveLastSummary (convId, data) {
     writeJSON(STORAGE_KEYS.last + convId, data)
+    try {
+      const keys = Object.keys(localStorage).filter((key) => key.startsWith(STORAGE_KEYS.last))
+      if (keys.length <= LAST_SUMMARIES_MAX) return
+      const savedAt = new Map(keys.map((key) => [key, Number((readJSON(key, null) || {}).at) || 0]))
+      keys.sort((a, b) => savedAt.get(a) - savedAt.get(b))
+        .slice(0, keys.length - LAST_SUMMARIES_MAX)
+        .forEach((key) => localStorage.removeItem(key))
+    } catch (error) {}
   }
 
   // ---------- New versions ----------
@@ -810,6 +834,14 @@
     return webpackRequire
   }
 
+  // A search through every module of Zalo is slow (tens of thousands of exports) and some callers run
+  // on every page change. One that found nothing (Zalo updated and renamed something) is not repeated
+  // for a minute, so Zenlo stops working instead of making Zalo stutter. Modules load lazily, so it
+  // is tried again later.
+  const searchMisses = new Map()
+  const SEARCH_RETRY = 60 * 1000
+  const recentlyMissed = (key) => Date.now() - (searchMisses.get(key) || 0) < SEARCH_RETRY
+
   // Module ids change between Zalo versions, so fall back to searching by shape
   function findExport (knownId, knownKey, predicate) {
     const req = getWebpackRequire()
@@ -818,6 +850,14 @@
       if (value && predicate(value)) return value
     } catch (error) {}
 
+    const missKey = `${knownId}:${knownKey}:${predicate}`
+    if (recentlyMissed(missKey)) return null
+    const found = searchExports(req, predicate)
+    if (!found) searchMisses.set(missKey, Date.now())
+    return found
+  }
+
+  function searchExports (req, predicate) {
     for (const id of Object.keys(req.c)) {
       const exports = req.c[id] && req.c[id].exports
       if (!exports) continue
@@ -859,10 +899,12 @@
       if (value) return value
     } catch (error) {}
 
+    if (recentlyMissed(key)) return null
     for (const id of Object.keys(req.c)) {
       const exports = req.c[id] && req.c[id].exports
       if (exports && Object.prototype.hasOwnProperty.call(exports, key)) return exports[key]
     }
+    searchMisses.set(key, Date.now())
     return null
   }
 
@@ -938,11 +980,17 @@
     getConvListController().selectConversation(conv)
   }
 
+  // The React fiber of a DOM element: "__reactInternalInstance$…" in Zalo's React 16, "__reactFiber$…"
+  // from React 17 on, so a React update in Zalo does not silently break Zenlo
+  function reactFiberOf (el) {
+    const key = Object.keys(el).find((k) => k.startsWith('__reactInternalInstance') || k.startsWith('__reactFiber'))
+    return key ? el[key] : null
+  }
+
   function getCurrentConversation () {
     const main = document.querySelector('main')
     if (!main) return null
-    const key = Object.keys(main).find((k) => k.startsWith('__reactInternalInstance'))
-    let fiber = key && main[key]
+    let fiber = reactFiberOf(main)
     let id = null
     // The nearest fiber with convId may not carry conversationName, so keep walking up for it
     for (let depth = 0; fiber && depth < 20; depth++) {
@@ -1283,13 +1331,27 @@
 
   // ---------- Cleaning the answer ----------
 
+  // A link stays a link only when its address is in the messages (source: the transcript). A
+  // message can ask the AI for a link whose text says anything and whose address carries what other
+  // conversations said; such a link keeps only its text, and a bare address loses its "https://",
+  // so neither can be clicked.
+  function keepSourceLinks (text, source) {
+    const known = (url) => source.includes(url.replace(/[.,;:!?'"]+$/, ''))
+    return text.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>()"'`\]]+/g, (match, label, url) => {
+      if (url) return known(url) ? match : label
+      return known(match) ? match : match.replace(/^https?:\/\//, '')
+    })
+  }
+
   // What a model adds that the reader does not need: a lead-in line ("Dưới đây là bản tóm tắt…")
   // and code fences around the whole answer. A citation one or two minutes off a real message
-  // (minutes from buildTranscript) is moved onto it; any other citation is left as it is.
-  function cleanAnswer (text, minutes = null) {
+  // (minutes from buildTranscript) is moved onto it; any other citation is left as it is. With the
+  // transcript (source), links not in it lose their address (keepSourceLinks).
+  function cleanAnswer (text, minutes = null, source = null) {
     let out = String(text).trim()
       .replace(/^```[a-z]*\n([\s\S]*?)\n```$/i, '$1')
       .replace(/^(dưới đây|sau đây|đây là|chào bạn)[^\n]{0,160}:\s*\n+/i, '')
+    if (source !== null) out = keepSourceLinks(out, source)
     if (!minutes || !minutes.size) return out
     const known = [...minutes]
     const year = new Date([...minutes.values()][0]).getFullYear()
@@ -1467,6 +1529,7 @@
 
     isZaloReady,
     findExport,
+    reactFiberOf,
     getReactionCache,
     getConvName,
     getConversationPreviews,

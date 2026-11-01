@@ -32,14 +32,28 @@ const running = new Map()
 
 // ---------- Claude Code ----------
 
+// Folders on PATH, only absolute ones: a relative entry (or a bare command name) would be looked up
+// in the working folder, where anyone could have put a claude.exe
+const pathFolders = () => String(process.env.PATH || '').split(path.delimiter).filter((dir) => dir && path.isAbsolute(dir))
+
 const findClaudeExecutable = () => {
   const name = process.platform === 'win32' ? 'claude.exe' : 'claude'
   const candidates = [
     path.join(os.homedir(), '.local', 'bin', name),
-    path.join(os.homedir(), '.claude', 'local', name)
+    path.join(os.homedir(), '.claude', 'local', name),
+    // Anything else on PATH (winget, other installers)
+    ...pathFolders().map((dir) => path.join(dir, name))
   ]
-  return candidates.find((p) => fs.existsSync(p)) || null
+  return candidates.find((p) => {
+    try {
+      return fs.statSync(p).isFile()
+    } catch (error) {
+      return false
+    }
+  }) || null
 }
+
+const CLAUDE_NOT_FOUND = 'Không tìm thấy Claude Code (lệnh "claude"). Hãy cài Claude Code và đăng nhập bằng tài khoản Claude Pro/Max.'
 
 // Variables that could send the messages somewhere else, switch to another billing or provider,
 // weaken TLS, or load code into Claude Code. Zalo's environment is inherited, so they are removed
@@ -85,7 +99,9 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
     '--system-prompt', systemPrompt
   ]
 
-  const child = spawn(findClaudeExecutable() || 'claude', args, {
+  const exe = findClaudeExecutable()
+  if (!exe) return finish({ type: 'error', message: CLAUDE_NOT_FOUND })
+  const child = spawn(exe, args, {
     cwd: os.tmpdir(),
     env: getChildEnv(),
     windowsHide: true
@@ -125,9 +141,7 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
   })
 
   child.on('error', (error) => {
-    const message = error.code === 'ENOENT'
-      ? 'Không tìm thấy Claude Code (lệnh "claude"). Hãy cài Claude Code và đăng nhập bằng tài khoản Claude Pro/Max.'
-      : String(error.message || error)
+    const message = error.code === 'ENOENT' ? CLAUDE_NOT_FOUND : String(error.message || error)
     finish({ type: 'error', message })
   })
 
@@ -170,7 +184,7 @@ const findCodexExecutable = () => {
     ...vendor('x64'),
     ...vendor('arm64'),
     // Anything else on PATH
-    ...String(process.env.PATH || '').split(path.delimiter).filter(Boolean).map((dir) => path.join(dir, 'codex.exe'))
+    ...pathFolders().map((dir) => path.join(dir, 'codex.exe'))
   ]
   return candidates.find((p) => {
     try {
@@ -560,8 +574,15 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
   // An empty folder of its own: nothing for Codex to read, no project AGENTS.md
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'zenlo-codex-'))
   const cleanUp = () => fs.rm(work, { recursive: true, force: true }, () => {})
+  // Stop works while the login is still being checked (up to 15 s), before Codex starts
+  let cancelled = false
+  running.set(id, () => {
+    cancelled = true
+    cleanUp()
+  })
 
   getCodexLogin(exe).then((login) => {
+    if (cancelled) return
     if (login && login.loggedIn === false) {
       cleanUp()
       return finish({ type: 'error', message: codexError('Not logged in') })
@@ -592,6 +613,9 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
     // The transcript first, the request after it, as with Gemini
     const prompt = `${input}\n\n${instruction}`
     runCodexStream({ exe, work, id, model: chosenModel, effort: chosenEffort, systemPrompt, prompt, config, send, finish, cleanUp, fallback: () => runCodexExec(config, prompt) })
+  }).catch((error) => {
+    cleanUp()
+    finish({ type: 'error', message: codexError(error.message) })
   })
 
   const runCodexExec = (config, prompt) => {
@@ -694,6 +718,14 @@ const SECRETS_FILE = () => zenloFile('secrets.json', 'zenlo-secrets.json')
 const QUOTA_FILE = () => zenloFile('gemini-quota.json', 'zenlo-gemini-quota.json')
 const STORAGE_BACKUP_FILE = () => path.join(ZENLO_DIR(), 'storage-backup.json')
 
+// Written to a temporary file and moved into place, so a file is never left cut in half (the
+// installer closes Zalo with taskkill, which could land in the middle of a write)
+const writeFileAtomic = (file, text) => {
+  const temp = `${file}.${process.pid}.tmp`
+  fs.writeFileSync(temp, text)
+  fs.renameSync(temp, file)
+}
+
 const readJSONFile = (file) => {
   try {
     return JSON.parse(fs.readFileSync(file, 'utf8')) || {}
@@ -723,7 +755,7 @@ const setGeminiKeys = (keys) => {
   const secrets = readJSONFile(SECRETS_FILE())
   delete secrets.gemini
   secrets.geminiKeys = clean.map((k) => safeStorage.encryptString(k).toString('base64'))
-  fs.writeFileSync(SECRETS_FILE(), JSON.stringify(secrets))
+  writeFileAtomic(SECRETS_FILE(), JSON.stringify(secrets))
   geminiModels = null
 }
 
@@ -757,7 +789,7 @@ const markExhausted = (key, model) => {
   const quota = readQuota()
   const id = keyId(key)
   quota[id] = { ...(quota[id] || {}), [model]: nextPacificMidnight() }
-  fs.writeFileSync(QUOTA_FILE(), JSON.stringify(quota))
+  writeFileAtomic(QUOTA_FILE(), JSON.stringify(quota))
 }
 
 const exhaustedUntil = (quota, key, model) => (quota[keyId(key)] || {})[model] || 0
@@ -794,8 +826,9 @@ let geminiModels = null
 const FALLBACK_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest']
 
 const getGeminiModels = async (keys) => {
-  if (geminiModels && Date.now() - geminiModels.at < 60 * 60 * 1000) return geminiModels.list
+  if (geminiModels && Date.now() - geminiModels.at < geminiModels.ttl) return geminiModels.list
   let list = FALLBACK_MODELS
+  let fetched = false
   for (const key of keys) {
     try {
       const data = await httpsGetJSON(`${GEMINI_URL}?pageSize=200`, key)
@@ -810,10 +843,13 @@ const getGeminiModels = async (keys) => {
       const current = found.filter((id) => Number(id.match(/^gemini-(\d+)/)[1]) >= 3)
       if (current.length) list = current
       else if (found.length) list = found
+      fetched = true
       break
     } catch (error) {}
   }
-  geminiModels = { list, at: Date.now() }
+  // The fallback (no key could list the models, e.g. the network dropped) only for a minute, so the
+  // real list and the chosen starting model are back as soon as Google answers again
+  geminiModels = { list, at: Date.now(), ttl: fetched ? 60 * 60 * 1000 : 60 * 1000 }
   return list
 }
 
@@ -841,6 +877,10 @@ const congestionLevel = (model, list) => {
   if (rank === 2) return 2
   return 1
 }
+
+// A problem with the key itself (invalid, revoked, API not allowed for it), as opposed to one with the
+// model (gone, does not take a setting): only the first kind stops a key for the other models
+const isKeyProblem = (status, body) => status === 401 || ((status === 400 || status === 403) && /API[ _]?key/i.test(body))
 
 // The reason of a 429: per-day quota (wait for the reset) or per-minute (sent too fast)
 const isDailyQuota = (body) => /PerDay/i.test(body) || (/per day|daily/i.test(body) && !/PerMinute/i.test(body))
@@ -977,6 +1017,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
   const badKeys = new Set()
   for (const current of models) {
     const quota = readQuota()
+    if (badKeys.size === keys.length) break
     const usable = keys.filter((key) => !badKeys.has(key) && !exhaustedUntil(quota, key, current))
     if (!usable.length) {
       problems.push(`${geminiLabel(current)}: mọi key đã hết lượt trong ngày`)
@@ -1037,14 +1078,23 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
         moveOn = true
         break
       }
-      // Invalid key or no access: skip this key from now on
-      badKeys.add(key)
-      problems.push(`key ${maskKey(key)}: ${geminiError(response.status, response.body)}`)
+      if (isKeyProblem(response.status, response.body)) {
+        // Invalid key or no access: skip this key from now on
+        badKeys.add(key)
+        problems.push(`key ${maskKey(key)}: ${geminiError(response.status, response.body)}`)
+        continue
+      }
+      // Something about this model (removed, a setting it does not take): another key will not help
+      problems.push(`${geminiLabel(current)}: ${geminiError(response.status, response.body)}`)
+      moveOn = true
+      break
     }
     skipped.push(current)
     if (!moveOn && cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
   }
-  finish({ type: 'error', message: `Không model Gemini nào dùng được lúc này. ${problems.slice(-4).join('; ')}.` })
+  // The first problems are the cause; what follows from them (e.g. every key skipped) comes after
+  const reasons = [...new Set(problems)]
+  finish({ type: 'error', message: `Không model Gemini nào dùng được lúc này. ${reasons.slice(0, 4).join('; ')}${reasons.length > 4 ? '; …' : ''}.` })
 }
 
 // For the settings page: the models (with the fixed congestion estimate, and whether every key is
@@ -1093,21 +1143,37 @@ ipcMain.on('zenlo:summary:run', (event, request) => {
     running.delete(request.id)
     send(payload)
   }
-  if (request.provider === 'gemini') runGemini(send, finish, request)
-  else if (request.provider === 'codex') runCodex(send, finish, request)
-  else runClaude(send, finish, request)
+  // Anything unexpected (a full disk, a locked file) ends the run with its message instead of
+  // leaving the panel at "Đang tóm tắt…"
+  const fail = (error) => finish({ type: 'error', message: String((error && error.message) || error) })
+  const run = request.provider === 'gemini' ? runGemini : request.provider === 'codex' ? runCodex : runClaude
+  try {
+    Promise.resolve(run(send, finish, request)).catch(fail)
+  } catch (error) {
+    fail(error)
+  }
 })
 
 ipcMain.on('zenlo:summary:cancel', (event, id) => {
   if (!isTrustedSender(event)) return
   const cancel = running.get(id)
   if (cancel) cancel()
+  // The page stopped listening already; a cancelled run never finishes on its own
+  running.delete(id)
+})
+
+// Claude Code or Codex still answering when Zalo quits: stop them with it
+app.on('will-quit', () => {
+  for (const cancel of running.values()) {
+    try {
+      cancel()
+    } catch (error) {}
+  }
 })
 
 // Links Zenlo may open in the default browser: Google AI Studio (Gemini keys), Claude Code's
 // page, Zenlo's website and repository, and e-mail. Anything else is refused.
-const EXTERNAL_HOSTS = ['aistudio.google.com', 'ai.google.dev', 'claude.com', 'www.claude.com', 'docs.claude.com', 'github.com']
-const EXTERNAL_HOST_SUFFIXES = ['.github.io', '.pages.dev']
+const EXTERNAL_HOSTS = ['aistudio.google.com', 'ai.google.dev', 'claude.com', 'www.claude.com', 'docs.claude.com', 'github.com', 'stephitnoob.github.io']
 
 const isAllowedExternal = (url) => {
   let parsed
@@ -1118,7 +1184,7 @@ const isAllowedExternal = (url) => {
   }
   if (parsed.protocol === 'mailto:') return true
   if (parsed.protocol !== 'https:') return false
-  return EXTERNAL_HOSTS.includes(parsed.hostname) || EXTERNAL_HOST_SUFFIXES.some((suffix) => parsed.hostname.endsWith(suffix))
+  return EXTERNAL_HOSTS.includes(parsed.hostname)
 }
 
 ipcMain.handle('zenlo:open-external', (event, url) => {
@@ -1218,7 +1284,7 @@ ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {
 ipcMain.on('zenlo:storage:save', (event, data) => {
   if (!isTrustedSender(event) || !data || typeof data !== 'object') return
   try {
-    fs.writeFileSync(STORAGE_BACKUP_FILE(), JSON.stringify({ at: Date.now(), data }))
+    writeFileAtomic(STORAGE_BACKUP_FILE(), JSON.stringify({ at: Date.now(), data }))
   } catch (error) {}
 })
 
