@@ -33,7 +33,7 @@ namespace Zenlo
         const string ZenloFolder = "zenlo";      // inside Zalo's pc-dist
         const string DevMarker = "zenlo-dev";    // left by the developer's installer in dev mode
         const string ShortcutName = "Zenlo - Cài đặt.lnk";
-        const string PrivacyUrl = "https://stephitnoob.github.io/zenlo/privacy.html";
+        const string PrivacyUrl = "https://zenlo.io.vn/privacy.html";
 
         static readonly string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         static readonly string RoamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

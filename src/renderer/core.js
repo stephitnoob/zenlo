@@ -26,12 +26,12 @@
 
   // Zenlo's public links; an empty one is not shown. Filled in when the site and repository exist.
   const LINKS = {
-    site: 'https://stephitnoob.github.io/zenlo/',
-    guide: 'https://stephitnoob.github.io/zenlo/huong-dan.html',
-    versions: 'https://stephitnoob.github.io/zenlo/phien-ban.html',
+    site: 'https://zenlo.io.vn/',
+    guide: 'https://zenlo.io.vn/huong-dan.html',
+    versions: 'https://zenlo.io.vn/phien-ban.html',
     source: 'https://github.com/stephitnoob/zenlo',
-    privacy: 'https://stephitnoob.github.io/zenlo/privacy.html',
-    terms: 'https://stephitnoob.github.io/zenlo/dieu-khoan.html',
+    privacy: 'https://zenlo.io.vn/privacy.html',
+    terms: 'https://zenlo.io.vn/dieu-khoan.html',
     feedback: 'mailto:stephit.zenlo@outlook.com?subject=G%C3%B3p%20%C3%BD%20Zenlo',
     geminiKey: 'https://aistudio.google.com/apikey'
   }

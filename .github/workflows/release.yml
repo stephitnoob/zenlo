@@ -127,4 +127,4 @@ jobs:
           Kiểm tra file tải về: \`Get-FileHash .\\Zenlo-Setup.exe -Algorithm SHA256\`
           Kiểm tra nguồn gốc build: \`gh attestation verify .\\Zenlo-Setup.exe --repo $GITHUB_REPOSITORY\`
 
-          Code signing policy: https://stephitnoob.github.io/zenlo/ky-so.html"
+          Code signing policy: https://zenlo.io.vn/ky-so.html"

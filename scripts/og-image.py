@@ -64,6 +64,6 @@ for text, cite in rows:
 
 # Footer line
 d.text((72 * S, 548 * S), 'Zalo · Windows 10/11', font=font('consola.ttf', 20), fill=MUTED)
-d.text((690 * S, 548 * S), 'stephitnoob.github.io/zenlo', font=font('consola.ttf', 20), fill=MUTED)
+d.text((690 * S, 548 * S), 'zenlo.io.vn', font=font('consola.ttf', 20), fill=MUTED)
 
 img.resize((W, H), Image.LANCZOS).save(sys.argv[1], optimize=True)

@@ -30,7 +30,7 @@ Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases c�
 
 Bộ cài sửa file `resources\app.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc.
 
-Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html) · [Các phiên bản](https://stephitnoob.github.io/zenlo/phien-ban.html)
+Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://zenlo.io.vn/ky-so.html) · [Các phiên bản](https://zenlo.io.vn/phien-ban.html)
 
 ## Yêu cầu (để phát triển)
 
@@ -82,7 +82,7 @@ Zenlo đang xin chứng chỉ ký số miễn phí của SignPath Foundation; c�
 - Chỉ ký `Zenlo-Setup.exe`, do GitHub Actions build từ tag phiên bản ([release.yml](.github/workflows/release.yml)); mỗi yêu cầu ký được duyệt thủ công.
 - Team roles: Authors, Reviewers, Approvers: [stephit](https://github.com/stephitnoob).
 - Quyền riêng tư: [PRIVACY.md](PRIVACY.md), mục "Mọi kết nối mạng của Zenlo".
-- Chi tiết: [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html).
+- Chi tiết: [Code signing policy](https://zenlo.io.vn/ky-so.html).
 
 ## Bản quyền
 

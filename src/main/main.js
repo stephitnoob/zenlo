@@ -1237,7 +1237,7 @@ app.on('will-quit', () => {
 
 // Links Zenlo may open in the default browser: Google AI Studio (Gemini keys), Claude Code's
 // page, Zenlo's website and repository, and e-mail. Anything else is refused.
-const EXTERNAL_HOSTS = ['aistudio.google.com', 'ai.google.dev', 'claude.com', 'www.claude.com', 'docs.claude.com', 'github.com', 'stephitnoob.github.io']
+const EXTERNAL_HOSTS = ['aistudio.google.com', 'ai.google.dev', 'claude.com', 'www.claude.com', 'docs.claude.com', 'github.com', 'zenlo.io.vn']
 
 const isAllowedExternal = (url) => {
   let parsed
@@ -1273,7 +1273,7 @@ ipcMain.handle('zenlo:open-link', (event, url) => {
 
 // A Windows notification for a newer Zenlo, shown once per version by the page; a click opens the
 // versions page. The text and the link are fixed here, only the version comes from the page.
-const VERSIONS_PAGE = 'https://stephitnoob.github.io/zenlo/phien-ban.html'
+const VERSIONS_PAGE = 'https://zenlo.io.vn/phien-ban.html'
 let updateNotification = null
 
 ipcMain.handle('zenlo:update:notify', (event, tag) => {

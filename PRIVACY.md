@@ -80,7 +80,7 @@ Mọi thứ chỉ nằm trên máy bạn:
 
 ## Trang web
 
-Trang web của Zenlo (stephitnoob.github.io/zenlo) đếm lượt xem bằng [GoatCounter](https://www.goatcounter.com/), một dịch vụ thống kê mã nguồn mở, để tác giả biết có bao nhiêu người ghé xem và bao nhiêu người bấm Tải về.
+Trang web của Zenlo (zenlo.io.vn) đếm lượt xem bằng [GoatCounter](https://www.goatcounter.com/), một dịch vụ thống kê mã nguồn mở, để tác giả biết có bao nhiêu người ghé xem và bao nhiêu người bấm Tải về.
 
 - **Được gửi đi:** địa chỉ trang đang xem, tiêu đề trang, trang web dẫn bạn tới đây (nếu có), và việc bạn bấm nút Tải về.
 - **GoatCounter lưu** từng lượt xem ở dạng ẩn danh: thời gian, trang được xem, trang dẫn tới, loại trình duyệt, hệ điều hành và quốc gia. Địa chỉ IP không được lưu. Để không đếm trùng khi một người tải lại trang, GoatCounter dùng một mã phiên ẩn danh chỉ tồn tại tối đa 8 giờ.

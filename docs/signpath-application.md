@@ -6,7 +6,7 @@ Soạn sẵn để điền vào form tại https://signpath.org/apply. Form đư
 
 - Kho mã đã có giấy phép GPL-3.0 trên GitHub (đã push).
 - Đã có một bản phát hành **build bằng GitHub Actions dưới giấy phép GPL-3.0**: SignPath yêu cầu dự án "đã phát hành đúng dạng sẽ ký". Bản v0.1.0 hiện có còn dùng giấy phép cũ, nên cần phát hành bản mới (ví dụ v0.1.1) sau khi đổi giấy phép.
-- Trang [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html) đã lên mạng.
+- Trang [Code signing policy](https://zenlo.io.vn/ky-so.html) đã lên mạng.
 - GitHub đã bật xác thực hai lớp.
 
 ## Câu trả lời
@@ -15,13 +15,13 @@ Soạn sẵn để điền vào form tại https://signpath.org/apply. Form đư
 
 **Repository URL:** https://github.com/stephitnoob/zenlo
 
-**Project website / home page:** https://stephitnoob.github.io/zenlo/
+**Project website / home page:** https://zenlo.io.vn/
 
-**Download page:** https://stephitnoob.github.io/zenlo/#cai-dat (also https://github.com/stephitnoob/zenlo/releases)
+**Download page:** https://zenlo.io.vn/#cai-dat (also https://github.com/stephitnoob/zenlo/releases)
 
-**Code signing policy:** https://stephitnoob.github.io/zenlo/ky-so.html
+**Code signing policy:** https://zenlo.io.vn/ky-so.html
 
-**Privacy policy:** https://stephitnoob.github.io/zenlo/privacy.html
+**Privacy policy:** https://zenlo.io.vn/privacy.html
 
 **License:** GPL-3.0-only (OSI approved). No commercial or dual licensing; the project is non-profit and has no paid tier.
 
@@ -34,7 +34,7 @@ Zenlo is a free, open-source add-on for the Zalo desktop messenger on Windows (Z
 
 **What the installer does (system changes):** With the user's choice in its menu, after showing what it will change, the installer adds Zenlo to the user's Zalo installation by modifying Zalo's `resources\app.asar` (the original is kept as `app.asar.bak`), creates a Start menu shortcut "Zenlo - Cài đặt", and keeps a copy of itself in `%LOCALAPPDATA%\Zenlo` for reinstalling after Zalo updates. Option 2 in the same installer uninstalls Zenlo and restores Zalo's original file. It needs no administrator rights and makes no network connections. It does not bypass any security feature; it only changes the user's own Zalo installation, at the user's request, reversibly.
 
-**Network behavior of the app:** Chats go only to the AI service the user selected, when the user presses Summarize or Create digest. Optional update check (GitHub API) runs only when the user presses "Check for updates" or turns on the daily check (off by default). Full list: https://stephitnoob.github.io/zenlo/privacy.html#ket-noi
+**Network behavior of the app:** Chats go only to the AI service the user selected, when the user presses Summarize or Create digest. Optional update check (GitHub API) runs only when the user presses "Check for updates" or turns on the daily check (off by default). Full list: https://zenlo.io.vn/privacy.html#ket-noi
 
 **Team / maintainers:** stephit (GitHub: https://github.com/stephitnoob), sole maintainer. Roles: Author, Reviewer and Approver. MFA is enabled for GitHub and will be for SignPath.
 
