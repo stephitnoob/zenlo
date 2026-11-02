@@ -105,7 +105,7 @@
   fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
     .then((response) => (response.ok ? response.json() : Promise.reject(new Error(response.status))))
     .then((release) => {
-      // From v0.1.3 a release also has the installer in a zip, which browsers warn less about
+      // From v0.2.0 a release also has the installer in a zip, which browsers warn less about
       const zip = (release.assets || []).find((a) => a.name === 'Zenlo-Setup.zip')
       if (zip) {
         setDownload(`https://github.com/${REPO}/releases/latest/download/Zenlo-Setup.zip`, 'Tải Zenlo miễn phí cho Windows')

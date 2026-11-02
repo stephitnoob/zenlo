@@ -1,6 +1,7 @@
 /*
   Zenlo – website. The pretend Zalo windows on the home page: a summary that streams out, a digest
-  with ticks and drag to reorder, citations that scroll the chat, length and AI switches.
+  with ticks and drag to reorder, citations that scroll the chat, length and AI switches, and the
+  reaction bar with its "+" panel.
   Everything here is made up and runs in the page; nothing is sent anywhere.
 */
 
@@ -28,7 +29,8 @@
       { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
       { h: 'Còn lại' },
       { li: 'Chốt ra mắt sản phẩm thứ 6 (23/10).', cite: ['19/10 11:40'] },
-      { li: 'Khách ABC đổi logo sang xanh đậm.', cite: ['19/10 09:10'] }
+      { li: 'Khách ABC đổi logo sang xanh đậm.', cite: ['19/10 09:10'] },
+      { li: 'Mừng sinh nhật chị Hoa lúc 15h ở pantry.', cite: ['19/10 15:00'] }
     ],
     long: [
       { h: 'Liên quan tới bạn' },
@@ -182,7 +184,7 @@
       await stream(out, TEAM.medium)
       log.classList.add('show')
       hint.textContent = 'thử bấm vào một mốc giờ'
-      run.textContent = 'Tóm tắt lại'
+      run.textContent = 'Tóm tắt'
       run.disabled = false
       busy = false
     })
@@ -363,12 +365,12 @@
       claude: {
         field: ['Claude Code', 'đã đăng nhập'],
         log: ['Claude Code trên máy bạn → api.anthropic.com', 'HTTPS · bằng gói Claude của bạn'],
-        note: 'Cần gói Claude Pro hoặc Max, và Claude Code đã cài trên máy.'
+        note: 'Cần gói Claude Pro hoặc Max, và Claude Code đã cài và đăng nhập.'
       },
       codex: {
         field: ['Codex', 'đã đăng nhập ChatGPT'],
         log: ['Codex trên máy bạn → máy chủ OpenAI', 'HTTPS · bằng gói ChatGPT của bạn'],
-        note: 'Cần gói ChatGPT có Codex (Plus, Pro…) và Codex đã cài, đăng nhập trên máy.'
+        note: 'Cần gói ChatGPT có Codex (Plus, Pro…) và Codex đã cài, đăng nhập bằng tài khoản ChatGPT.'
       }
     }
     const ai = yours.querySelector('.js-ai')
@@ -412,8 +414,63 @@
     })
   }
 
+  // ---------- Reactions ----------
+
+  // 82 reactions, as many as the app shows; the page draws them with the system's emoji
+  const QUICK = ['👍', '❤️', '😆', '😮', '😭', '😡']
+  const ALL = QUICK.concat([
+    '😍', '😘', '😂', '🤣', '😊', '🥰', '😎', '🤩', '🥳', '😇', '🙂', '😉', '😋', '🤤',
+    '😜', '🤪', '😏', '😌', '🤗', '🤭', '🤔', '🤫', '😴', '🥱', '😢', '🥺', '😤', '😱',
+    '😨', '😰', '😳', '🤯', '😵', '🤐', '🤢', '🤧', '😷', '🤒', '👏', '🙏', '💪', '👌',
+    '✌️', '🤝', '👋', '🙌', '👎', '💯', '🔥', '✨', '🎉', '🎊', '💔', '💕', '💖', '💙',
+    '💚', '💛', '💜', '🖤', '🌹', '🌸', '☕', '🍻', '🎂', '🍀', '🌟', '⭐', '🌈', '🤮', '😪', '💗', '🎄', '⛄', '🎁', '🧧'
+  ])
+
+  function setupReact () {
+    const box = document.getElementById('demo-react')
+    if (!box) return
+    const chips = box.querySelector('.js-chips')
+    const plus = box.querySelector('.js-plus')
+    const hint = box.querySelector('.js-hint')
+    const pick = box.querySelector('.js-pick')
+    const recentBox = box.querySelector('.js-recent')
+    let recent = ['🤤', '🥳', '🙏']
+
+    const emojiButtons = (list) => list.map((e) => `<button type="button" data-e="${e}" aria-label="Thả ${e}">${e}</button>`).join('')
+    const showRecent = () => { recentBox.innerHTML = emojiButtons(recent) }
+
+    box.querySelector('.js-quick').innerHTML = emojiButtons(QUICK)
+    box.querySelector('.js-all').innerHTML = emojiButtons(ALL)
+    box.querySelector('.js-total').textContent = ALL.length
+    showRecent()
+
+    function open (yes) {
+      pick.hidden = !yes
+      plus.setAttribute('aria-expanded', String(yes))
+    }
+
+    plus.addEventListener('click', () => {
+      hint.hidden = true
+      open(pick.hidden)
+    })
+
+    box.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-e]')
+      if (!button) return
+      const e = button.dataset.e
+      chips.innerHTML = `<span class="rx-chip">${e} 1</span>`
+      hint.hidden = true
+      // As in the app: what was just sent from the panel goes to the top of "Gần đây"
+      if (pick.contains(button)) {
+        recent = [e].concat(recent.filter((r) => r !== e)).slice(0, 12)
+        showRecent()
+      }
+      open(false)
+    })
+  }
+
   // Each demo on its own: one that fails leaves the others working
-  for (const setup of [setupSummary, setupDigest, setupYours, setupNote]) {
+  for (const setup of [setupSummary, setupDigest, setupYours, setupNote, setupReact]) {
     try {
       setup()
     } catch (error) {

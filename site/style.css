@@ -924,6 +924,112 @@ button {
   height: 420px;
 }
 
+/* ---------- Extra: more reactions ---------- */
+
+.zw--solo {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 640px;
+}
+
+.zw--solo .zw__chat {
+  height: auto;
+}
+
+.zw--solo .zw__msgs {
+  overflow: visible;
+}
+
+.rx-chips:empty {
+  display: none;
+}
+
+.rx-chips {
+  display: block;
+  margin-top: 6px;
+}
+
+.rx-chip {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 1px solid var(--z-line);
+  border-radius: 999px;
+  background: var(--z-bg);
+  font-size: 12.5px;
+}
+
+.rx-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--z-line);
+  border-radius: 999px;
+  background: var(--z-bg);
+}
+
+.rx-bar .zp__hint {
+  margin: 0 6px 0 4px;
+}
+
+.rx-bar button,
+.rx-grid button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rx-bar button:hover,
+.rx-grid button:hover {
+  background: var(--z-bubble);
+}
+
+.rx-bar .rx-plus {
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.rx-bar .rx-plus:hover {
+  background: var(--accent);
+}
+
+.rx-pick {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--z-line);
+  border-radius: 10px;
+  background: var(--z-bg);
+}
+
+.rx-pick__label {
+  margin: 4px 0;
+  color: var(--z-muted);
+  font-size: 12px;
+}
+
+.rx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 34px);
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.rx-grid--all {
+  max-height: 190px;
+  overflow-y: auto;
+}
+
 /* ---------- Chapter 4: your way ---------- */
 
 .yours {
