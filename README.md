@@ -18,7 +18,7 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 - **Đọc tin nhắn** từ dữ liệu Zalo đã lưu trên máy, không cuộn khung chat, không gửi gì lên máy chủ Zalo.
 - **Trạng thái chưa đọc lấy từ Zalo.** Zalo xoá số tin chưa đọc ngay khi mở hội thoại, nên Zenlo ghi lại con số đó trước khi bạn mở, để "Từ tin chưa đọc" vẫn đúng.
 - **Gọi Claude** bằng [Claude Code](https://claude.com/claude-code) ở chế độ headless (`claude -p`), dùng gói Claude Pro/Max của bạn. Không dùng API key, không nạp `CLAUDE.md` hay memory cá nhân vào ngữ cảnh.
-- **Gọi ChatGPT** bằng [Codex CLI](https://github.com/openai/codex), đăng nhập bằng gói ChatGPT của bạn. Chữ hiện dần qua `codex app-server`: Zenlo tắt MCP server, plugin, bộ nhớ, `notify` và kiểm tra lại trước khi gửi tin nhắn; có gì bất thường thì dùng `codex exec --ignore-user-config` (chữ ra một lần). Cả hai đều chạy chỉ đọc trong thư mục trống, tắt công cụ, không nạp `AGENTS.md` của dự án, bỏ `CODEX_API_KEY`/`OPENAI_API_KEY` khỏi môi trường và từ chối chạy khi Codex đăng nhập bằng API key, để không bị tính tiền theo API.
+- **Gọi ChatGPT** bằng [Codex CLI](https://github.com/openai/codex), đăng nhập bằng gói ChatGPT của bạn. Chữ hiện dần qua `codex app-server`: Zenlo tắt MCP server, plugin, bộ nhớ, `notify` và kiểm tra lại trước khi gửi tin nhắn; MCP hay hook còn chạy thì dùng `codex exec --ignore-user-config` (chữ ra một lần), chỉ khi `codex login status` đã xác nhận đăng nhập bằng ChatGPT. Cả hai đều chạy chỉ đọc trong thư mục trống, tắt công cụ, không nạp `AGENTS.md` của dự án, bỏ `CODEX_API_KEY`/`OPENAI_API_KEY` khỏi môi trường và từ chối chạy khi Codex đăng nhập bằng API key hay cách khác ChatGPT (Bedrock, access token…), để không bị tính tiền theo API.
 - **Gọi Gemini** bằng API key của bạn (tối đa 5 key), lưu mã hoá bằng Windows (`safeStorage`) trên máy. Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện.
 - **Dữ liệu của Zenlo** (cài đặt, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm một bản sao lưu cùng key và hạn mức trong `%APPDATA%\Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
 - **Cài vào Zalo** bằng cách giải nén `app.asar`, thêm Zenlo, giữ bản gốc ở `app.asar.bak`.
@@ -28,7 +28,7 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 
 Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases của kho mã này, giải nén, mở `Zenlo-Setup.exe` và chọn "1. Cài Zenlo" (trình duyệt ít cảnh báo file zip hơn; trong zip chỉ có đúng file `.exe` đó, cũng có trên Releases). Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
 
-Bộ cài sửa file `resourcespp.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc.
+Bộ cài sửa file `resources\app.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc.
 
 Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://stephitnoob.github.io/zenlo/ky-so.html) · [Các phiên bản](https://stephitnoob.github.io/zenlo/phien-ban.html)
 

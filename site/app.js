@@ -118,12 +118,13 @@
       const asset = zip || (release.assets || []).find((a) => a.name === 'Zenlo-Setup.exe')
       const sha = ((release.body || '').match(/\b[a-f0-9]{64}\b/) || [])[0]
       // The C# installer is about 180 KB, the old one 90 MB
-      const size = !asset ? '–' : asset.size < 1048576 ? `${Math.round(asset.size / 1024)} KB` : `${Math.round(asset.size / 1048576)} MB`
-      setText('.js-version', release.tag_name || '–')
+      const size = !asset ? 'khoảng 200 KB' : asset.size < 1048576 ? `${Math.round(asset.size / 1024)} KB` : `${Math.round(asset.size / 1048576)} MB`
+      const tag = release.tag_name || 'bản mới nhất'
+      setText('.js-version', tag)
       setText('.js-size', size)
-      setText('.js-size-small', `${release.tag_name} · ${size}`)
+      setText('.js-size-small', `${tag} · ${size}`)
       setText('.js-sha', sha || 'xem trong ghi chú phát hành')
-      setText('.js-release-meta', `Miễn phí · ${release.tag_name} · ${size} · Windows 10/11`)
+      setText('.js-release-meta', `Miễn phí · ${tag} · ${size} · Windows 10/11`)
       if (sha) {
         $$('.js-virustotal').forEach((a) => {
           a.href = `https://www.virustotal.com/gui/file/${sha}`
@@ -132,6 +133,9 @@
       }
     })
     .catch(() => {
+      // GitHub did not answer (e.g. too many requests from one network): words instead of dashes
+      setText('.js-version', 'bản mới nhất')
+      setText('.js-size', 'khoảng 200 KB')
       setText('.js-sha', 'xem trong ghi chú phát hành trên GitHub')
     })
 })()

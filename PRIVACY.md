@@ -1,6 +1,6 @@
 # Chính sách quyền riêng tư của Zenlo
 
-Cập nhật: 01/11/2026
+Cập nhật: 02/11/2026
 
 Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
 
@@ -15,6 +15,8 @@ Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính c�
 Khi bạn mở khung Zenlo (để đếm tin và ước lượng trước khi gửi) và khi bấm **Tóm tắt** hoặc **Tạo bản tin**, Zenlo đọc từ dữ liệu Zalo đã lưu trên máy bạn. Việc đọc chỉ diễn ra trên máy; chỉ khi bạn bấm nút thì tin nhắn mới được gửi đi (mục dưới).
 
 - nội dung các tin nhắn trong khoảng thời gian bạn chọn (hoặc các tin chưa đọc), tên hiển thị của người gửi, thời gian gửi;
+- với tin trả lời một tin khác: tên người viết tin đó và tối đa 80 ký tự đầu của nó, kể cả khi tin đó cũ hơn khoảng bạn chọn;
+- tên hội thoại, và đó là nhóm hay trò chuyện riêng;
 - số người thả cảm xúc cho từng tin, và tin nào nhắc tới bạn;
 - tên Zalo của bạn, để AI biết tin nào đang nói với bạn;
 - ghi chú bạn tự viết cho hội thoại đó (nút Ghi chú), nếu có;
@@ -26,7 +28,14 @@ Zenlo không đọc ảnh, video, tệp đính kèm hay tin nhắn thoại; ch�
 
 ## Zenlo gửi gì, gửi đi đâu
 
-Zenlo chỉ gửi đi phần tin nhắn cần tóm tắt, kèm lời yêu cầu tóm tắt và ghi chú của bạn cho hội thoại đó (nếu có), tới **một** trong ba dịch vụ AI mà bạn chọn trong Cài đặt:
+Zenlo chỉ gửi đi những gì AI cần để tóm tắt, tới **một** trong ba dịch vụ AI mà bạn chọn trong Cài đặt:
+
+- các tin nhắn cần tóm tắt, với những gì ở mục trên: người gửi, giờ gửi, đoạn đầu của tin được trả lời, tin nào nhắc tới bạn, số người thả cảm xúc;
+- tên hội thoại, tên Zalo của bạn và giờ hiện tại, để AI hiểu "mai", "thứ 6", ai đang nói với bạn;
+- lời yêu cầu tóm tắt của Zenlo, và ghi chú của bạn cho hội thoại đó (nếu có).
+
+Ảnh, video, tệp và tin nhắn thoại không được gửi đi, chỉ tên tệp và chú thích (như mục trên).
+
 
 | Dịch vụ | Cách Zenlo gửi | Dữ liệu được dùng thế nào |
 |---|---|---|
@@ -58,7 +67,7 @@ Mọi thứ chỉ nằm trên máy bạn:
 
 | Dữ liệu | Nơi lưu |
 |---|---|
-| Cài đặt, ghi chú cho AI, bản tóm tắt gần nhất của từng hội thoại, kết quả Bản tin, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây và thanh cảm xúc nhanh | Bộ nhớ của Zalo trên máy (`%APPDATA%\ZaloData`) |
+| Cài đặt, ghi chú cho AI, bản tóm tắt gần nhất của từng hội thoại (300 hội thoại gần nhất), kết quả Bản tin, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây và thanh cảm xúc nhanh | Bộ nhớ của Zalo trên máy (`%APPDATA%\ZaloData`) |
 | Bản sao lưu của mục trên | `%APPDATA%\Zenlo\storage-backup.json` |
 | API key Gemini | `%APPDATA%\Zenlo\secrets.json`, **được mã hoá bằng Windows** (chỉ tài khoản Windows của bạn giải mã được) |
 | Ghi nhận model nào hết lượt trong ngày | `%APPDATA%\Zenlo\gemini-quota.json` |
@@ -66,7 +75,8 @@ Mọi thứ chỉ nằm trên máy bạn:
 ## Xoá dữ liệu
 
 - Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, và xoá từng API key bằng nút ✕.
-- Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` nếu muốn xoá sạch.
+- Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` (bản sao lưu, API key, ghi nhận hết lượt).
+- Gỡ xong, cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng `@Zenlo:`). Zalo không dùng tới và không gửi chúng đi. Muốn xoá cả phần này, trước khi gỡ hãy bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt, và xoá ghi chú trong từng hội thoại.
 
 ## Trang web
 
