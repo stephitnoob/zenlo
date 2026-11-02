@@ -226,7 +226,8 @@
     const status = overlay.querySelector('.js-settings-keys-status')
     const keys = [...overlay.querySelectorAll('.js-settings-key')].map((input) => input.value.trim()).filter(Boolean)
     try {
-      await window.$zenlo.setGeminiKeys(keys)
+      const saved = await window.$zenlo.setGeminiKeys(keys)
+      if (saved && saved.error) throw new Error(saved.error)
       status.textContent = keys.length ? `Đã lưu ${keys.length} key (mã hoá bằng Windows trên máy này).` : 'Đã xoá mọi key.'
       status.classList.remove('zenlo__status--error')
       overlay.querySelector('.js-settings-guide').hidden = keys.length > 0

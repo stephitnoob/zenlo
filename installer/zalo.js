@@ -62,13 +62,32 @@ function stopZalo () {
 
 const isFile = (p) => fs.existsSync(p) && fs.statSync(p).isFile()
 
-// Brings back Zalo's untouched app.asar (undoes a previous install)
+// Brings back Zalo's untouched app.asar (undoes a previous install). The patched one is only moved
+// aside until the original is in its place, then deleted: if a file is still held (by Zalo or an
+// antivirus), Zalo is never left without an app.asar.
 function restoreOriginal (resourcesDir) {
   const app = path.join(resourcesDir, 'app.asar')
   const backup = path.join(resourcesDir, 'app.asar.bak')
+  let old = path.join(resourcesDir, 'app.asar.zenlo-old')
+  const removeQuietly = (p) => {
+    try {
+      fs.rmSync(p, { recursive: true, force: true })
+    } catch (error) {}
+  }
+  // Left by earlier runs that could not delete them; one still held makes this run use a name of its own
+  for (const name of fs.readdirSync(resourcesDir)) {
+    if (name.startsWith('app.asar.zenlo-old')) removeQuietly(path.join(resourcesDir, name))
+  }
+  if (fs.existsSync(old)) old += `-${Date.now()}`
   if (!isFile(backup)) return false
-  if (fs.existsSync(app)) fs.rmSync(app, { recursive: true, force: true })
-  fs.renameSync(backup, app)
+  if (fs.existsSync(app)) fs.renameSync(app, old)
+  try {
+    fs.renameSync(backup, app)
+  } catch (error) {
+    if (!fs.existsSync(app) && fs.existsSync(old)) fs.renameSync(old, app)
+    throw error
+  }
+  removeQuietly(old)
   return true
 }
 
@@ -140,7 +159,13 @@ function install ({ dev = false, source = DIST } = {}) {
     throw error
   }
 
-  fs.renameSync(app, backup)
+  try {
+    fs.renameSync(app, backup)
+  } catch (error) {
+    // Zalo still holds app.asar: nothing was changed
+    fs.rmSync(work, { recursive: true, force: true })
+    throw error
+  }
   try {
     try {
       fs.renameSync(appDir, app)

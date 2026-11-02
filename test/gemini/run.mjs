@@ -34,7 +34,7 @@ function reply (callback, answer) {
     if (answer.status !== 200) {
       response.emit('data', answer.body || JSON.stringify({ error: { message: 'busy' } }))
     } else {
-      const event = { candidates: [{ content: { parts: [{ text: answer.text }] } }] }
+      const event = { candidates: [{ content: { parts: [{ text: answer.text || '' }] }, ...(answer.finish ? { finishReason: answer.finish } : {}) }] }
       response.emit('data', `data: ${JSON.stringify(event)}\n\n`)
     }
     response.emit('end')
@@ -60,7 +60,7 @@ const fakeHttps = {
   // One streaming call: the next scripted answer for that model; "hang" never answers
   request: (url, options, callback) => {
     const model = decodeURIComponent(url.split('/models/')[1].split(':')[0])
-    calls.push({ model, at: Date.now() })
+    calls.push({ model, at: Date.now(), key: options.headers['x-goog-api-key'] })
     const answer = (script[model] || []).shift() || { status: 200, text: `ok từ ${model}` }
     const request = new EventEmitter()
     request.destroy = () => {}
@@ -189,6 +189,59 @@ await test('Key không hợp lệ: dừng, báo đúng lý do, không đổ cho 
   assert.equal(calls.length, 1)
   assert.match(last.message, /không hợp lệ/)
   assert.doesNotMatch(last.message, /hết lượt/)
+})
+
+await test('403 của riêng một model (một key): sang model kế tiếp, không bỏ key', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 403, body: JSON.stringify({ error: { status: 'PERMISSION_DENIED', message: 'Permission denied on resource project.' } }) }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'done')
+  assert.deepEqual(calls.map((c) => c.model), ['gemini-3.6-flash', 'gemini-3.5-flash'])
+})
+
+await test('403 nói key bị lộ: dừng, báo lỗi key', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 403, body: JSON.stringify({ error: { message: 'Your API key was reported as leaked. Please use another API key.' } }) }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'error')
+  assert.equal(calls.length, 1)
+})
+
+await test('Trả lời bị cắt vì hết token: sang model kế tiếp', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 200, text: 'Phần đầu…', finish: 'MAX_TOKENS' }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'done')
+  assert.equal(last.result, 'ok từ gemini-3.5-flash')
+  assert.deepEqual(calls.map((c) => c.model), ['gemini-3.6-flash', 'gemini-3.5-flash'])
+})
+
+await test('Dừng giữa chừng vì nội dung (SAFETY): báo lỗi, không coi phần dở là xong', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 200, text: 'Phần đầu…', finish: 'SAFETY' }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'error')
+  assert.match(last.message, /dừng giữa chừng vì nội dung \(SAFETY\)/)
+  assert.equal(calls.length, 1)
+})
+
+await test('Trả lời trọn vẹn (STOP) vẫn xong như thường', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 200, text: 'Xong.', finish: 'STOP' }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'done')
+  assert.equal(last.result, 'Xong.')
+})
+
+await test('Key dán kèm khoảng trắng, ký tự ẩn: được làm sạch trước khi lưu', async () => {
+  const saved = handlers['zenlo:settings:setGeminiKeys'](trusted, [' AIzaFAKE\u200bKEY 0000\n'])
+  assert.equal(saved, true)
+  script = {}
+  await summarize()
+  assert.equal(calls[0].key, 'AIzaFAKEKEY0000')
+})
+
+await test('Key có chữ có dấu: không lưu, báo rõ lý do', async () => {
+  const saved = handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000', 'AIzaKhoáGiả'])
+  assert.match(saved.error, /Key thứ 2 có ký tự không hợp lệ/)
+  script = {}
+  await summarize()
+  assert.equal(calls[0].key, 'AIzaFAKEKEY0000')
 })
 
 console.log('\n[Gemini]')

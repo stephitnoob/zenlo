@@ -211,7 +211,8 @@ const getCodexEnv = () => {
   return env
 }
 
-// "codex login status": { loggedIn, mode } (mode "chatgpt" or "apikey"); null when unknown.
+// "codex login status": { loggedIn, mode } (mode "chatgpt", or "other" for an API key, Bedrock, an
+// access token or a workload identity, which may be billed by the API); null when unknown.
 // Kept for a minute, since the settings and the drawer ask often.
 let codexLogin = null
 const getCodexLogin = (exe) => {
@@ -239,7 +240,7 @@ const getCodexLogin = (exe) => {
     child.on('error', () => finish(null))
     child.on('close', (code) => {
       if (/Logged in using ChatGPT/i.test(output)) finish({ loggedIn: true, mode: 'chatgpt' })
-      else if (/API key configured/i.test(output)) finish({ loggedIn: true, mode: 'apikey' })
+      else if (/Logged in using|API key configured/i.test(output)) finish({ loggedIn: true, mode: 'other' })
       else if (/Not logged in/i.test(output) || code === 1) finish({ loggedIn: false })
       else finish(null)
     })
@@ -251,6 +252,8 @@ const getCodexLogin = (exe) => {
     }, 15000)
   })
 }
+
+const CODEX_NOT_CHATGPT = 'Codex đang đăng nhập bằng API key hoặc cách khác ChatGPT, có thể bị tính tiền theo API. Hãy chạy "codex logout" rồi "codex login" và chọn đăng nhập bằng ChatGPT.'
 
 // Codex's error texts (English) as a short Vietnamese message
 const codexError = (message) => {
@@ -423,12 +426,24 @@ const CODEX_STREAM_CONFIG = [
   'approval_policy="never"'
 ]
 
+// fallback (codex exec) is null when "codex login status" did not say ChatGPT: exec cannot check
+// the login itself, and an API key login is billed
 const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, config, send, finish, fallback, cleanUp }) => {
+  const cannotRun = () => {
+    cleanUp()
+    finish({ type: 'error', message: 'Không chạy được Codex ở chế độ an toàn (còn MCP server hay hook đang bật, hoặc không xác định được Codex đăng nhập bằng gì). Hãy chạy "codex login status" để xem, rồi thử lại.' })
+  }
+  // Once codex exec has the empty folder, it removes it itself
+  let handedOver = false
+  const handOver = () => {
+    handedOver = true
+    fallback()
+  }
   let child
   try {
     child = spawn(exe, ['app-server', ...[...config, ...CODEX_STREAM_CONFIG].flatMap((item) => ['-c', item])], { cwd: work, env: getCodexEnv(), windowsHide: true })
   } catch (error) {
-    return fallback()
+    return fallback ? handOver() : cannotRun()
   }
 
   let buffer = ''
@@ -457,7 +472,11 @@ const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, co
     if (over) return
     stop()
     if (cancelled) return
-    if (!sent) return fallback()
+    if (!sent && authMode && authMode !== 'chatgpt') {
+      cleanUp()
+      return finish({ type: 'error', message: CODEX_NOT_CHATGPT })
+    }
+    if (!sent) return fallback ? handOver() : cannotRun()
     finish({ type: 'error', message: codexError(lastError || reason) })
   }
   const timer = setTimeout(() => { if (!sent) giveUp('timeout') }, CODEX_HANDSHAKE_TIMEOUT)
@@ -534,7 +553,8 @@ const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, co
   child.on('error', () => giveUp('spawn'))
   child.on('close', (code) => {
     if (!over) giveUp(stderr.trim().split(/\r?\n/).pop() || `Codex thoát với mã ${code} mà không trả kết quả.`)
-    if (sent || cancelled) cleanUp()
+    // Again once Codex has exited: removing the folder while it was still Codex's working folder may have failed
+    if (!handedOver) cleanUp()
   })
 
   ;(async () => {
@@ -587,9 +607,9 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
       cleanUp()
       return finish({ type: 'error', message: codexError('Not logged in') })
     }
-    if (login && login.mode === 'apikey') {
+    if (login && login.mode !== 'chatgpt') {
       cleanUp()
-      return finish({ type: 'error', message: 'Codex đang đăng nhập bằng API key, sẽ bị tính tiền theo API. Hãy chạy "codex logout" rồi "codex login" và chọn đăng nhập bằng ChatGPT.' })
+      return finish({ type: 'error', message: CODEX_NOT_CHATGPT })
     }
 
     const chosenEffort = CODEX_EFFORTS.includes(effort) ? effort : 'medium'
@@ -612,7 +632,7 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
     ]
     // The transcript first, the request after it, as with Gemini
     const prompt = `${input}\n\n${instruction}`
-    runCodexStream({ exe, work, id, model: chosenModel, effort: chosenEffort, systemPrompt, prompt, config, send, finish, cleanUp, fallback: () => runCodexExec(config, prompt) })
+    runCodexStream({ exe, work, id, model: chosenModel, effort: chosenEffort, systemPrompt, prompt, config, send, finish, cleanUp, fallback: login ? () => runCodexExec(config, prompt) : null })
   }).catch((error) => {
     cleanUp()
     finish({ type: 'error', message: codexError(error.message) })
@@ -720,10 +740,23 @@ const STORAGE_BACKUP_FILE = () => path.join(ZENLO_DIR(), 'storage-backup.json')
 
 // Written to a temporary file and moved into place, so a file is never left cut in half (the
 // installer closes Zalo with taskkill, which could land in the middle of a write)
+// A virus scanner or the search indexer may hold the new file for a moment (EPERM/EBUSY on rename):
+// a few short retries, then a plain write, never a temporary file left behind.
 const writeFileAtomic = (file, text) => {
   const temp = `${file}.${process.pid}.tmp`
   fs.writeFileSync(temp, text)
-  fs.renameSync(temp, file)
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      fs.renameSync(temp, file)
+      return
+    } catch (error) {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 30)
+    }
+  }
+  try {
+    fs.unlinkSync(temp)
+  } catch (error) {}
+  fs.writeFileSync(file, text)
 }
 
 const readJSONFile = (file) => {
@@ -749,8 +782,13 @@ const getGeminiKeys = () => {
   return stored.map(decrypt).filter(Boolean)
 }
 
+// Spaces and invisible characters copied along with a key are dropped. Anything else that is not
+// plain ASCII cannot be sent in a request header, so it is refused here with a clear message
+// rather than failing every summary as a lost connection.
 const setGeminiKeys = (keys) => {
-  const clean = [...new Set(keys.map((k) => String(k || '').trim()).filter(Boolean))].slice(0, MAX_KEYS)
+  const clean = [...new Set(keys.map((k) => String(k || '').replace(/[\s\u200b-\u200d\u2060\ufeff]+/g, '')).filter(Boolean))].slice(0, MAX_KEYS)
+  const bad = clean.findIndex((k) => !/^[\x21-\x7e]+$/.test(k))
+  if (bad !== -1) throw new Error(`Key thứ ${bad + 1} có ký tự không hợp lệ (có thể đã dán nhầm chữ có dấu hay ký tự lạ). Hãy sao chép lại key từ Google AI Studio.`)
   if (clean.length && !safeStorage.isEncryptionAvailable()) throw new Error('Windows không cho mã hoá dữ liệu, nên Zenlo không lưu key.')
   const secrets = readJSONFile(SECRETS_FILE())
   delete secrets.gemini
@@ -880,6 +918,8 @@ const congestionLevel = (model, list) => {
 
 // A problem with the key itself (invalid, revoked, API not allowed for it), as opposed to one with the
 // model (gone, does not take a setting): only the first kind stops a key for the other models
+// A 403 that names the key (leaked, suspended) is the key's; any other 403 (API not enabled for the
+// key's project, no access to this model) only skips this key for this model, like a quota.
 const isKeyProblem = (status, body) => status === 401 || ((status === 400 || status === 403) && /API[ _]?key/i.test(body))
 
 // The reason of a 429: per-day quota (wait for the reset) or per-minute (sent too fast)
@@ -905,10 +945,13 @@ const FIRST_BYTE_TIMEOUT = 10 * 1000
 const IDLE_TIMEOUT = 60 * 1000
 const RECENT_FAILURE = 60 * 1000
 const BUSY_RETRY_DELAY = 1000
+// Reasons a model stops early over what it was writing
+const GEMINI_CONTENT_STOPS = ['SAFETY', 'RECITATION', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'SPII', 'IMAGE_SAFETY']
 const clampSetting = (value, fallback, min, max) => Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback
 
 // One streaming call (server-sent events). Zalo's Electron runs Node 16, which has no fetch.
-// Resolves to { status, body } on an HTTP error or a timeout (status 0), or { status: 200, result, blocked }.
+// Resolves to { status, body } on an HTTP error or a timeout (status 0), or { status: 200, result,
+// blocked, finishReason } (finishReason: why the model stopped, "STOP" when the answer is whole).
 const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FIRST_BYTE_TIMEOUT) => new Promise((resolve, reject) => {
   let settled = false
   const settle = (fn, value) => {
@@ -942,6 +985,7 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
     let buffer = ''
     let result = ''
     let blocked = ''
+    let finishReason = ''
     response.on('data', (chunk) => {
       arm(IDLE_TIMEOUT)
       buffer += chunk
@@ -957,6 +1001,7 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
           continue
         }
         if (event.promptFeedback && event.promptFeedback.blockReason) blocked = event.promptFeedback.blockReason
+        if (event.candidates && event.candidates[0] && event.candidates[0].finishReason) finishReason = event.candidates[0].finishReason
         const parts = (event.candidates && event.candidates[0] && event.candidates[0].content && event.candidates[0].content.parts) || []
         for (const part of parts) {
           // Thought summaries only show that the model is working; they are not part of the answer
@@ -966,7 +1011,7 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
         }
       }
     })
-    response.on('end', () => settle(resolve, { status: 200, result, blocked }))
+    response.on('end', () => settle(resolve, { status: 200, result, blocked, finishReason }))
     // Destroyed (cancel or timeout) after the answer started: Node 16 emits "aborted"/"close", not "end"
     response.on('aborted', () => settle(reject, new Error('aborted')))
     response.on('close', () => settle(reject, new Error('closed')))
@@ -1046,7 +1091,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
             if (cancelled) break
             continue
           }
-          if (response.status !== 200 || response.result || response.blocked) break
+          if (response.status !== 200 || response.result || response.blocked || GEMINI_CONTENT_STOPS.includes(response.finishReason)) break
         }
       } catch (error) {
         if (cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
@@ -1057,8 +1102,18 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
       }
 
       if (response.status === 200) {
+        const reason = response.finishReason
         if (!response.result && response.blocked) return finish({ type: 'error', message: `Gemini từ chối nội dung này (${response.blocked}).` })
-        if (response.result) return finish({ type: 'done', isError: false, result: response.result, model: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+        // Stopped over the content (safety, recitation…): another model would most likely stop too
+        if (GEMINI_CONTENT_STOPS.includes(reason)) return finish({ type: 'error', message: `Gemini dừng giữa chừng vì nội dung (${reason}), nên câu trả lời không đủ. Thử lại với khoảng tin ngắn hơn hoặc chọn AI khác.` })
+        if (response.result && (!reason || reason === 'STOP')) return finish({ type: 'done', isError: false, result: response.result, model: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+        if (response.result) {
+          // Cut off for another reason (out of tokens…): the next model gets a fresh try. Its status
+          // event clears what this one wrote.
+          problems.push(`${geminiLabel(current)}: trả lời bị cắt giữa chừng (${reason})`)
+          moveOn = true
+          break
+        }
         // Still empty: treat like a busy model
         recentFailures.set(current, Date.now())
         problems.push(`${geminiLabel(current)}: trả lời rỗng`)
@@ -1067,7 +1122,12 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
       }
       if (response.status === 429) {
         // Out of quota for this key's project: try the same model with the next key
-        if (isDailyQuota(response.body)) markExhausted(key, current)
+        if (isDailyQuota(response.body)) {
+          // Only a note to skip this key and model until tomorrow: not worth failing the run over
+          try {
+            markExhausted(key, current)
+          } catch (error) {}
+        }
         problems.push(`${geminiLabel(current)} (key ${maskKey(key)}): ${geminiError(429, response.body)}`)
         continue
       }
@@ -1082,6 +1142,10 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
         // Invalid key or no access: skip this key from now on
         badKeys.add(key)
         problems.push(`key ${maskKey(key)}: ${geminiError(response.status, response.body)}`)
+        continue
+      }
+      if (response.status === 403) {
+        problems.push(`${geminiLabel(current)} (key ${maskKey(key)}): ${geminiError(403, response.body)}`)
         continue
       }
       // Something about this model (removed, a setting it does not take): another key will not help
@@ -1259,7 +1323,7 @@ ipcMain.handle('zenlo:settings:get', async (event) => {
     codex: {
       path: codexPath,
       loggedIn: login ? login.loggedIn : null,
-      account: login && login.mode === 'chatgpt' ? 'đã đăng nhập bằng ChatGPT' : login && login.mode === 'apikey' ? 'đang dùng API key (nên đăng nhập bằng ChatGPT)' : ''
+      account: login && login.mode === 'chatgpt' ? 'đã đăng nhập bằng ChatGPT' : login && login.loggedIn ? 'đang dùng API key hoặc cách khác ChatGPT (nên đăng nhập bằng ChatGPT)' : ''
     },
     encryption: safeStorage.isEncryptionAvailable()
   }
@@ -1273,9 +1337,14 @@ ipcMain.handle('zenlo:models:check', (event, provider) => {
   return null
 })
 
+// { error } with the message as written, not wrapped in Electron's "Error invoking remote method"
 ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {
   if (!isTrustedSender(event)) return false
-  setGeminiKeys(Array.isArray(keys) ? keys : [])
+  try {
+    setGeminiKeys(Array.isArray(keys) ? keys : [])
+  } catch (error) {
+    return { error: error.message }
+  }
   return true
 })
 

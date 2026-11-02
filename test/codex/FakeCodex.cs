@@ -4,7 +4,9 @@
   codex-cli 0.160 for the catalog and the app server): "codex login status", "codex debug models
   [--bundled]", "codex app-server" and "codex exec --json ... -".
 
-  FAKE_CODEX_LOGIN    chatgpt (default) | none | apikey
+  FAKE_CODEX_LOGIN    chatgpt (default) | none | apikey (older CLIs) | apikey-new | bedrock |
+                      unknown (prints nothing)
+  FAKE_CODEX_AUTHMODE the app server's authMode, when it should differ from the login above
   FAKE_CODEX_SCENARIO success (default) | usage | usage-plus | upgrade | badmodel | unauthorized |
                       network | crash | tooLong
   FAKE_CODEX_LOG      a file to write the arguments and the prompt read from stdin to
@@ -33,6 +35,10 @@ internal static class FakeCodex
         {
             if (login == "none") { stderr.WriteLine("Not logged in"); return 1; }
             if (login == "apikey") { stderr.WriteLine("API key configured - sk-proj-***ABCD"); return 0; }
+            // The texts of codex-cli 0.160
+            if (login == "apikey-new") { stderr.WriteLine("Logged in using an API key - sk-proj-***ABCD"); return 0; }
+            if (login == "bedrock") { stderr.WriteLine("Logged in using Amazon Bedrock API key"); return 0; }
+            if (login == "unknown") return 0;
             stderr.WriteLine("Logged in using ChatGPT");
             return 0;
         }
@@ -160,7 +166,7 @@ internal static class FakeCodex
             if (method == "initialize")
             {
                 stdout.WriteLine(reply(new Dictionary<string, object> { { "userAgent", "fake" } }));
-                stdout.WriteLine(note("account/updated", new Dictionary<string, object> { { "authMode", login == "apikey" ? "apikey" : "chatgpt" }, { "planType", "plus" } }));
+                stdout.WriteLine(note("account/updated", new Dictionary<string, object> { { "authMode", Environment.GetEnvironmentVariable("FAKE_CODEX_AUTHMODE") ?? (login.StartsWith("apikey") || login == "bedrock" ? "apikey" : "chatgpt") }, { "planType", "plus" } }));
             }
             else if (method == "config/read")
             {

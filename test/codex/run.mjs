@@ -29,7 +29,7 @@ if (!process.argv[2]) {
   const csc = path.join(process.env.WINDIR || 'C:\\Windows', 'Microsoft.NET', 'Framework64', 'v4.0.30319', 'csc.exe')
   execFileSync(csc, ['/nologo', '/codepage:65001', '/reference:System.Web.Extensions.dll', `/out:${FAKE}`, path.join(ROOT, 'test', 'codex', 'FakeCodex.cs')], { stdio: 'inherit' })
   let failed = 0
-  for (const login of ['chatgpt', 'none', 'apikey', 'missing']) {
+  for (const login of ['chatgpt', 'none', 'apikey', 'apikey-new', 'bedrock', 'unknown', 'missing']) {
     const result = spawnSync(process.execPath, [fileURLToPath(import.meta.url), login], { stdio: 'inherit' })
     if (result.status !== 0) failed++
   }
@@ -124,10 +124,21 @@ await test('Cài đặt báo đúng trạng thái Codex', async () => {
     assert.equal(settings.codex.path, null)
   } else {
     assert.equal(settings.codex.path, FAKE)
-    assert.equal(settings.codex.loggedIn, login !== 'none')
-    if (login === 'apikey') assert.match(settings.codex.account, /API key/)
+    assert.equal(settings.codex.loggedIn, login === 'unknown' ? null : login !== 'none')
+    if (/apikey|bedrock/.test(login)) assert.match(settings.codex.account, /API key/)
   }
 })
+
+// The empty folders Zenlo makes for Codex; each one must be gone a moment after the answer or the error
+const workDirs = () => fs.readdirSync(os.tmpdir()).filter((name) => name.startsWith('zenlo-codex-')).sort().join(',')
+const leavesNoFolder = async (run) => {
+  const before = workDirs()
+  await run()
+  await new Promise((resolve) => setTimeout(resolve, 1500))
+  // Folders of earlier runs may still be going away meanwhile; only a new one is wrong
+  const left = workDirs().split(',').filter((name) => name && !before.split(',').includes(name))
+  assert.deepEqual(left, [], `left: ${left.join(', ')}`)
+}
 
 const logArgs = () => fs.readFileSync(LOG, 'utf8').split('\nCWD\n')[0].split('\n').slice(1)
 
@@ -171,6 +182,19 @@ if (login === 'chatgpt') {
       assert.equal(logArgs()[0], 'exec')
     })
   }
+
+  await test('app-server báo không phải ChatGPT: dừng, không gửi tin, không chuyển sang exec', async () => {
+    process.env.FAKE_CODEX_AUTHMODE = 'apikey'
+    let last
+    try {
+      await leavesNoFolder(async () => { ({ last } = await summarize('success')) })
+    } finally {
+      delete process.env.FAKE_CODEX_AUTHMODE
+    }
+    assert.equal(last.type, 'error')
+    assert.match(last.message, /API key/)
+    assert.ok(!fs.existsSync(LOG), 'nothing was sent')
+  })
 
   const streamErrors = {
     usage: /hết lượt dùng Codex, thử lại lúc 3:05 PM/,
@@ -298,11 +322,30 @@ if (login === 'chatgpt') {
     assert.match(last.message, /codex login/)
     assert.ok(!fs.existsSync(LOG), 'exec was not run')
   })
-} else if (login === 'apikey') {
-  await test('Đăng nhập bằng API key: từ chối chạy để không bị tính tiền API', async () => {
+} else if (login === 'apikey' || login === 'apikey-new' || login === 'bedrock') {
+  await test('Đăng nhập bằng API key hay cách khác ChatGPT: từ chối chạy để không bị tính tiền API', async () => {
     const { last } = await summarize('success')
     assert.equal(last.type, 'error')
     assert.match(last.message, /API key/)
+    assert.ok(!fs.existsSync(LOG), 'exec was not run')
+  })
+} else if (login === 'unknown') {
+  await test('Không rõ đăng nhập: app-server xác nhận ChatGPT thì vẫn chạy', async () => {
+    const { last } = await summarize('success')
+    assert.equal(last.type, 'done')
+    assert.equal(logArgs()[0], 'app-server')
+  })
+
+  await test('Không rõ đăng nhập và app-server không dùng được: báo lỗi, không chạy exec', async () => {
+    process.env.FAKE_CODEX_APPSERVER = 'missing'
+    let last
+    try {
+      await leavesNoFolder(async () => { ({ last } = await summarize('success')) })
+    } finally {
+      delete process.env.FAKE_CODEX_APPSERVER
+    }
+    assert.equal(last.type, 'error')
+    assert.match(last.message, /codex login status/)
     assert.ok(!fs.existsSync(LOG), 'exec was not run')
   })
 } else if (login === 'missing') {

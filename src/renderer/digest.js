@@ -146,9 +146,14 @@
 
   // Read each time (not once at load), so a restore from Zenlo's backup is picked up
 
+  // "Chọn hết" / "Bỏ chọn hết" hold until Zalo restarts, not for good: a conversation unticked in
+  // bulk must not stay unticked once it has something important, nor an automated one ticked
+  const bulkTicks = new Map()
+
   // Unticked by default: what the user unticked, and conversations whose unread messages are all
   // automated notices (account notices, cards), unless the user ticked them by hand
   function isSelectedByDefault (convId, fromOthers) {
+    if (bulkTicks.has(convId)) return bulkTicks.get(convId)
     if (readSet(UNTICKED_KEY).has(convId)) return false
     if (readSet(TICKED_KEY).has(convId)) return true
     return !(fromOthers.length && fromOthers.every((m) => AUTOMATED_KINDS.includes(m.originMsgType)))
@@ -204,19 +209,9 @@
     })
   }
 
-  // Saves the new order of the visible conversations without disturbing the saved rank of
-  // conversations that are not in this digest: the visible ones are written back into their own slots.
-  function rememberVisibleOrder () {
-    const saved = loadOrder()
-    for (const item of items) {
-      if (!saved.includes(item.convId)) saved.push(item.convId)
-    }
-    const visible = new Set(items.map((item) => item.convId))
-    const slots = saved.map((id, i) => (visible.has(id) ? i : -1)).filter((i) => i >= 0)
-    slots.forEach((slot, i) => {
-      saved[slot] = items[i].convId
-    })
-    saveOrder(saved)
+  // Saves the order after a card was dropped at index `at` (ZenloCore.mergeDigestOrder)
+  function rememberVisibleOrder (at) {
+    saveOrder(Z.mergeDigestOrder(loadOrder(), items.map((item) => item.convId), at))
   }
 
   // ---------- UI ----------
@@ -297,41 +292,70 @@
 
   function setSelected (item, selected) {
     item.selected = selected
+    bulkTicks.delete(item.convId)
     rememberTick(item.convId, selected)
   }
 
   function setAllSelected (selected) {
     for (const item of items) {
-      if (item.status !== 'done') setSelected(item, selected)
+      if (item.status === 'done') continue
+      item.selected = selected
+      bulkTicks.set(item.convId, selected)
     }
     renderItems()
   }
 
-  // Marks conversations read in Zalo and removes them from the digest
-  function markRead (convIds) {
+  // A message from someone else newer than the card shows: Zalo would mark it read too, unseen
+  async function hasNewerMessages (item) {
     try {
-      Z.markReadInZalo(convIds)
+      const latest = await Z.getLatestMessages(item.convId, 20)
+      return latest.some((m) => Number(m.sendDttm) > item.lastTime && String(m.fromUid) !== '0' && m.msgType !== -4 && Z.describeContent(m))
     } catch (error) {
-      setStatus(`Lỗi: ${error.message || error}`, true)
       return false
     }
-    const ids = new Set(convIds)
-    forgetSummaries(convIds)
-    items = items.filter((item) => !ids.has(item.convId))
-    renderItems()
-    return true
   }
 
+  // Marks conversations read in Zalo and removes them from the digest, except those with a newer
+  // message (unless force). Returns { marked, newer } (newer: the items left), or null on an error.
+  async function markRead (chosen, { force = false } = {}) {
+    const newer = force ? [] : (await Promise.all(chosen.map(async (item) => ((await hasNewerMessages(item)) ? item : null)))).filter(Boolean)
+    const marking = chosen.filter((item) => !newer.includes(item))
+    if (marking.length) {
+      const ids = new Set(marking.map((item) => item.convId))
+      try {
+        Z.markReadInZalo([...ids])
+      } catch (error) {
+        setStatus(`Lỗi: ${error.message || error}`, true)
+        return null
+      }
+      forgetSummaries([...ids])
+      for (const id of ids) readDuringScan.add(id)
+      items = items.filter((item) => !ids.has(item.convId))
+      renderItems()
+    }
+    return { marked: marking.length, newer }
+  }
+
+  // Which conversations were unread at the last scan (see the automatic refresh at the end); null: unknown
+  let lastShape = null
+  // Marked read while a scan was reading: that scan saw them unread, so they are left out of its result
+  const readDuringScan = new Set()
+
+  // The list on screen stays until the new one is ready, so a refresh (also the automatic one when
+  // a conversation becomes unread) does not empty it while reading
   async function refresh () {
     if (running) return
-    items = []
-    renderItems()
+    lastShape = unreadShape()
+    readDuringScan.clear()
     setStatus('Đang tìm hội thoại chưa đọc…')
     try {
-      const result = await collectUnread((done, total) => setStatus(`Đang đọc tin chưa đọc… ${done}/${total} hội thoại`))
+      // The list stays usable while this reads: a digest started meanwhile owns the status line
+      const result = await collectUnread((done, total) => {
+        if (!running) setStatus(`Đang đọc tin chưa đọc… ${done}/${total} hội thoại`)
+      })
       // A newer scan started, or a digest started while this one was reading
       if (!result || running) return
-      items = result.items
+      items = result.items.filter((item) => !readDuringScan.has(item.convId))
       const old = result.tooOld ? `${result.tooOld} hội thoại có tin chưa đọc cũ hơn ${Z.getLookback() / Z.DAY} ngày nên không đưa vào (đổi trong Cài đặt Zenlo).` : ''
       const unreadable = result.failed ? `${result.failed} hội thoại không đọc được nên không đưa vào.` : ''
       const note = [old, unreadable].filter(Boolean).join(' ')
@@ -555,9 +579,12 @@
       if (running) running.cancel()
     })
     el.querySelector('.js-digest-refresh').addEventListener('click', refresh)
-    el.querySelector('.js-digest-read-all').addEventListener('click', () => {
+    el.querySelector('.js-digest-read-all').addEventListener('click', async () => {
       if (!items.length) return
-      if (markRead(items.map((item) => item.convId))) setStatus('Đã đánh dấu đã đọc trong Zalo.')
+      const result = await markRead(items)
+      if (!result) return
+      if (!result.newer.length) return setStatus('Đã đánh dấu đã đọc trong Zalo.')
+      setStatus(`${result.marked ? `Đã đánh dấu đã đọc ${result.marked} hội thoại. ` : ''}${result.newer.length} hội thoại có tin mới sau khi danh sách được tải nên chưa đánh dấu; bấm Làm mới để xem.`)
     })
 
     el.querySelector('.js-digest-select-all').addEventListener('click', () => setAllSelected(true))
@@ -590,7 +617,12 @@
           setStatus(`Lỗi: ${error.message || error}`, true)
         })
       } else if (event.target.closest('.js-digest-read')) {
-        markRead([item.convId])
+        // A second press marks it read anyway
+        markRead([item], { force: !!item.readAnyway }).then((result) => {
+          if (!result || !result.newer.length) return
+          item.readAnyway = true
+          setStatus(`"${item.name}" có tin mới sau khi danh sách được tải nên chưa đánh dấu. Bấm Làm mới để xem, hoặc bấm Đã đọc lần nữa để vẫn đánh dấu.`)
+        })
       } else if (event.target.closest('.js-digest-open')) {
         Z.openConversation(item.convId)
       } else if (event.target.closest('.js-digest-detail')) {
@@ -650,7 +682,7 @@
       const [moved] = items.splice(dragIndex, 1)
       if (target > dragIndex) target--
       items.splice(target, 0, moved)
-      rememberVisibleOrder()
+      rememberVisibleOrder(target)
       dragIndex = null
       renderItems()
     })
@@ -677,17 +709,20 @@
     try {
       return [...Z.readZaloUnread()].map(([convId, state]) => `${convId}:${state.mentions > 0 ? 1 : 0}`).sort().join(',')
     } catch (error) {
-      return ''
+      // Unknown, not "nothing unread": a failed read must not look like a change
+      return null
     }
   }
-  let lastShape = null
   let lastAutoRefresh = 0
   setInterval(() => {
-    if (!overlay || running || !Z.drawer.isOpen('digest')) {
+    if (!overlay || !Z.drawer.isOpen('digest')) {
       lastShape = null
       return
     }
+    // While a digest runs the list stays as it is; what became unread meanwhile is picked up after
+    if (running) return
     const shape = unreadShape()
+    if (shape === null) return
     // null: no shape yet ('' is a real one: nothing unread)
     if (lastShape === null) lastShape = shape
     if (shape === lastShape || Date.now() - lastAutoRefresh < 20 * 1000) return

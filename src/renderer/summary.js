@@ -32,16 +32,8 @@
     return formatTime(ms, true)
   }
 
-  // Parses "dd/mm/yyyy hh:mm"; returns NaN when the text or the date is invalid
-  function parseInputValue (text) {
-    const match = String(text).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/)
-    if (!match) return NaN
-    const [day, month, year, hour, minute] = match.slice(1).map(Number)
-    const d = new Date(year, month - 1, day, hour, minute)
-    const valid = d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day &&
-      d.getHours() === hour && d.getMinutes() === minute
-    return valid ? d.getTime() : NaN
-  }
+  // "Đến" is the last moment of its minute, so "Đến 14:30" keeps a message sent at 14:30:20
+  const parseInputValue = (text, end = false) => Z.parseTime(text, end)
 
   let panel = null
   let activeJob = null
@@ -79,7 +71,7 @@
     const myId = ++estimateId
     const convId = panel.dataset.convId
     const fromMs = parseInputValue(panel.querySelector('.js-summary-from').value)
-    const toMs = parseInputValue(panel.querySelector('.js-summary-to').value)
+    const toMs = parseInputValue(panel.querySelector('.js-summary-to').value, true)
     if (!convId || Number.isNaN(fromMs) || Number.isNaN(toMs) || fromMs >= toMs) return setEstimate('')
 
     setEstimate('Đang đếm tin nhắn…')
@@ -321,7 +313,7 @@
     const convId = panel.dataset.convId
     const convName = panel.dataset.convName
     const fromMs = parseInputValue(panel.querySelector('.js-summary-from').value)
-    const toMs = parseInputValue(panel.querySelector('.js-summary-to').value)
+    const toMs = parseInputValue(panel.querySelector('.js-summary-to').value, true)
     const length = Z.getLength('summary')
 
     if (Number.isNaN(fromMs)) return setStatus(`"Từ" chưa đúng định dạng ${TIME_FORMAT_HINT}, ví dụ ${toInputValue(Date.now())}.`, true)

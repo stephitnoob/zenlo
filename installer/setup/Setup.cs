@@ -269,16 +269,47 @@ namespace Zenlo
             }
         }
 
-        // Brings back Zalo's untouched app.asar (undoes a previous install)
+        // Brings back Zalo's untouched app.asar (undoes a previous install). The patched one is only
+        // moved aside until the original is in its place, then deleted: if a file is still held (by
+        // Zalo or an antivirus), Zalo is never left without an app.asar.
         static bool RestoreOriginal(string resources)
         {
             string app = Path.Combine(resources, "app.asar");
             string backup = Path.Combine(resources, "app.asar.bak");
+            string old = Path.Combine(resources, "app.asar.zenlo-old");
+            // Left by earlier runs that could not delete them; one still held makes this run use a name of its own
+            foreach (string left in Directory.GetFileSystemEntries(resources, "app.asar.zenlo-old*")) RemoveQuietly(left);
+            if (File.Exists(old) || Directory.Exists(old)) old += "-" + Guid.NewGuid().ToString("N");
             if (!File.Exists(backup)) return false;
-            if (Directory.Exists(app)) DeleteDirectory(app);
-            else if (File.Exists(app)) File.Delete(app);
-            File.Move(backup, app);
+            if (Directory.Exists(app)) Directory.Move(app, old);
+            else if (File.Exists(app)) File.Move(app, old);
+            try
+            {
+                File.Move(backup, app);
+            }
+            catch (Exception)
+            {
+                if (!File.Exists(app) && !Directory.Exists(app))
+                {
+                    if (Directory.Exists(old)) Directory.Move(old, app);
+                    else if (File.Exists(old)) File.Move(old, app);
+                }
+                throw;
+            }
+            RemoveQuietly(old);
             return true;
+        }
+
+        static void RemoveQuietly(string path)
+        {
+            try
+            {
+                if (Directory.Exists(path)) DeleteDirectory(path);
+                else if (File.Exists(path)) File.Delete(path);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         static void Install()

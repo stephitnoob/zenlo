@@ -231,23 +231,56 @@
   }
 
   // The digest answer split by its "### n" lines -> { n: text }. Works on a partial answer while it
-  // streams. Also accepts "### Hội thoại 2", "### 2. Tên", "**2. Tên**". The first heading of a
-  // number wins and a later one is text of the section it is in, so a message in one conversation
-  // cannot get the AI to write over another conversation's card.
+  // streams. Also accepts "### Hội thoại 2", "### 2. Tên", "### 2: Tên", "**2. Tên**", but not a
+  // time or a date ("### 10:30 họp", "**1/10 họp lớp**"). When the first heading is a "#" one, bold
+  // lines are not headings. A number already used starts its section again only while that section is the
+  // open one and still empty, or was opened by a bold line (a heading the AI wrote early gives way
+  // to the real one); otherwise it is text of the section it is in, so a message in one
+  // conversation cannot write over an earlier card, and a bold line cannot wipe its own card.
+  const DIGEST_HEAD = /^\s*(?:(#{1,6})\s*(?:(?:hội thoại|mục)\s*(?:số\s*)?)?\[?(\d{1,3})\]?(?!\d|[/:.,]\d)|\*\*\s*(?:(?:hội thoại|mục)\s*(?:số\s*)?)?(\d{1,3})(?!\d|[/:.,]\d)[^*\n]*\*\*\s*$)/i
+
   function splitDigest (text) {
     const sections = {}
+    const byBold = {}
     let current = null
+    // The kind of the first heading: "#" or bold
+    let style = null
     for (const line of String(text).split('\n')) {
-      const head = line.match(/^\s*(?:#{1,6}\s*(?:hội thoại\s*)?\[?(\d{1,3})\]?(?![\d/:])|\*\*\s*(?:hội thoại\s*)?(\d{1,3})[.):]?[^*\n]*\*\*\s*$)/i)
-      if (head && sections[Number(head[1] || head[2])] === undefined) {
-        current = Number(head[1] || head[2])
+      const head = line.match(DIGEST_HEAD)
+      const bold = !!head && !head[1]
+      const n = head && Number(head[2] || head[3])
+      const opens = head && !(bold && style === '#') && (sections[n] === undefined ||
+        (n === current && (!sections[n].trim() || (byBold[n] && !bold))))
+      if (opens) {
+        current = n
         sections[current] = ''
+        byBold[current] = bold
+        if (style === null) style = bold ? '**' : '#'
         continue
       }
       if (current !== null) sections[current] += line + '\n'
     }
     for (const n of Object.keys(sections)) sections[n] = sections[n].trim()
     return sections
+  }
+
+  // The digest's saved priority order (conversation ids) after a card was dropped at index `at` of
+  // the visible list (ids in their new order). Ranked from now on: the dropped card, the cards the
+  // user put above it, and those already ranked; the cards below it that were not ranked keep the
+  // automatic order (so one that later @mentions the user still comes up). Conversations not in
+  // this digest keep their rank: the visible ones are written back into their own slots.
+  function mergeDigestOrder (saved, visible, at) {
+    const order = [...saved]
+    const ranked = visible.filter((id, i) => i <= at || saved.includes(id))
+    for (const id of ranked) {
+      if (!order.includes(id)) order.push(id)
+    }
+    const set = new Set(ranked)
+    const slots = order.map((id, i) => (set.has(id) ? i : -1)).filter((i) => i >= 0)
+    slots.forEach((slot, i) => {
+      order[slot] = ranked[i]
+    })
+    return order
   }
 
   // Shared rules about the transcript format, appended to every feature's system prompt
@@ -291,6 +324,18 @@
     const d = new Date(ms)
     const date = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}` + (withYear ? `/${d.getFullYear()}` : '')
     return `${date} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
+  // Parses "dd/mm/yyyy hh:mm" (formatTime with the year); NaN when the text or the date is invalid.
+  // end: the last moment of that minute instead of its start.
+  function parseTime (text, end = false) {
+    const match = String(text).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/)
+    if (!match) return NaN
+    const [day, month, year, hour, minute] = match.slice(1).map(Number)
+    const d = new Date(year, month - 1, day, hour, minute)
+    const valid = d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day &&
+      d.getHours() === hour && d.getMinutes() === minute
+    return valid ? d.getTime() + (end ? MINUTE - 1 : 0) : NaN
   }
 
   function escapeHTML (text) {
@@ -393,15 +438,15 @@
     const inline = (s) => {
       const links = []
       const out = renderCitations(s
-        .replace(//g, '')
+        .replace(/\uE000/g, '')
         .replace(LINK, (m, text, url, bare) => {
           links.push(`<a class="zenlo-link" data-url="${url || bare}" title="${url || bare}">${text || bare}</a>`)
-          return `${links.length - 1}`
+          return `\uE000${links.length - 1}\uE000`
         })
         .replace(/`([^`]+)`/g, '<code>$1</code>')
         .replace(/\*\*(.+?)\*\*|__(.+?)__/g, (m, a, b) => `<strong>${a || b}</strong>`)
         .replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\w)/g, '$1<em>$2</em>'), range)
-      return out.replace(/(\d+)/g, (m, i) => links[i])
+      return out.replace(/\uE000(\d+)\uE000/g, (m, i) => links[i])
     }
 
     const closeList = () => {
@@ -793,17 +838,43 @@
   // before the count-th latest message from someone else (sent before `before`). A conversation
   // marked unread with no count starts after the user's own last message. Never further back than
   // the lookback setting.
-  async function getUnreadStart (convId, { count, marked, mentions = 0 }, before = Date.now()) {
+  // Messages are read back from the newest, a page at a time, until the unread ones are all in:
+  // more than a page can be unread, and the user's own and Zalo's messages in between do not count.
+  // It stops at the floor, at the start of the history on this computer, or after UNREAD_MAX_PAGES.
+  // readPage(anchor) is for tests; by default Zalo's own message store.
+  const UNREAD_MAX_PAGES = 20
+
+  async function getUnreadStart (convId, { count, marked, mentions = 0 }, before = Date.now(), readPage = null) {
     // A conversation that mentions the user is never left out for being old
     const floor = before - (mentions > 0 ? MENTION_LOOKBACK : getLookback())
-    const latest = await getLatestMessages(convId, Math.max(count, 1) + 200)
-    const fromOthers = latest.filter((m) => Number(m.sendDttm) <= before && m.fromUid !== '0' && m.msgType !== -4 && describeContent(m))
+    if (!readPage) {
+      const store = getMessageStore()
+      const { MAX_MSG_ID, MAX_SENDDTTM } = getMessageConstants()
+      readPage = (anchor) => store.getLastMessageFrom(convId, anchor ? anchor.msgId : MAX_MSG_ID, anchor ? anchor.sendDttm : MAX_SENDDTTM, PAGE_SIZE, false)
+    }
+    const isFromOthers = (m) => Number(m.sendDttm) <= before && String(m.fromUid) !== '0' && m.msgType !== -4 && describeContent(m)
+    const isMine = (m) => String(m.fromUid) === '0' && Number(m.sendDttm) <= before
+    const byId = new Map()
+    let anchor = null
+    for (let i = 0; i < UNREAD_MAX_PAGES; i++) {
+      const result = await readPage(anchor)
+      const page = (result && result.messages) || []
+      if (!page.length) break
+      for (const m of page) byId.set(m.msgId, m)
+      const seen = [...byId.values()]
+      const enough = count > 0 ? seen.filter(isFromOthers).length >= count : !marked || seen.some(isMine)
+      if (enough || Number(page[0].sendDttm) < floor || !result.hasMore) break
+      anchor = page[0]
+    }
+    const messages = [...byId.values()].sort((a, b) => Number(a.sendDttm) - Number(b.sendDttm))
+
     let start
     if (count > 0) {
+      const fromOthers = messages.filter(isFromOthers)
       const first = fromOthers[Math.max(0, fromOthers.length - count)]
       start = first ? Number(first.sendDttm) - 1 : floor
     } else {
-      const mine = latest.filter((m) => m.fromUid === '0' && Number(m.sendDttm) <= before)
+      const mine = messages.filter(isMine)
       start = mine.length ? Number(mine[mine.length - 1].sendDttm) : floor
       if (!marked) start = before
     }
@@ -1223,6 +1294,27 @@
     const today = new Date(now).toDateString()
     const yesterday = new Date(now - DAY).toDateString()
     const isMe = (uid) => uid !== undefined && uid !== null && (String(uid) === '0' || (!!myUid && String(uid) === String(myUid)))
+    // Who sent it: by Zalo id, so two people with one name are told apart ("Minh", "Minh (2)") and
+    // never share a line, and a name that passes for the user or for Zalo ("Tôi", "(hệ thống)")
+    // says it is someone else, also when hidden behind an invisible or direction character. A line
+    // break in a name would start a line of its own.
+    const cleanName = (raw) => {
+      const name = String(raw || '').replace(/[\s\u00ad\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]+/g, ' ').trim()
+      return /^(tôi|\(hệ thống)/i.test(name.normalize('NFC')) ? `${name} (người khác)` : name
+    }
+    // Labels already given, so "Minh (2)" cannot be a third person's own name taken for the second Minh
+    const names = new Map()
+    const labels = new Set(['Tôi', '(hệ thống)'])
+    const nameOf = (message) => {
+      const uid = String(message.fromUid)
+      if (names.has(uid)) return names.get(uid)
+      const name = cleanName(message.dName) || uid
+      let label = name
+      for (let n = 2; labels.has(label); n++) label = `${name} (${n})`
+      labels.add(label)
+      names.set(uid, label)
+      return label
+    }
 
     for (const message of messages) {
       const content = describeContent(message)
@@ -1232,7 +1324,8 @@
       const time = Number(message.sendDttm)
       const sender = message.msgType === -4
         ? '(hệ thống)'
-        : message.fromUid === '0' ? 'Tôi' : (message.dName || message.fromUid)
+        : isMe(message.fromUid) ? 'Tôi' : nameOf(message)
+      const senderId = message.msgType === -4 ? '(hệ thống)' : isMe(message.fromUid) ? '0' : String(message.fromUid)
 
       let marks = ''
       if (Array.isArray(message.mentions)) {
@@ -1243,7 +1336,7 @@
       let quote = ''
       if (message.quote && typeof message.quote.msg === 'string' && message.quote.msg) {
         const quoted = message.quote.msg.replace(/\s+/g, ' ').slice(0, 80)
-        const owner = isMe(message.quote.ownerId) ? 'Tôi' : (message.quote.fromD || '')
+        const owner = isMe(message.quote.ownerId) ? 'Tôi' : names.get(String(message.quote.ownerId)) || cleanName(message.quote.fromD)
         quote = `(trả lời ${owner}: "${quoted}") `
       }
 
@@ -1260,13 +1353,13 @@
       const newDay = lastTime === null || day !== new Date(lastTime).toDateString()
       if (newDay) lines.push(`[${formatDay(time)}${day === today ? ' – hôm nay' : day === yesterday ? ' – hôm qua' : ''}]`)
 
-      if (sender === lastSender && !newDay && time - lastTime <= JOIN_GAP) {
+      if (senderId === lastSender && !newDay && time - lastTime <= JOIN_GAP) {
         const last = new Date(lastTime)
         const ownTime = last.getHours() !== d.getHours() || last.getMinutes() !== d.getMinutes() ? hhmm + ' ' : ''
         lines[lines.length - 1] += ` | ${ownTime}${neutralizeTags(text)}`
       } else {
         lines.push(`${hhmm} ${neutralizeTags(sender)}: ${neutralizeTags(text)}`)
-        lastSender = sender
+        lastSender = senderId
       }
       lastTime = time
     }
@@ -1333,14 +1426,59 @@
 
   // A link stays a link only when its address is in the messages (source: the transcript). A
   // message can ask the AI for a link whose text says anything and whose address carries what other
-  // conversations said; such a link keeps only its text, and a bare address loses its "https://",
-  // so neither can be clicked.
+  // conversations said; such a link keeps only its text (itself checked, as it may be an address),
+  // and a bare address loses its "https://", so neither can be clicked. A bare address is matched at
+  // least as widely as renderMarkdown's LINK, so nothing it would show as a link escapes the check.
+  // Addresses are compared without "https://", "www." and a final "/", and decoded, so a real link
+  // the AI wrote a little differently stays a link.
+  // The check runs again until nothing changes: taking an address away can join what is left with
+  // the text around it into a new address ("[h](https://x.yz)ttps://…", "https://https://…"). The
+  // text of a kept link is checked too, since a table cell can split it from its address. The
+  // character renderMarkdown uses as a placeholder, and drops, is dropped first for the same reason.
+  const decodeAddress = (url) => {
+    try {
+      return decodeURI(url)
+    } catch (error) {
+      return url
+    }
+  }
+  const stripScheme = (text) => text.replace(/https?:\/\/(www\.)?/gi, '').toLowerCase()
+
+  function linkKey (url) {
+    return stripScheme(decodeAddress(String(url))).replace(/\/+$/, '')
+  }
+
+  // The transcript as linkKey sees it. Each address in it is decoded on its own, so a stray "%"
+  // elsewhere ("giảm 50%") does not keep the addresses encoded. Kept for the last transcript: the
+  // answer is checked again on every streamed piece.
+  let sourceKeyCache = { source: null, key: '' }
+  function sourceKey (source) {
+    if (sourceKeyCache.source !== source) {
+      sourceKeyCache = { source, key: stripScheme(String(source).replace(/https?:\/\/[^\s<>()"]+/g, decodeAddress)) }
+    }
+    return sourceKeyCache.key
+  }
+
   function keepSourceLinks (text, source) {
-    const known = (url) => source.includes(url.replace(/[.,;:!?'"]+$/, ''))
-    return text.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>()"'`\]]+/g, (match, label, url) => {
-      if (url) return known(url) ? match : label
-      return known(match) ? match : match.replace(/^https?:\/\//, '')
+    const known = sourceKey(source)
+    const isKnown = (url) => {
+      // "https://https://known.com" would have the same key as known.com
+      if (/^https?:\/\/(www\.)?https?:/i.test(url)) return false
+      const key = linkKey(url.replace(/[.,;:!?'"\]&`]+$/, ''))
+      // A decoded line break would let an address run on into the next message of the transcript
+      return key.length > 3 && !/[\r\n]/.test(key) && known.includes(key)
+    }
+    const once = (s) => s.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>()"]+/g, (match, label, url) => {
+      if (url) return isKnown(url) ? `[${keepSourceLinks(label, source)}](${url})` : label
+      return isKnown(match) ? match : match.replace(/^https?:\/\//, '')
     })
+    // Every change makes the text shorter, so this ends
+    let out = String(text).replace(/\uE000/g, '')
+    for (let before = null; before !== out;) {
+      before = out
+      out = once(out)
+    }
+    return out
   }
 
   // What a model adds that the reader does not need: a lead-in line ("Dưới đây là bản tóm tắt…")
@@ -1503,6 +1641,7 @@
     log,
 
     formatTime,
+    parseTime,
     escapeHTML,
     renderMarkdown,
     estimateTokens,
@@ -1553,6 +1692,7 @@
     buildDigestInput,
     buildDigestInstruction,
     splitDigest,
+    mergeDigestOrder,
     buildSummaryInstruction,
     buildSystemPrompt,
     buildPartInstruction,
