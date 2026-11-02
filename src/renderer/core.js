@@ -1606,6 +1606,27 @@
     fn()
   }
 
+  // A letter rising from its envelope and being written: shown while the AI has written nothing yet.
+  // The animation follows the page's clock, so a card rebuilt every frame (the digest) keeps moving
+  // instead of starting over. The paper is clipped at the envelope's bottom edge when it sinks back.
+  const LOADER_CYCLE = 3200
+  let loaderCount = 0
+  function letterLoader (className = '') {
+    const clip = `zenlo-loader-clip-${++loaderCount}`
+    const phase = -(Date.now() % LOADER_CYCLE)
+    return `<svg class="zenlo-loader ${className}" viewBox="0 0 120 90" style="--zenlo-loader-phase: ${phase}ms" aria-hidden="true">
+      <defs><clipPath id="${clip}"><rect width="120" height="79"/></clipPath></defs>
+      <rect class="zenlo-loader__body" x="30" y="42" width="60" height="38" rx="4"/>
+      <g clip-path="url(#${clip})"><g class="zenlo-loader__paper">
+        <rect class="zenlo-loader__body" x="38" y="12" width="44" height="62" rx="3"/>
+        <line class="zenlo-loader__line" x1="45" y1="23" x2="75" y2="23"/>
+        <line class="zenlo-loader__line" x1="45" y1="31" x2="71" y2="31"/>
+        <line class="zenlo-loader__line" x1="45" y1="39" x2="65" y2="39"/>
+      </g></g>
+      <path class="zenlo-loader__body" d="M30 52 L60 68 L90 52 L90 76 Q90 80 86 80 L34 80 Q30 80 30 76 Z"/>
+    </svg>`
+  }
+
   // A link in a summary or the digest opens in the default browser, never inside Zalo
   document.addEventListener('click', (event) => {
     const link = event.target.closest && event.target.closest('.zenlo-link')
@@ -1648,6 +1669,7 @@
     parseTime,
     escapeHTML,
     renderMarkdown,
+    letterLoader,
     estimateTokens,
 
     getSetting,

@@ -103,8 +103,17 @@
     panel.querySelector('.js-summary-stop').hidden = !running
   }
 
+  // The letter animation, from the first AI request until the answer starts to arrive
+  function setLoading (loading) {
+    const el = panel.querySelector('.zenlo__loading')
+    if (loading && !el.firstChild) el.innerHTML = Z.letterLoader()
+    if (!loading) el.innerHTML = ''
+    el.hidden = !loading
+  }
+
   // range: { from, to } of the summarized messages, to date citations written without a day
   function showResult (text, streaming, range = null) {
+    if (text) setLoading(false)
     const el = panel.querySelector('.zenlo__result')
     el.hidden = !text
     el.classList.toggle('zenlo__result--streaming', streaming)
@@ -177,6 +186,7 @@
 
       <div class="zenlo__status zenlo__estimate"></div>
       <div class="zenlo__status zenlo__main-status"></div>
+      <div class="zenlo__loading" hidden></div>
       <div class="zenlo__result" hidden></div>
     `
 
@@ -351,6 +361,7 @@
       const chunks = Z.splitIntoChunks(lines)
       const source = lines.join('\n')
       let input = `<transcript>\n${source}\n</transcript>`
+      setLoading(true)
 
       if (chunks.length > 1) {
         // The parts at the same time, a few at once as in the digest
@@ -420,6 +431,7 @@
       setStatus(cancelled ? 'Đã dừng.' : `Lỗi: ${error.message || error}`, !cancelled)
     } finally {
       activeJob = null
+      setLoading(false)
       setRunning(false)
     }
   }

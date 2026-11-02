@@ -570,6 +570,100 @@ html.zenlo-dark {
   }
 }
 
+// ZenloCore.letterLoader: the letter being written while the AI has written nothing yet
+.zenlo-loader {
+  display: block;
+  width: 120px;
+  margin: 12px auto;
+  overflow: visible;
+
+  // A third of the size: strokes twice as thick so they stay visible
+  &--small {
+    flex-shrink: 0;
+    width: 40px;
+    margin: 0;
+
+    .zenlo-loader__body,
+    .zenlo-loader__line {
+      stroke-width: 5;
+    }
+  }
+
+  &__body,
+  &__line {
+    stroke: var(--zenlo-accent);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  &__body {
+    fill: var(--layer-background, #fff);
+  }
+
+  &__paper {
+    animation: zenlo-loader-rise 3.2s ease-in-out var(--zenlo-loader-phase, 0s) infinite;
+  }
+
+  &__line {
+    transform-box: fill-box;
+    transform-origin: left;
+    animation: zenlo-loader-write 3.2s ease-out var(--zenlo-loader-phase, 0s) infinite;
+
+    &:nth-child(3) {
+      animation-delay: calc(var(--zenlo-loader-phase, 0s) + 0.25s);
+    }
+
+    &:nth-child(4) {
+      animation-delay: calc(var(--zenlo-loader-phase, 0s) + 0.5s);
+    }
+  }
+
+  // Still: the letter stands out of its envelope, already written
+  @media (prefers-reduced-motion: reduce) {
+    &__paper,
+    &__line {
+      animation: none;
+    }
+  }
+}
+
+// A card's "Đang tóm tắt…" line, with the small letter in front
+.zenlo-loader-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes zenlo-loader-rise {
+  0%,
+  100% {
+    transform: translateY(40px);
+  }
+
+  18%,
+  82% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes zenlo-loader-write {
+  0%,
+  22% {
+    transform: scaleX(0);
+  }
+
+  42%,
+  80% {
+    transform: scaleX(1);
+  }
+
+  88%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+
 // Markdown that models write without being told the format: numbered lists, tables, code, rules.
 // Long links and codes break anywhere instead of pushing past the panel.
 .zenlo__result,
