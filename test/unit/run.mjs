@@ -240,6 +240,20 @@ await (async () => {
   })
 })()
 
+// ---------- Length ----------
+
+test('Độ dài: mặc định Vừa, kể cả khi bản cũ đã lưu "không chọn"', () => {
+  assert.equal(Z.getLength('summary'), 'medium')
+  Z.setLength('summary', '')
+  assert.equal(Z.getLength('summary'), 'medium')
+  Z.setLength('summary', 'long')
+  assert.equal(Z.getLength('summary'), 'long')
+})
+
+test('Độ dài: không mức nào bảo AI bỏ chuyện phiếm hay drama', () => {
+  for (const { rule } of Z.LENGTHS) assert.doesNotMatch(rule, /bỏ chuyện|bỏ qua chuyện|chuyện phiếm/i, rule)
+})
+
 // ---------- Times ----------
 
 test('Ô "Đến" lấy hết phút đó, ô "Từ" từ đầu phút', () => {

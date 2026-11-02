@@ -134,12 +134,16 @@
   const GEMINI_TIMEOUTS = ['5', '10', '15', '20', '30', '60']
   const GEMINI_RETRIES = ['0', '1', '2', '5', '10', '30']
 
-  // Output length; whatever concerns the user is always kept in full
+  // Output length (tested 02/11 on Gemini 3.6 Flash and 3.5 Flash-Lite with trap chats and a drama
+  // chat). Whatever concerns the user is always kept in full. The length says how much to write, never
+  // what to leave out: some users read Zenlo to keep up with the group's chit-chat and drama.
   const LENGTHS = [
-    { value: 'short', label: 'Ngắn', rule: 'Viết thật ngắn: tối đa khoảng 3 ý, mỗi ý một câu, chỉ giữ điều quan trọng nhất.' },
-    { value: 'medium', label: 'Vừa', rule: 'Độ dài vừa phải: đủ các ý đáng chú ý, viết gọn.' },
-    { value: 'long', label: 'Dài', rule: 'Viết đầy đủ chi tiết, không bỏ sót ý nào đáng chú ý.' }
+    { value: 'short', label: 'Ngắn', rule: 'Viết thật ngắn, mỗi ý một dòng ngắn. Giữ đủ từng việc liên quan tới mình, mỗi việc một dòng; phần còn lại chỉ vài chuyện đáng chú ý nhất, việc chung hay chuyện vui, tranh cãi đều được.' },
+    { value: 'medium', label: 'Vừa', rule: 'Độ dài vừa: mỗi ý một hai câu, đủ những gì đáng chú ý trong nhóm.' },
+    { value: 'long', label: 'Dài', rule: 'Viết đầy đủ: với mỗi chuyện, kể cả chuyện vui, tranh cãi, thêm bối cảnh, ai nói gì, diễn biến và kết cục.' }
   ]
+  // Always one of them: Vừa until the user picks another (an empty choice saved by older versions too)
+  const DEFAULT_LENGTH = 'medium'
 
   // The summary panel's prompt (v3, Nov 2026, tested on Gemini 3.6 Flash and 3.5 Flash-Lite with
   // trap chats). No fixed sections: a template made models fill every bucket and invent content.
@@ -591,7 +595,7 @@
 
   // feature: "summary". '' (the default): no length asked, the AI decides
   function getLength (feature) {
-    return getSetting(STORAGE_KEYS.length + feature, LENGTHS.map((l) => l.value), '')
+    return getSetting(STORAGE_KEYS.length + feature, LENGTHS.map((l) => l.value), DEFAULT_LENGTH)
   }
 
   function setLength (feature, value) {

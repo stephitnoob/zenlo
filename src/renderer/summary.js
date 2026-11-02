@@ -163,7 +163,7 @@
       </div>
 
       <div class="zenlo__length">
-        <span title="Không chọn: AI tự quyết. Bấm lại nút đang chọn để bỏ chọn.">Độ dài</span>
+        <span>Độ dài</span>
         <span class="zenlo__segment">
           ${LENGTHS.map((l) => `<button type="button" class="zenlo__segment-btn" data-length="${l.value}">${l.label}</button>`).join('')}
         </span>
@@ -226,10 +226,9 @@
         .catch((error) => setStatus(`Lỗi: ${error.message || error}`, true))
     })
 
-    // A length is optional: clicking the chosen one again clears it, and the AI decides
     el.querySelectorAll('[data-length]').forEach((button) => {
       button.addEventListener('click', () => {
-        Z.setLength('summary', Z.getLength('summary') === button.dataset.length ? '' : button.dataset.length)
+        Z.setLength('summary', button.dataset.length)
         renderLength()
       })
     })

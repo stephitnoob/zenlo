@@ -17,7 +17,9 @@
       { h: 'Liên quan tới bạn' },
       { li: 'Gửi chị Hoa slide trước 9h mai.', cite: ['19/10 08:30'] },
       { li: 'Gửi Quang ảnh sản phẩm gốc tối nay.', cite: ['19/10 17:45'] },
-      { li: 'Nộp báo cáo trước 12h trưa mai.', cite: ['19/10 17:30'] }
+      { li: 'Nộp báo cáo trước 12h trưa mai.', cite: ['19/10 17:30'] },
+      { h: 'Còn lại' },
+      { li: 'Chốt ra mắt thứ 6 (23/10).', cite: ['19/10 11:40'] }
     ],
     medium: [
       { h: 'Liên quan tới bạn' },
