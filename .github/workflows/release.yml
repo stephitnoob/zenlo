@@ -8,22 +8,24 @@
 # repository variable SIGNPATH_ORGANIZATION_ID is set. They also need the variables
 # SIGNPATH_PROJECT_SLUG, SIGNPATH_SIGNING_POLICY_SLUG and SIGNPATH_ARTIFACT_CONFIGURATION_SLUG and
 # the secret SIGNPATH_API_TOKEN. Every signing request waits for a manual approval in SignPath.
+#
+# Two jobs: "build" installs packages and builds with read-only access; only "publish", which runs
+# no project code, may write the release and the attestation.
 name: Release
 
 on:
   push:
     tags: ['v*']
 
-permissions:
-  contents: write       # create the release
-  actions: read         # let SignPath read this run's artifact
-  id-token: write       # sign the build provenance
-  attestations: write   # store the build provenance
+permissions: {}
 
 jobs:
-  release:
+  build:
     runs-on: windows-latest
     timeout-minutes: 360
+    permissions:
+      contents: read      # check out the code
+      actions: read       # let SignPath read this run's artifact
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -99,12 +101,35 @@ jobs:
           [IO.File]::WriteAllText("build/setup/SHA256.txt", "$hash  Zenlo-Setup.exe`n")
           build/setup/Zenlo-Setup.exe --check
 
-      # ---------- Publish ----------
-
       # Browsers warn far less about a zip than an exe while downloading
       - name: Pack Zenlo-Setup.zip
         shell: pwsh
         run: Compress-Archive -Path build/setup/Zenlo-Setup.exe -DestinationPath build/setup/Zenlo-Setup.zip -Force
+
+      - name: Hand the files to the publish job
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release
+          path: |
+            build/setup/Zenlo-Setup.exe
+            build/setup/Zenlo-Setup.zip
+            build/setup/SHA256.txt
+          if-no-files-found: error
+
+  # ---------- Publish ----------
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # create the release
+      id-token: write       # sign the build provenance
+      attestations: write   # store the build provenance
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release
+          path: build/setup
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
@@ -120,6 +145,7 @@ jobs:
         run: |
           hash=$(cut -d' ' -f1 build/setup/SHA256.txt)
           gh release create "$GITHUB_REF_NAME" build/setup/Zenlo-Setup.zip build/setup/Zenlo-Setup.exe build/setup/SHA256.txt \
+            --repo "$GITHUB_REPOSITORY" \
             --title "Zenlo $GITHUB_REF_NAME" \
             --notes "SHA-256 của Zenlo-Setup.exe: \`$hash\`
           Zenlo-Setup.zip chứa đúng file Zenlo-Setup.exe này.
