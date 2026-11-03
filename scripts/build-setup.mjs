@@ -3,7 +3,7 @@
 
   Builds build/setup/Zenlo-Setup.exe, the installer for everyone: installer/setup/Setup.cs compiled
   by the C# compiler of the .NET Framework that comes with Windows, with Zenlo's built files (dist/)
-  inside as resources. About 100 KB, and nothing else to install. Writes its SHA-256 next to it.
+  inside as resources. About 200 KB, and nothing else to install. Writes its SHA-256 next to it.
   Run "npm run build" first.
 */
 

@@ -9,6 +9,24 @@
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, still ? 0 : ms))
 
+  // The letter Zenlo shows while the AI has written nothing yet (ZenloCore.letterLoader in the app).
+  // It follows the clock, so every letter on the page moves together.
+  let letters = 0
+  function letter (small) {
+    const clip = `letter-clip-${++letters}`
+    return `<svg class="letter${small ? ' letter--small' : ''}" viewBox="0 0 120 90" style="--letter-phase: ${-(Date.now() % 3200)}ms" aria-hidden="true">
+      <defs><clipPath id="${clip}"><rect width="120" height="79"/></clipPath></defs>
+      <rect class="letter__body" x="30" y="42" width="60" height="38" rx="4"/>
+      <g clip-path="url(#${clip})"><g class="letter__paper">
+        <rect class="letter__body" x="38" y="12" width="44" height="62" rx="3"/>
+        <line class="letter__line" x1="45" y1="23" x2="75" y2="23"/>
+        <line class="letter__line" x1="45" y1="31" x2="71" y2="31"/>
+        <line class="letter__line" x1="45" y1="39" x2="65" y2="39"/>
+      </g></g>
+      <path class="letter__body" d="M30 52 L60 68 L90 52 L90 76 Q90 80 86 80 L34 80 Q30 80 30 76 Z"/>
+    </svg>`
+  }
+
   // ---------- Summaries ----------
 
   // A summary is a list of blocks: { h: 'heading' } or { li: 'text', cite: ['dd/mm hh:mm', ...] }
@@ -179,8 +197,12 @@
       hint.textContent = 'Đang đọc 35 tin…'
       log.classList.remove('show')
       out.textContent = ''
-      await wait(700)
+      await wait(500)
+      hint.textContent = 'Đang tóm tắt 35 tin…'
+      out.innerHTML = letter()
+      await wait(1800)
       hint.textContent = ''
+      out.textContent = ''
       await stream(out, TEAM.medium)
       log.classList.add('show')
       hint.textContent = 'thử bấm vào một mốc giờ'
@@ -252,6 +274,8 @@
       const mine = ++round
       cards.querySelectorAll('.dcard__sum').forEach((box) => { box.textContent = '' })
       const chosen = ticked()
+      // Every chosen card waits with a small letter until its part of the answer arrives
+      for (const card of chosen) card.querySelector('.dcard__sum').innerHTML = `<span class="letter-row">${letter(true)}Đang tóm tắt…</span>`
       // Zenlo writes the whole digest in one answer; two cards at a time keeps the demo short
       let next = 0
       const worker = async () => {
@@ -259,7 +283,7 @@
           if (mine !== round) return
           const card = chosen[next++]
           if (!card.querySelector('.dcard__check').checked) continue
-          await wait(350)
+          await wait(900)
           await fill(card, mine)
         }
       }

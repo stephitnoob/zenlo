@@ -906,6 +906,102 @@ button {
   display: none;
 }
 
+/* The letter shown while the AI has written nothing yet, as in the app */
+.letter {
+  display: block;
+  width: 120px;
+  margin: 24px auto;
+  overflow: visible;
+}
+
+.letter--small {
+  flex-shrink: 0;
+  width: 40px;
+  margin: 0;
+}
+
+.letter__body,
+.letter__line {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.letter--small .letter__body,
+.letter--small .letter__line {
+  stroke-width: 5;
+}
+
+.letter__body {
+  fill: var(--z-side);
+}
+
+.dcard .letter__body {
+  fill: var(--z-bg);
+}
+
+.letter__paper {
+  animation: letter-rise 3.2s ease-in-out var(--letter-phase, 0s) infinite;
+}
+
+.letter__line {
+  transform-box: fill-box;
+  transform-origin: left;
+  animation: letter-write 3.2s ease-out var(--letter-phase, 0s) infinite;
+}
+
+.letter__line:nth-child(3) {
+  animation-delay: calc(var(--letter-phase, 0s) + 0.25s);
+}
+
+.letter__line:nth-child(4) {
+  animation-delay: calc(var(--letter-phase, 0s) + 0.5s);
+}
+
+.letter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--z-muted);
+}
+
+@keyframes letter-rise {
+  0%,
+  100% {
+    transform: translateY(40px);
+  }
+
+  18%,
+  82% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes letter-write {
+  0%,
+  22% {
+    transform: scaleX(0);
+  }
+
+  42%,
+  80% {
+    transform: scaleX(1);
+  }
+
+  88%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter__paper,
+  .letter__line {
+    animation: none;
+  }
+}
+
 .tag {
   margin-right: 6px;
   padding: 1px 7px;
@@ -1742,11 +1838,12 @@ button {
   gap: 8px 12px;
 }
 
-.doc .release__head h2 {
+.doc .release__head h3 {
   margin: 0;
   padding: 0;
   font-family: var(--mono);
   font-size: 24px;
+  letter-spacing: -0.4px;
 }
 
 .release__tag {

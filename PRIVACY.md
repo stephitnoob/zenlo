@@ -1,6 +1,6 @@
 # Chính sách quyền riêng tư của Zenlo
 
-Cập nhật: 02/11/2026
+Cập nhật: 03/11/2026
 
 Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
 
@@ -74,8 +74,8 @@ Mọi thứ chỉ nằm trên máy bạn:
 
 ## Xoá dữ liệu
 
-- Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, và xoá từng API key bằng nút ✕.
-- Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` (bản sao lưu, API key, ghi nhận hết lượt).
+- Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, và xoá từng API key bằng nút ×.
+- Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` (bản sao lưu, API key, ghi nhận hết lượt). Gỡ bằng lối tắt **Zenlo - Cài đặt** thì xoá thêm file `%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe` mà bộ cài báo còn lại.
 - Gỡ xong, cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng `@Zenlo:`). Zalo không dùng tới và không gửi chúng đi. Trước khi gỡ, bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh và lựa chọn tự kiểm tra bản mới; các mục này không chứa nội dung tin nhắn.
 
 ## Trang web

@@ -91,7 +91,7 @@
 
   if (!REPO) {
     setDownload('', 'Sắp phát hành')
-    setText('.js-release-meta', 'Bản đầu tiên sắp ra mắt · Windows 10/11')
+    setText('.js-release-meta', 'Windows 10/11')
     $$('.js-source').forEach((a) => a.remove())
     return
   }

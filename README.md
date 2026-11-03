@@ -54,7 +54,7 @@ npm run zalo:install
 | `npm run dev` | Tự build lại mỗi khi sửa code |
 | `npm run zalo:status` | Xem Zenlo đang được cài thế nào |
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
-| `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 150 KB, không cần Node.js) kèm SHA-256 |
+| `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 200 KB, không cần Node.js) kèm SHA-256 |
 | `npm run site` | Xem trang web trên máy ở http://127.0.0.1:4173 (không lưu cache, luôn thấy bản mới nhất) |
 | `npm run test:gemini` | Thử chuỗi model Gemini trong tiến trình chính thật, với máy chủ Google giả (không tốn lượt) |
 | `npm run test:codex` | Thử cách gọi Codex với một Codex giả (không gọi Codex thật) |
