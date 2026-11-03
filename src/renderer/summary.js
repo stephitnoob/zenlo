@@ -419,6 +419,8 @@
         if (modelStatus.done) return
         // Another model (or key) starts over: drop what a failed one had written
         streamed = ''
+        showResult('', true)
+        setLoading(true)
         setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
       })
       const result = Z.cleanAnswer(await currentCall.promise, minutes, source)
