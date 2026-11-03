@@ -5,28 +5,30 @@
   (stats.js only sends GoatCounter a count).
 */
 
+/* Light: a faintly grey page so the white Zalo windows and panels stand off it, Zalo's own border
+   color, and grey text dark enough to read in long lines */
 :root {
-  --bg: #ffffff;
-  --bg-2: #f4f5f7;
+  --bg: #f6f7f9;
+  --bg-2: #eceef1;
   --surface: #ffffff;
-  --line: #e3e6ea;
+  --line: #d6dbe1;
   --text: #081c36;
-  --muted: #5a6981;
-  --faint: #667080;
+  --muted: #44516a;
+  --faint: #5c6879;
   --accent: #7c3aed;
   --accent-ink: #ffffff;
-  --accent-soft: rgba(124, 58, 237, 0.09);
-  --accent-line: rgba(124, 58, 237, 0.32);
+  --accent-soft: rgba(124, 58, 237, 0.12);
+  --accent-line: rgba(124, 58, 237, 0.36);
   --shadow: none;
 
   /* The pretend Zalo window */
   --z-bg: #ffffff;
   --z-side: #f5f6f8;
-  --z-line: #e3e6ea;
-  --z-bubble: #f1f3f5;
+  --z-line: #d6dbe1;
+  --z-bubble: #eceff3;
   --z-me: #dbeafe;
   --z-text: #1f2329;
-  --z-muted: #5f6773;
+  --z-muted: #4f5866;
 
   --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   --display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
