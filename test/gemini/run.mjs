@@ -91,7 +91,9 @@ Module._load = function (request, ...rest) {
 }
 require(path.join(ROOT, 'dist', 'zenlo-main.js'))
 
-const trusted = { senderFrame: { url: 'file:///zalo/index.html' } }
+// Zalo's main page, where Zenlo is added: only its main frame may use Zenlo
+const frame = { url: 'file:///C:/Zalo/resources/app.asar/pc-dist/index.html?type=24', routingId: 1, processId: 1 }
+const trusted = { senderFrame: frame, sender: { mainFrame: frame } }
 handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000'])
 
 function summarize (request = {}) {
@@ -100,6 +102,7 @@ function summarize (request = {}) {
     const event = {
       ...trusted,
       sender: {
+        mainFrame: frame,
         isDestroyed: () => false,
         send: (channel, payload) => {
           if (payload.type === 'done' || payload.type === 'error') resolve(payload)
@@ -242,6 +245,40 @@ await test('Key có chữ có dấu: không lưu, báo rõ lý do', async () => 
   script = {}
   await summarize()
   assert.equal(calls[0].key, 'AIzaFAKEKEY0000')
+})
+
+await test('Key đã lưu: giữ theo số thứ tự, thêm key mới, bỏ key cũ', async () => {
+  assert.equal(handlers['zenlo:settings:setGeminiKeys'](trusted, [0, 'AIzaSECONDKEY1111']), true)
+  assert.equal(handlers['zenlo:settings:setGeminiKeys'](trusted, [1]), true)
+  script = {}
+  await summarize()
+  assert.equal(calls[0].key, 'AIzaSECONDKEY1111')
+  assert.equal(handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000']), true)
+})
+
+await test('Trang Zalo: chỉ trả key đã che', async () => {
+  const status = await handlers['zenlo:gemini:status'](trusted)
+  assert.deepEqual(status.keys.map((k) => k.masked), ['AIza…0000'])
+  assert.ok(!JSON.stringify(status).includes('AIzaFAKEKEY0000'))
+})
+
+await test('Khung con, trang khác của Zalo, trang web: không dùng được Zenlo', async () => {
+  const child = { url: frame.url, routingId: 2, processId: 1 }
+  const other = { url: 'file:///C:/Zalo/resources/app.asar/pc-dist/znotification.html', routingId: 1, processId: 1 }
+  const web = { url: 'https://example.com/pc-dist/index.html', routingId: 1, processId: 1 }
+  assert.equal(handlers['zenlo:settings:setGeminiKeys']({ senderFrame: child, sender: { mainFrame: frame } }, []), false)
+  assert.equal(handlers['zenlo:settings:setGeminiKeys']({ senderFrame: other, sender: { mainFrame: other } }, []), false)
+  assert.equal(handlers['zenlo:settings:setGeminiKeys']({ senderFrame: web, sender: { mainFrame: web } }, []), false)
+  script = {}
+  await summarize()
+  assert.equal(calls[0].key, 'AIzaFAKEKEY0000')
+})
+
+await test('Đoạn cần tóm tắt quá dài: báo lỗi, không gọi Gemini', async () => {
+  script = {}
+  const last = await summarize({ input: 'x'.repeat(2000001) })
+  assert.equal(last.type, 'error')
+  assert.equal(calls.length, 0)
 })
 
 console.log('\n[Gemini]')

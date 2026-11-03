@@ -186,30 +186,39 @@
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
   }
 
-  // One row per key: hidden like a password, 👁 to show, ✕ to remove, and which models it ran out of
-  function renderKeys (keys) {
-    const list = overlay.querySelector('.js-settings-keys')
-    const rows = keys.length ? keys : ['']
-    list.innerHTML = rows.map((key) => `
-      <div class="zenlo-settings__key">
+  // One row per key, and which models it ran out of. A saved key shows only its mask (the main
+  // process never sends the key itself) and can only be removed; a new key is typed hidden like a
+  // password, 👁 to show it.
+  function keyRow (mask, index) {
+    const saved = mask !== undefined
+    return `
+      <div class="zenlo-settings__key"${saved ? ` data-index="${index}"` : ''}>
         <span class="zenlo__field">
-          <input type="password" class="js-settings-key" value="${escapeHTML(key)}" placeholder="Dán API key vào đây" spellcheck="false" autocomplete="off">
-          <button type="button" class="zenlo__now zenlo-settings__icon-btn js-settings-eye" title="Hiện / ẩn key">${EYE_SVG}</button>
+          ${saved
+            ? `<input type="text" class="js-settings-key" value="${escapeHTML(mask)}" readonly title="Key đã lưu, chỉ hiện đầu và cuối">`
+            : `<input type="password" class="js-settings-key" placeholder="Dán API key vào đây" spellcheck="false" autocomplete="off">
+          <button type="button" class="zenlo__now zenlo-settings__icon-btn js-settings-eye" title="Hiện / ẩn key">${EYE_SVG}</button>`}
           <button type="button" class="zenlo__now zenlo-settings__icon-btn js-settings-remove-key" title="Xoá key này">&times;</button>
         </span>
         <div class="zenlo-settings__key-status js-settings-key-status"></div>
       </div>
-    `).join('')
-    overlay.querySelector('.js-settings-add-key').hidden = rows.length >= maxKeys
+    `
+  }
+
+  function renderKeys (masks) {
+    const list = overlay.querySelector('.js-settings-keys')
+    list.innerHTML = masks.length ? masks.map(keyRow).join('') : keyRow()
+    overlay.querySelector('.js-settings-add-key').hidden = list.children.length >= maxKeys
     // First time: show how to get a key
-    overlay.querySelector('.js-settings-guide').hidden = keys.some(Boolean)
+    overlay.querySelector('.js-settings-guide').hidden = masks.length > 0
     renderKeyStatus()
   }
 
   function renderKeyStatus () {
     overlay.querySelectorAll('.zenlo-settings__key').forEach((row) => {
-      const key = row.querySelector('.js-settings-key').value.trim()
-      const info = key && keyStatus.find((k) => k.masked === maskKey(key))
+      const value = row.querySelector('.js-settings-key').value.trim()
+      const masked = row.dataset.index !== undefined ? value : value && maskKey(value)
+      const info = masked && keyStatus.find((k) => k.masked === masked)
       const el = row.querySelector('.js-settings-key-status')
       if (!info) {
         el.textContent = ''
@@ -222,15 +231,21 @@
     })
   }
 
+  // A saved key is sent back as its index, a new one as typed; then the rows are drawn again from
+  // what was saved, so a new key turns into its mask
   async function saveGeminiKeys () {
     const status = overlay.querySelector('.js-settings-keys-status')
-    const keys = [...overlay.querySelectorAll('.js-settings-key')].map((input) => input.value.trim()).filter(Boolean)
+    const keys = [...overlay.querySelectorAll('.zenlo-settings__key')]
+      .map((row) => row.dataset.index !== undefined ? Number(row.dataset.index) : row.querySelector('.js-settings-key').value.trim())
+      .filter((entry) => entry !== '')
     try {
       const saved = await window.$zenlo.setGeminiKeys(keys)
       if (saved && saved.error) throw new Error(saved.error)
-      status.textContent = keys.length ? `Đã lưu ${keys.length} key (mã hoá bằng Windows trên máy này).` : 'Đã xoá mọi key.'
+      const settings = await window.$zenlo.getSettings()
+      renderKeys(settings.geminiKeys || [])
+      const count = (settings.geminiKeys || []).length
+      status.textContent = count ? `Đã lưu ${count} key (mã hoá bằng Windows trên máy này).` : 'Đã xoá mọi key.'
       status.classList.remove('zenlo__status--error')
-      overlay.querySelector('.js-settings-guide').hidden = keys.length > 0
       loadGeminiModels()
       Z.drawer.refreshNotice()
     } catch (error) {
@@ -527,11 +542,10 @@
       }
     })
     el.querySelector('.js-settings-add-key').addEventListener('click', () => {
-      const keys = [...keyList.querySelectorAll('.js-settings-key')].map((input) => input.value.trim())
-      if (keys.length >= maxKeys) return
-      renderKeys([...keys, ''])
-      const inputs = keyList.querySelectorAll('.js-settings-key')
-      inputs[inputs.length - 1].focus()
+      if (keyList.children.length >= maxKeys) return
+      keyList.insertAdjacentHTML('beforeend', keyRow())
+      el.querySelector('.js-settings-add-key').hidden = keyList.children.length >= maxKeys
+      keyList.lastElementChild.querySelector('.js-settings-key').focus()
     })
 
     el.querySelector('.js-settings-test').addEventListener('click', testConnection)

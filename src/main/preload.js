@@ -36,9 +36,10 @@ function exposeBridge () {
       listeners.delete(id)
       ipcRenderer.send('zenlo:summary:cancel', id)
     },
-    // { geminiKeys, maxKeys, claudePath, encryption }
+    // { geminiKeys (masks only), maxKeys, claudePath, encryption }
     getSettings: () => ipcRenderer.invoke('zenlo:settings:get'),
-    // The keys are encrypted by the main process; an empty list deletes them
+    // The keys to keep: an index keeps a saved key, a string adds a new one. Encrypted by the main
+    // process; an empty list deletes them all.
     setGeminiKeys: (keys) => ipcRenderer.invoke('zenlo:settings:setGeminiKeys', keys),
     // { models: [{ id, label, level, exhausted, resetAt }], keys: [{ masked, exhausted: [{ label, resetAt }] }] }
     geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status'),

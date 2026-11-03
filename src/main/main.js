@@ -782,10 +782,14 @@ const getGeminiKeys = () => {
   return stored.map(decrypt).filter(Boolean)
 }
 
-// Spaces and invisible characters copied along with a key are dropped. Anything else that is not
-// plain ASCII cannot be sent in a request header, so it is refused here with a clear message
-// rather than failing every summary as a lost connection.
-const setGeminiKeys = (keys) => {
+// The page never sees a saved key, only its mask. It sends back the list it wants: a number keeps
+// the saved key at that index, a string is a new key. Spaces and invisible characters copied along
+// with a key are dropped. Anything else that is not plain ASCII cannot be sent in a request
+// header, so it is refused here with a clear message rather than failing every summary as a lost
+// connection.
+const setGeminiKeys = (entries) => {
+  const saved = getGeminiKeys()
+  const keys = entries.slice(0, MAX_KEYS * 2).map((entry) => Number.isInteger(entry) ? saved[entry] : typeof entry === 'string' ? entry.slice(0, 200) : '')
   const clean = [...new Set(keys.map((k) => String(k || '').replace(/[\s\u200b-\u200d\u2060\ufeff]+/g, '')).filter(Boolean))].slice(0, MAX_KEYS)
   const bad = clean.findIndex((k) => !/^[\x21-\x7e]+$/.test(k))
   if (bad !== -1) throw new Error(`Key thứ ${bad + 1} có ký tự không hợp lệ (có thể đã dán nhầm chữ có dấu hay ký tự lạ). Hãy sao chép lại key từ Google AI Studio.`)
@@ -1188,14 +1192,32 @@ const geminiStatus = async () => {
 
 // ---------- IPC ----------
 
-// Only Zalo's own local pages may use Zenlo
+// Only the page Zenlo is added to may use it: the main frame of Zalo's own pc-dist/index.html,
+// not a frame inside it nor Zalo's other windows
 const isTrustedSender = (event) => {
-  const url = (event.senderFrame && event.senderFrame.url) || ''
-  return url.startsWith('file://')
+  const frame = event.senderFrame
+  const main = event.sender && event.sender.mainFrame
+  if (!frame || !main || frame.routingId !== main.routingId || frame.processId !== main.processId) return false
+  try {
+    const url = new URL(frame.url)
+    return url.protocol === 'file:' && url.pathname.endsWith('/pc-dist/index.html')
+  } catch (error) {
+    return false
+  }
 }
+
+// What the page may send: a request's text (the summary panel splits a conversation into parts of
+// 300 000 characters, the digest packs 60 000) and the localStorage mirror
+const MAX_REQUEST_CHARS = 2000000
+const MAX_BACKUP_CHARS = 20000000
+const requestChars = (request) => ['systemPrompt', 'instruction', 'note', 'input'].reduce((sum, field) => sum + String(request[field] || '').length, 0)
 
 ipcMain.on('zenlo:summary:run', (event, request) => {
   if (!isTrustedSender(event) || !request || !request.id) return
+  if (requestChars(request) > MAX_REQUEST_CHARS) {
+    event.sender.send('zenlo:summary:event', { id: request.id, type: 'error', message: 'Đoạn cần tóm tắt quá dài.' })
+    return
+  }
   const sender = event.sender
   const send = (payload) => {
     if (!sender.isDestroyed()) sender.send('zenlo:summary:event', { id: request.id, ...payload })
@@ -1316,7 +1338,8 @@ ipcMain.handle('zenlo:settings:get', async (event) => {
   const codexPath = findCodexExecutable()
   const login = await getCodexLogin(codexPath)
   return {
-    geminiKeys: getGeminiKeys(),
+    // Masks only ("AIza…x9Qk"): the keys themselves never leave this process
+    geminiKeys: getGeminiKeys().map(maskKey),
     maxKeys: MAX_KEYS,
     claudePath: findClaudeExecutable(),
     codexPath,
@@ -1353,7 +1376,8 @@ ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {
 ipcMain.on('zenlo:storage:save', (event, data) => {
   if (!isTrustedSender(event) || !data || typeof data !== 'object') return
   try {
-    writeFileAtomic(STORAGE_BACKUP_FILE(), JSON.stringify({ at: Date.now(), data }))
+    const text = JSON.stringify({ at: Date.now(), data })
+    if (text.length <= MAX_BACKUP_CHARS) writeFileAtomic(STORAGE_BACKUP_FILE(), text)
   } catch (error) {}
 })
 

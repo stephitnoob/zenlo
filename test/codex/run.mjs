@@ -75,7 +75,9 @@ process.env.CODEX_API_KEY = 'should-be-removed'
 process.env.OPENAI_API_KEY = 'should-be-removed'
 require(path.join(ROOT, 'dist', 'zenlo-main.js'))
 
-const trusted = { senderFrame: { url: 'file:///zalo/index.html' } }
+// Zalo's main page, where Zenlo is added: only its main frame may use Zenlo
+const frame = { url: 'file:///C:/Zalo/resources/app.asar/pc-dist/index.html?type=24', routingId: 1, processId: 1 }
+const trusted = { senderFrame: frame, sender: { mainFrame: frame } }
 
 function summarize (scenario, request = {}) {
   process.env.FAKE_CODEX_SCENARIO = scenario
@@ -85,6 +87,7 @@ function summarize (scenario, request = {}) {
     const event = {
       ...trusted,
       sender: {
+        mainFrame: frame,
         isDestroyed: () => false,
         send: (channel, payload) => {
           events.push(payload)
