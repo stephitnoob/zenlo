@@ -10,7 +10,7 @@
 
 (function () {
   const Z = window.ZenloCore
-  const { formatTime, escapeHTML } = Z
+  const { formatTime, escapeHTML, WAIT_HINT } = Z
 
   // Conversations summarized at the same time (ZenloCore.PARALLEL)
   const { PARALLEL } = Z
@@ -222,9 +222,24 @@
     el.classList.toggle('zenlo__status--error', isError)
   }
 
+  // Gemini requests that have written nothing yet: { start, model, thinking, call }. While one waits, its
+  // cards count the seconds, and after WAIT_HINT "Chuyển model khác" moves it to the next model.
+  const waits = new Set()
+
+  function waitText (item) {
+    const wait = item.wait
+    if (!wait || !wait.start) return `Đang tóm tắt${item.model ? ` bằng ${item.model}` : ''}…`
+    const seconds = Math.round((Date.now() - wait.start) / 1000)
+    if (wait.thinking) return `${wait.model} đang suy nghĩ… ${seconds} giây`
+    return `Đang chờ ${wait.model} trả lời… ${seconds} giây${seconds * 1000 >= WAIT_HINT ? ' (Gemini đang đông)' : ''}`
+  }
+
+  // A thinking model is working: moving on would only throw that away
+  const longWaits = () => [...waits].filter((wait) => !wait.thinking && Date.now() - wait.start >= WAIT_HINT)
+
   function cardSummary (item) {
     if (item.status === 'error') return `<div class="zenlo__status zenlo__status--error">Lỗi: ${escapeHTML(item.error)}</div>`
-    if (item.status === 'running' && !item.summary) return `<div class="zenlo__status zenlo-loader-row">${Z.letterLoader('zenlo-loader--small')}Đang tóm tắt${item.model ? ` bằng ${escapeHTML(item.model)}` : ''}…</div>`
+    if (item.status === 'running' && !item.summary) return `<div class="zenlo__status zenlo-loader-row">${Z.letterLoader('zenlo-loader--small')}${escapeHTML(waitText(item))}</div>`
     if (item.status === 'running') return `<pre>${escapeHTML(item.summary)}</pre>`
     if (!item.summary) return ''
     const model = item.model ? `<div class="zenlo__status zenlo-digest__model">bằng ${escapeHTML(item.model)}</div>` : ''
@@ -424,6 +439,8 @@
       item.error = ''
       item.model = ''
     }
+    const wait = { start: 0, model: '', thinking: false, call: null }
+    for (const item of batch) item.wait = wait
     scheduleRender()
 
     const show = (text) => {
@@ -450,18 +467,27 @@
         instruction: Z.buildDigestInstruction({ count: batch.length, notes: batch.map((item) => Z.getNote(item.convId)) }),
         input: Z.buildDigestInput(entries)
       }, (text) => {
+        waits.delete(wait)
+        wait.start = 0
         streamed += text
         show(streamed)
       }, (modelStatus) => {
         const model = Z.describeModelStatus(modelStatus)
         for (const item of batch) item.model = model
-        if (!modelStatus.done) {
+        if (modelStatus.thinking) {
+          wait.thinking = true
+        } else if (!modelStatus.done) {
           // Another model (or key) starts over: drop what a failed one had written
           streamed = ''
           for (const item of batch) item.summary = ''
+          wait.start = Date.now()
+          wait.model = modelStatus.model
+          wait.thinking = false
+          waits.add(wait)
         }
         scheduleRender()
       })
+      wait.call = call
       calls.add(call)
       const answer = await call.promise
       calls.delete(call)
@@ -488,6 +514,7 @@
         item.error = error.message || String(error)
       }
     }
+    waits.delete(wait)
     scheduleRender()
   }
 
@@ -506,6 +533,12 @@
     }
     const stopButton = overlay.querySelector('.js-digest-stop')
     stopButton.hidden = false
+    const skipButton = overlay.querySelector('.js-digest-skip')
+    // The waiting cards count the seconds; the skip button shows once a request waits long
+    const ticker = setInterval(() => {
+      skipButton.hidden = !longWaits().length
+      if (waits.size) scheduleRender()
+    }, 1000)
     overlay.querySelector('.js-digest-copy').hidden = true
     setStatus(`Đang tạo bản tin bằng ${Z.getAILabel()}…`)
     renderItems()
@@ -527,8 +560,11 @@
       }
     }
     const failed = chosen.filter((item) => item.status === 'error').length
+    clearInterval(ticker)
+    waits.clear()
     running = null
     stopButton.hidden = true
+    skipButton.hidden = true
     if (cancelled) setStatus('Đã dừng.')
     else if (failed) setStatus(`${failed} hội thoại bị lỗi, xem trên từng thẻ. Bấm "Tạo bản tin" để thử lại.`, true)
     else setStatus(`Bản tin lúc ${formatTime(Date.now(), true)}.`)
@@ -557,6 +593,7 @@
       <div class="zenlo__actions">
         <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
         <button class="zenlo__btn js-digest-stop" hidden>Dừng</button>
+        <button class="zenlo__btn js-digest-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
         <button class="zenlo__btn js-digest-copy" hidden>Sao chép</button>
         <button class="zenlo__btn js-digest-refresh">Làm mới</button>
         <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc trong Zalo mọi hội thoại trong danh sách">Đã đọc hết</button>
@@ -577,6 +614,10 @@
     el.querySelector('.js-digest-copy').addEventListener('click', copyDigest)
     el.querySelector('.js-digest-stop').addEventListener('click', () => {
       if (running) running.cancel()
+    })
+    el.querySelector('.js-digest-skip').addEventListener('click', (event) => {
+      event.currentTarget.hidden = true
+      for (const wait of longWaits()) if (wait.call) wait.call.skip()
     })
     el.querySelector('.js-digest-refresh').addEventListener('click', refresh)
     el.querySelector('.js-digest-read-all').addEventListener('click', async () => {

@@ -34,6 +34,10 @@ function reply (callback, answer) {
     if (answer.status !== 200) {
       response.emit('data', answer.body || JSON.stringify({ error: { message: 'busy' } }))
     } else {
+      // A thinking model sends thought summaries before its answer
+      for (const thought of answer.thoughts || []) {
+        response.emit('data', `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: thought, thought: true }] } }] })}\n\n`)
+      }
       const event = { candidates: [{ content: { parts: [{ text: answer.text || '' }] }, ...(answer.finish ? { finishReason: answer.finish } : {}) }] }
       response.emit('data', `data: ${JSON.stringify(event)}\n\n`)
     }
@@ -96,8 +100,14 @@ const frame = { url: 'file:///C:/Zalo/resources/app.asar/pc-dist/index.html?type
 const trusted = { senderFrame: frame, sender: { mainFrame: frame } }
 handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000'])
 
-function summarize (request = {}) {
+// Every event the page got in the last run
+const events = []
+
+// onStart(id): called once the run has started, with its id (to press "Chuyển model khác")
+function summarize (request = {}, onStart = () => {}) {
   calls.length = 0
+  events.length = 0
+  const id = `t-${Math.random()}`
   return new Promise((resolve) => {
     const event = {
       ...trusted,
@@ -105,12 +115,13 @@ function summarize (request = {}) {
         mainFrame: frame,
         isDestroyed: () => false,
         send: (channel, payload) => {
+          events.push(payload)
           if (payload.type === 'done' || payload.type === 'error') resolve(payload)
         }
       }
     }
     handlers['zenlo:summary:run'](event, {
-      id: `t-${Math.random()}`,
+      id,
       provider: 'gemini',
       model: 'gemini-3.6-flash',
       effort: 'low',
@@ -121,6 +132,7 @@ function summarize (request = {}) {
       input: '<transcript>\n08:30 Lan: hi\n</transcript>',
       ...request
     })
+    onStart(id)
   })
 }
 
@@ -160,12 +172,13 @@ await test('503 hai lần: chuyển xuống 3.5 Flash, không thử lần thứ 
   assert.deepEqual(calls.map((c) => c.model), ['gemini-3.6-flash', 'gemini-3.6-flash', 'gemini-3.5-flash'])
 })
 
-await test('Không phản hồi (hàng đợi): chuyển xuống ngay khi hết thời gian chờ, không thử lại', async () => {
+await test('Không phản hồi (hàng đợi): hết thời gian chờ chung thì dừng và báo nghẽn, không đi tiếp từng model', async () => {
   script = { 'gemini-3.6-flash': [{ status: 'hang' }] }
   const started = Date.now()
   const last = await summarize({ timeout: 3000, retryWindow: 0 })
-  assert.equal(last.type, 'done')
-  assert.deepEqual(calls.map((c) => c.model), ['gemini-3.6-flash', 'gemini-3.5-flash'])
+  assert.equal(last.type, 'error')
+  assert.match(last.message, /nghẽn/)
+  assert.deepEqual(calls.map((c) => c.model), ['gemini-3.6-flash'])
   const took = Date.now() - started
   assert.ok(took >= 2900 && took < 4500, `${took} ms`)
 })
@@ -176,6 +189,36 @@ await test('Model vừa quá tải bị xếp cuối trong 1 phút', async () =>
   script = {}
   await summarize({ retryWindow: 60 * 1000 })
   assert.equal(calls[0].model, 'gemini-3.5-flash')
+})
+
+await test('503 rồi hàng đợi: model sau chỉ chờ phần thời gian còn lại', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 503 }, { status: 503 }], 'gemini-3.5-flash': [{ status: 'hang' }] }
+  const started = Date.now()
+  const last = await summarize({ timeout: 3000, retryWindow: 0 })
+  assert.equal(last.type, 'error')
+  assert.match(last.message, /3\.5 Flash vẫn chưa trả lời/)
+  const took = Date.now() - started
+  assert.ok(took >= 2900 && took < 4500, `${took} ms`)
+})
+
+await test('Chuyển model khác: bỏ model đang im, model sau được chờ đủ và trả lời', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 'hang' }] }
+  const last = await summarize({ timeout: 3000, retryWindow: 0 }, (id) => {
+    setTimeout(() => handlers['zenlo:summary:skip'](trusted, id), 2500)
+  })
+  assert.equal(last.type, 'done')
+  assert.deepEqual(calls.map((c) => c.model), ['gemini-3.6-flash', 'gemini-3.5-flash'])
+  assert.match(last.skipped.join(), /3\.6 Flash/)
+})
+
+await test('Đang suy nghĩ: trang được báo một lần, rồi mới tới chữ', async () => {
+  script = { 'gemini-3.6-flash': [{ status: 200, thoughts: ['đọc tin', 'so hạn'], text: 'xong' }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'done')
+  const types = events.map((e) => e.type)
+  assert.equal(types.filter((t) => t === 'thinking').length, 1)
+  assert.ok(types.indexOf('thinking') < types.indexOf('text'))
+  assert.equal(last.result, 'xong')
 })
 
 await test('Lỗi riêng của một model (404): sang model kế tiếp, vẫn dùng key đó', async () => {

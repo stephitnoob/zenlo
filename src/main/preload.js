@@ -36,6 +36,8 @@ function exposeBridge () {
       listeners.delete(id)
       ipcRenderer.send('zenlo:summary:cancel', id)
     },
+    // Gemini: leave the model that keeps the run waiting and ask the next one
+    skip: (id) => ipcRenderer.send('zenlo:summary:skip', id),
     // { geminiKeys (masks only), maxKeys, claudePath, encryption }
     getSettings: () => ipcRenderer.invoke('zenlo:settings:get'),
     // The keys to keep: an index keeps a saved key, a string adds a new one. Encrypted by the main

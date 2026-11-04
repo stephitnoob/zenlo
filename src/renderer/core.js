@@ -54,7 +54,9 @@
     effort: '@Zenlo:EFFORT',
     geminiModel: '@Zenlo:GEMINI_MODEL',
     geminiEffort: '@Zenlo:GEMINI_EFFORT',
-    geminiTimeout: '@Zenlo:GEMINI_TIMEOUT',
+    // How long a summary waits for Gemini to start answering. A new key: the old one (GEMINI_TIMEOUT)
+    // held a wait per model, often 10 s, which is far too short as a wait for the whole run
+    geminiWait: '@Zenlo:GEMINI_WAIT',
     geminiRetry: '@Zenlo:GEMINI_RETRY',
     codexModel: '@Zenlo:CODEX_MODEL',
     codexEffort: '@Zenlo:CODEX_EFFORT',
@@ -130,8 +132,11 @@
   // Gemini's "thinking level"; "high" was needed for it not to miss what concerns the user
   const GEMINI_EFFORTS = ['low', 'medium', 'high']
   const LOOKBACK_DAYS = ['1', '3', '7']
-  // Gemini: seconds to wait for a model's first reply, and minutes an overloaded model stays last
-  const GEMINI_TIMEOUTS = ['5', '10', '15', '20', '30', '60']
+  // Gemini: seconds to wait for the first reply (all models together), and minutes an overloaded
+  // model stays last
+  const GEMINI_WAITS = ['20', '30', '45', '60', '90', '120']
+  // A Gemini model silent this long: the panels say Gemini is busy and offer "Chuyển model khác"
+  const WAIT_HINT = 10 * 1000
   const GEMINI_RETRIES = ['0', '1', '2', '5', '10', '30']
 
   // Output length (tested 02/11 on Gemini 3.6 Flash and 3.5 Flash-Lite with trap chats and a drama
@@ -559,7 +564,7 @@
         provider,
         model: getGeminiModel(),
         effort: getSetting(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'),
-        timeout: Number(getSetting(STORAGE_KEYS.geminiTimeout, GEMINI_TIMEOUTS, '10')) * 1000,
+        timeout: Number(getSetting(STORAGE_KEYS.geminiWait, GEMINI_WAITS, '45')) * 1000,
         retryWindow: Number(getSetting(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '1')) * MINUTE
       }
     }
@@ -705,7 +710,7 @@
   // order and ticks are data, not settings, and stay.
   function resetSettings () {
     const keys = [STORAGE_KEYS.provider, STORAGE_KEYS.model, STORAGE_KEYS.effort, STORAGE_KEYS.geminiModel, STORAGE_KEYS.geminiEffort,
-      STORAGE_KEYS.geminiTimeout, STORAGE_KEYS.geminiRetry, STORAGE_KEYS.codexModel, STORAGE_KEYS.codexEffort, STORAGE_KEYS.lookbackDays, STORAGE_KEYS.length + 'summary', STORAGE_KEYS.length + 'digest']
+      STORAGE_KEYS.geminiWait, STORAGE_KEYS.geminiRetry, STORAGE_KEYS.codexModel, STORAGE_KEYS.codexEffort, STORAGE_KEYS.lookbackDays, STORAGE_KEYS.length + 'summary', STORAGE_KEYS.length + 'digest']
     keys.forEach((key) => {
       try {
         localStorage.removeItem(key)
@@ -1532,10 +1537,12 @@
   }
 
   // Runs the AI chosen in the settings (Claude Code, Codex or Gemini) through the main process.
-  // Returns { promise, cancel }. provider / model / effort / now / myName can be passed in (tests,
+  // Returns { promise, cancel, skip }. provider / model / effort / now / myName can be passed in (tests,
   // the settings' connection check); by default they come from the settings, the clock and Zalo.
-  // onStatus({ model, skipped, done }) reports which Gemini model is answering (and which were skipped).
+  // onStatus({ model, skipped, done, thinking }) reports which Gemini model is answering (and which
+  // were skipped); thinking: that model has started thinking, so it is working, not stuck.
   // cancel() rejects the promise right away with "Đã dừng.", without waiting for the main process.
+  // skip() (Gemini) leaves the model that keeps the run waiting for the next one.
   // What every AI gets as its system prompt: the feature's prompt, the transcript rules, the time
   // and the user's name. The data (transcript, the conversation's name, which others can set) is in
   // the request; the user's own request (note, length) ends it (requestLine, added by runAI).
@@ -1562,6 +1569,7 @@
 
     let id = null
     let stop = () => {}
+    let status = { model: '', skipped: [] }
     const promise = new Promise((resolve, reject) => {
       stop = () => reject(new Error('Đã dừng.'))
       const fullSystemPrompt = buildSystemPrompt({ systemPrompt, now, myName })
@@ -1570,7 +1578,10 @@
         if (event.type === 'text') {
           onText(event.text)
         } else if (event.type === 'status') {
-          onStatus({ model: event.label, skipped: event.skipped || [], done: false })
+          status = { model: event.label, skipped: event.skipped || [] }
+          onStatus({ ...status, done: false })
+        } else if (event.type === 'thinking') {
+          onStatus({ ...status, done: false, thinking: true })
         } else if (event.type === 'done') {
           if (event.model) onStatus({ model: event.model, skipped: event.skipped || [], done: true })
           if (event.isError) reject(new Error(event.result || 'AI báo lỗi.'))
@@ -1585,6 +1596,9 @@
       cancel: () => {
         if (id) bridge.cancel(id)
         stop()
+      },
+      skip: () => {
+        if (id && bridge.skip) bridge.skip(id)
       }
     }
   }
@@ -1660,7 +1674,8 @@
     describeModelStatus,
     GEMINI_EFFORTS,
     LOOKBACK_DAYS,
-    GEMINI_TIMEOUTS,
+    GEMINI_WAITS,
+    WAIT_HINT,
     GEMINI_RETRIES,
     LENGTHS,
     log,

@@ -8,7 +8,7 @@
 
 (function () {
   const Z = window.ZenloCore
-  const { STORAGE_KEYS, MODELS, EFFORTS, CODEX_EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, GEMINI_TIMEOUTS, GEMINI_RETRIES, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
+  const { STORAGE_KEYS, MODELS, EFFORTS, CODEX_EFFORTS, GEMINI_AUTO, GEMINI_EFFORTS, GEMINI_WAITS, GEMINI_RETRIES, LOOKBACK_DAYS, LENGTHS, escapeHTML } = Z
 
   const EYE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
 
@@ -405,8 +405,8 @@
             </label>
             <label>Effort<select class="js-settings-gemini-effort">${options(GEMINI_EFFORTS, get(STORAGE_KEYS.geminiEffort, GEMINI_EFFORTS, 'high'))}</select></label>
             <span></span>
-            <label title="Model chưa phản hồi sau thời gian này thì coi là quá tải và chuyển xuống bản thấp hơn">Chờ model trả lời
-              <select class="js-settings-gemini-timeout">${options(GEMINI_TIMEOUTS.map((v) => ({ value: v, label: `${v} giây` })), get(STORAGE_KEYS.geminiTimeout, GEMINI_TIMEOUTS, '10'))}</select>
+            <label title="Gemini chưa bắt đầu trả lời sau thời gian này thì dừng và báo nghẽn. Model báo quá tải thì chuyển ngay xuống bản thấp hơn; đang chờ thì bấm Chuyển model khác để chuyển sớm.">Chờ Gemini tối đa
+              <select class="js-settings-gemini-wait">${options(GEMINI_WAITS.map((v) => ({ value: v, label: `${v} giây` })), get(STORAGE_KEYS.geminiWait, GEMINI_WAITS, '45'))}</select>
             </label>
             <label title="Model vừa quá tải bị xếp xuống cuối trong thời gian này, rồi mới được thử lại đầu tiên">Thử lại model quá tải sau
               <select class="js-settings-gemini-retry">${options(GEMINI_RETRIES.map((v) => ({ value: v, label: v === '0' ? 'Luôn thử lại' : `${v} phút` })), get(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '1'))}</select>
@@ -515,7 +515,7 @@
     })
 
     bindSelect('.js-settings-gemini-effort', STORAGE_KEYS.geminiEffort)
-    bindSelect('.js-settings-gemini-timeout', STORAGE_KEYS.geminiTimeout)
+    bindSelect('.js-settings-gemini-wait', STORAGE_KEYS.geminiWait)
     bindSelect('.js-settings-gemini-retry', STORAGE_KEYS.geminiRetry)
     bindSelect('.js-settings-lookback', STORAGE_KEYS.lookbackDays)
     el.querySelectorAll('.js-settings-length').forEach((select) => {

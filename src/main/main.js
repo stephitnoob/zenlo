@@ -29,6 +29,8 @@ const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/'
 const GEMINI_TLS = { rejectUnauthorized: true, minVersion: 'TLSv1.2' }
 
 const running = new Map()
+// Gemini runs only: moves on from the model that keeps the user waiting ("Chuyển model khác")
+const skippers = new Map()
 
 // ---------- Claude Code ----------
 
@@ -941,11 +943,13 @@ const geminiError = (status, body) => {
   return `Gemini báo lỗi ${status}${message ? ': ' + message : ''}.`
 }
 
-// A model that sends nothing for this long is treated as overloaded: Google keeps requests from free
-// keys waiting in a queue instead of answering 503 (one waited over 90 s). Thought summaries are
-// requested, so a working model sends something within a few seconds. Both waits are settings
-// ("Chờ model trả lời", "Thử lại model quá tải sau"); these are the defaults and the limits.
-const FIRST_BYTE_TIMEOUT = 10 * 1000
+// How long one summary waits for Gemini to start answering, all models together. Google keeps
+// requests from free keys in a queue instead of answering 503: on a busy day every model takes
+// 15–20 s before its first byte (measured Nov 2026), so a short wait per model only threw away
+// requests that were about to answer. A model that answers 500/503 is left at once for the next;
+// one that keeps quiet is waited for, and the user can move on with "Chuyển model khác". Both
+// waits are settings ("Chờ Gemini tối đa", "Thử lại model quá tải sau"); these are the defaults.
+const ANSWER_WAIT = 45 * 1000
 const IDLE_TIMEOUT = 60 * 1000
 const RECENT_FAILURE = 60 * 1000
 const BUSY_RETRY_DELAY = 1000
@@ -954,9 +958,10 @@ const GEMINI_CONTENT_STOPS = ['SAFETY', 'RECITATION', 'BLOCKLIST', 'PROHIBITED_C
 const clampSetting = (value, fallback, min, max) => Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback
 
 // One streaming call (server-sent events). Zalo's Electron runs Node 16, which has no fetch.
-// Resolves to { status, body } on an HTTP error or a timeout (status 0), or { status: 200, result,
-// blocked, finishReason } (finishReason: why the model stopped, "STOP" when the answer is whole).
-const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FIRST_BYTE_TIMEOUT) => new Promise((resolve, reject) => {
+// Resolves to { status, body } on an HTTP error, a timeout (status 0) or a skip by the user
+// (status -1, through setSkip), or { status: 200, result, blocked, finishReason } (finishReason: why
+// the model stopped, "STOP" when the answer is whole). onThought: the model sent a thought summary.
+const streamGemini = (model, key, body, { onText, onThought, setCancel, setSkip, firstByteTimeout }) => new Promise((resolve, reject) => {
   let settled = false
   const settle = (fn, value) => {
     if (settled) return
@@ -965,11 +970,12 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
     fn(value)
   }
   let timer = null
-  const arm = (ms) => {
+  // body "timeout": nothing came at all; "idle": the model went quiet after it had started
+  const arm = (ms, body = 'timeout') => {
     clearTimeout(timer)
     timer = setTimeout(() => {
       request.destroy()
-      settle(resolve, { status: 0, body: 'timeout' })
+      settle(resolve, { status: 0, body })
     }, ms)
   }
 
@@ -991,7 +997,7 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
     let blocked = ''
     let finishReason = ''
     response.on('data', (chunk) => {
-      arm(IDLE_TIMEOUT)
+      arm(IDLE_TIMEOUT, 'idle')
       buffer += chunk
       let newline
       while ((newline = buffer.indexOf('\n')) !== -1) {
@@ -1009,6 +1015,7 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
         const parts = (event.candidates && event.candidates[0] && event.candidates[0].content && event.candidates[0].content.parts) || []
         for (const part of parts) {
           // Thought summaries only show that the model is working; they are not part of the answer
+          if (part.thought) onThought()
           if (part.thought || typeof part.text !== 'string') continue
           result += part.text
           onText(part.text)
@@ -1025,6 +1032,10 @@ const streamGemini = (model, key, body, onText, setCancel, firstByteTimeout = FI
     request.destroy()
     settle(reject, new Error('cancelled'))
   })
+  setSkip(() => {
+    request.destroy()
+    settle(resolve, { status: -1, body: 'skipped' })
+  })
   arm(firstByteTimeout)
   request.end(body)
 })
@@ -1037,16 +1048,25 @@ const recentFailures = new Map()
 // - out of quota (daily or per minute): that key's project is out → same model with the next key;
 //   when every key is out, next model
 const runGemini = async (send, finish, { id, model, effort, systemPrompt, instruction, input, timeout, retryWindow }) => {
-  const firstByteTimeout = clampSetting(timeout, FIRST_BYTE_TIMEOUT, 3000, 120000)
+  const wait = clampSetting(timeout, ANSWER_WAIT, 3000, 300000)
   const failureWindow = clampSetting(retryWindow, RECENT_FAILURE, 0, 60 * 60 * 1000)
   const keys = getGeminiKeys()
   if (!keys.length) return finish({ type: 'error', message: 'Chưa có API key Gemini. Hãy dán key trong Cài đặt Zenlo.' })
 
   let cancelled = false
   let cancelRequest = () => {}
+  let skipRequest = () => {}
   running.set(id, () => {
     cancelled = true
     cancelRequest()
+  })
+  skippers.set(id, () => skipRequest())
+  // The wait for the first byte, shared by every model; a model the user moves on from gives the
+  // next one a full wait again
+  let deadline = Date.now() + wait
+  const timedOut = (label) => finish({
+    type: 'error',
+    message: `Gemini đang nghẽn: chờ ${Math.round(wait / 1000)} giây mà ${label} vẫn chưa trả lời. Thử lại sau vài phút, hoặc chọn AI khác trong Cài đặt.`
   })
 
   const all = await getGeminiModels(keys)
@@ -1083,10 +1103,26 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
         // Thinking models sometimes finish with no text at all: ask the same model once more.
         // A busy answer at once (500, 503) is often gone a second later: one more try after a
         // second, before going down a model. A model that keeps the request waiting (status 0)
-        // is not tried again.
+        // used up the wait.
         let busyRetried = false
+        let thinking = false
         for (let attempt = 0; attempt < 2; attempt++) {
-          response = await streamGemini(current, key, body, (text) => send({ type: 'text', text }), (fn) => { cancelRequest = fn }, firstByteTimeout)
+          if (deadline - Date.now() < 1000) {
+            response = { status: 0, body: 'timeout' }
+            break
+          }
+          response = await streamGemini(current, key, body, {
+            onText: (text) => send({ type: 'text', text }),
+            // Once per model: the page shows that it is thinking, not stuck
+            onThought: () => {
+              if (thinking) return
+              thinking = true
+              send({ type: 'thinking' })
+            },
+            setCancel: (fn) => { cancelRequest = fn },
+            setSkip: (fn) => { skipRequest = fn },
+            firstByteTimeout: deadline - Date.now()
+          })
           if (cancelled) break
           if ((response.status === 500 || response.status === 503) && !busyRetried) {
             busyRetried = true
@@ -1135,10 +1171,23 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
         problems.push(`${geminiLabel(current)} (key ${maskKey(key)}): ${geminiError(429, response.body)}`)
         continue
       }
-      if ([0, 500, 503].includes(response.status)) {
-        // The model's servers are busy for every key: go down a model
+      if (response.status === 0 && response.body !== 'idle') {
+        // The whole wait is used up: going down a model now would only make the user wait longer
         recentFailures.set(current, Date.now())
-        problems.push(`${geminiLabel(current)}: quá tải${response.status === 0 ? ` (không phản hồi sau ${Math.round(firstByteTimeout / 1000)} giây)` : ''}`)
+        return timedOut(geminiLabel(current))
+      }
+      if (response.status === -1) {
+        // The user moved on: the next model, with a full wait of its own
+        recentFailures.set(current, Date.now())
+        problems.push(`${geminiLabel(current)}: quá tải (bạn đã chuyển model khác)`)
+        deadline = Date.now() + wait
+        moveOn = true
+        break
+      }
+      if ([0, 500, 503].includes(response.status)) {
+        // The model's servers are busy for every key, or it went quiet halfway: go down a model
+        recentFailures.set(current, Date.now())
+        problems.push(`${geminiLabel(current)}: quá tải${response.status === 0 ? ' (ngừng trả lời giữa chừng)' : ''}`)
         moveOn = true
         break
       }
@@ -1162,7 +1211,11 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
   }
   // The first problems are the cause; what follows from them (e.g. every key skipped) comes after
   const reasons = [...new Set(problems)]
-  finish({ type: 'error', message: `Không model Gemini nào dùng được lúc này. ${reasons.slice(0, 4).join('; ')}${reasons.length > 4 ? '; …' : ''}.` })
+  const busy = reasons.length && reasons.every((reason) => reason.includes('quá tải'))
+  const lead = busy
+    ? 'Gemini đang quá tải ở mọi model. Thử lại sau vài phút, hoặc chọn AI khác trong Cài đặt.'
+    : 'Không model Gemini nào dùng được lúc này.'
+  finish({ type: 'error', message: `${lead} ${busy ? 'Chi tiết: ' : ''}${reasons.slice(0, 4).join('; ')}${reasons.length > 4 ? '; …' : ''}.` })
 }
 
 // For the settings page: the models (with the fixed congestion estimate, and whether every key is
@@ -1227,6 +1280,7 @@ ipcMain.on('zenlo:summary:run', (event, request) => {
     if (finished) return
     finished = true
     running.delete(request.id)
+    skippers.delete(request.id)
     send(payload)
   }
   // Anything unexpected (a full disk, a locked file) ends the run with its message instead of
@@ -1246,6 +1300,13 @@ ipcMain.on('zenlo:summary:cancel', (event, id) => {
   if (cancel) cancel()
   // The page stopped listening already; a cancelled run never finishes on its own
   running.delete(id)
+  skippers.delete(id)
+})
+
+ipcMain.on('zenlo:summary:skip', (event, id) => {
+  if (!isTrustedSender(event)) return
+  const skip = skippers.get(id)
+  if (skip) skip()
 })
 
 // Claude Code or Codex still answering when Zalo quits: stop them with it

@@ -35,6 +35,8 @@
   // "Đến" is the last moment of its minute, so "Đến 14:30" keeps a message sent at 14:30:20
   const parseInputValue = (text, end = false) => Z.parseTime(text, end)
 
+  const { WAIT_HINT } = Z
+
   let panel = null
   let activeJob = null
 
@@ -181,6 +183,7 @@
       <div class="zenlo__actions">
         <button class="zenlo__btn zenlo__btn--primary js-summary-run">Tóm tắt</button>
         <button class="zenlo__btn js-summary-stop" hidden>Dừng</button>
+        <button class="zenlo__btn js-summary-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
         <button class="zenlo__btn js-summary-copy" hidden>Sao chép</button>
       </div>
 
@@ -246,6 +249,10 @@
     el.querySelector('.js-summary-run').addEventListener('click', handleRun)
     el.querySelector('.js-summary-stop').addEventListener('click', () => {
       if (activeJob) activeJob.cancel()
+    })
+    el.querySelector('.js-summary-skip').addEventListener('click', (event) => {
+      event.currentTarget.hidden = true
+      if (activeJob) activeJob.skip()
     })
     el.querySelector('.js-summary-copy').addEventListener('click', () => {
       navigator.clipboard.writeText(Z.withCredit(el.dataset.result))
@@ -331,10 +338,14 @@
 
     let cancelled = false
     let currentCall = null
+    let waitTimer = null
     activeJob = {
       cancel: () => {
         cancelled = true
         if (currentCall) currentCall.cancel()
+      },
+      skip: () => {
+        if (currentCall && currentCall.skip) currentCall.skip()
       }
     }
     setRunning(true)
@@ -404,6 +415,24 @@
       let streamed = ''
       let usedModel = ''
       const started = Date.now()
+      // Gemini: while a model has written nothing, how long it has been, so a slow Gemini does not
+      // look stuck; after WAIT_HINT the user may move on to the next model
+      let waitStart = 0
+      let waitModel = ''
+      let thinking = false
+      const showWait = () => {
+        const skip = panel.querySelector('.js-summary-skip')
+        if (!waitStart) {
+          skip.hidden = true
+          return
+        }
+        const seconds = Math.round((Date.now() - waitStart) / 1000)
+        setStatus(thinking
+          ? `${waitModel} đang suy nghĩ… ${seconds} giây${historyNote}`
+          : `Đang chờ ${waitModel} trả lời… ${seconds} giây${seconds * 1000 >= WAIT_HINT ? ' (Gemini đang đông)' : ''}${historyNote}`)
+        // A thinking model is working: moving on would only throw that away
+        skip.hidden = thinking || seconds * 1000 < WAIT_HINT
+      }
       currentCall = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
         instruction: Z.buildSummaryInstruction({ convName, from: fromMs, to: toMs, count: messageCount, notes: chunks.length > 1 }),
@@ -411,17 +440,31 @@
         note,
         input
       }, (text) => {
+        if (waitStart) {
+          waitStart = 0
+          showWait()
+          setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
+        }
         streamed += text
         showResult(Z.cleanAnswer(streamed, null, source), true)
       }, (modelStatus) => {
         // Gemini: which model is answering, and which ones were skipped
         usedModel = Z.describeModelStatus(modelStatus)
         if (modelStatus.done) return
+        if (modelStatus.thinking) {
+          thinking = true
+          return showWait()
+        }
         // Another model (or key) starts over: drop what a failed one had written
         streamed = ''
         showResult('', true)
         setLoading(true)
-        setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
+        waitStart = Date.now()
+        waitModel = modelStatus.model
+        thinking = false
+        clearInterval(waitTimer)
+        waitTimer = setInterval(showWait, 1000)
+        showWait()
       })
       const result = Z.cleanAnswer(await currentCall.promise, minutes, source)
 
@@ -432,6 +475,8 @@
     } catch (error) {
       setStatus(cancelled ? 'Đã dừng.' : `Lỗi: ${error.message || error}`, !cancelled)
     } finally {
+      clearInterval(waitTimer)
+      panel.querySelector('.js-summary-skip').hidden = true
       activeJob = null
       setLoading(false)
       setRunning(false)
