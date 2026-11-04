@@ -29,6 +29,8 @@ if (!OUT) throw new Error('--out <folder> is required')
 const PROVIDERS = String(args.providers || 'claude,codex').split(',')
 const WHAT = String(args.what || 'summary,digest').split(',')
 const REPS = Number(args.reps || 2)
+// Summary prompts: A = before v3, E = current, F = current with the check asked for in any case
+const VARIANTS = String(args.variants || 'A,E').split(',')
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 
 const Z = loadCore()
@@ -39,6 +41,12 @@ fs.mkdirSync(OUT, { recursive: true })
 const minuteKeys = (messages, now) => Z.buildTranscript(messages, { myUid: MY_UID, now }).minutes
 
 // ---------- Requests, built as each version of Zenlo builds them ----------
+
+// "F": the current prompt with its check of later messages asked for in any case, not only "while
+// thinking", for models and efforts that think little or not at all
+const THINK_LINE = 'Khi suy nghĩ trước lúc viết: với mỗi việc, hạn, câu hỏi, quyết định định ghi, đọc các tin sau nó'
+if (!Z.SUMMARY_PROMPT.includes(THINK_LINE)) throw new Error('SUMMARY_PROMPT has changed: update THINK_LINE')
+const SUMMARY_PROMPT_F = Z.SUMMARY_PROMPT.replace(THINK_LINE, 'Trước khi ghi mỗi việc, hạn, câu hỏi, quyết định, đọc các tin sau nó')
 
 function summaryRequest (chat, variant) {
   if (variant === 'A') {
@@ -51,7 +59,7 @@ function summaryRequest (chat, variant) {
   }
   const { lines, count } = Z.buildTranscript(chat.messages, { myUid: MY_UID, now: chat.now })
   return {
-    systemPrompt: Z.buildSystemPrompt({ systemPrompt: Z.SUMMARY_PROMPT, now: chat.now, myName: MY_NAME }),
+    systemPrompt: Z.buildSystemPrompt({ systemPrompt: variant === 'F' ? SUMMARY_PROMPT_F : Z.SUMMARY_PROMPT, now: chat.now, myName: MY_NAME }),
     input: `<transcript>\n${lines.join('\n')}\n</transcript>`,
     instruction: Z.buildSummaryInstruction({ convName: chat.convName, isGroup: chat.isGroup, from: chat.from, to: chat.to, count })
   }
@@ -119,7 +127,7 @@ async function summaryJob (provider, chatId, variant, rep) {
   const r = await call(provider, summaryRequest(chat, variant))
   if (r.error) return console.log(`${path.basename(file)}: ERROR ${r.error}`)
   // The current Zenlo cleans the answer before showing it; the raw answer is kept
-  const text = variant === 'E' ? Z.cleanAnswer(r.text, minutes) : r.text
+  const text = variant !== 'A' ? Z.cleanAnswer(r.text, minutes) : r.text
   const cites = V2.checkCitations(text, new Set(minutes.keys()), singleDay(chat))
   fs.writeFileSync(file, JSON.stringify({ chatId, variant, model: modelOf(provider), rep, text, raw: r.text, usage: r.usage, ms: r.ms, cites }, null, 2))
   console.log(`${path.basename(file)}: ${Math.round(r.ms / 1000)} s, in ${r.usage.promptTokenCount}, out ${r.usage.candidatesTokenCount}`)
@@ -199,7 +207,7 @@ async function longJob (provider, variant, rep) {
   if (r.error) return console.log(`${path.basename(file)}: ERROR ${r.error}`)
   sum(usage, r.usage)
   ms += r.ms
-  const text = variant === 'E' ? Z.cleanAnswer(r.text, minutes) : r.text
+  const text = variant !== 'A' ? Z.cleanAnswer(r.text, minutes) : r.text
   const cites = V2.checkCitations(text, new Set(minutes.keys()), singleDay(chat))
   fs.writeFileSync(file, JSON.stringify({ chatId: 'D', variant, model: modelOf(provider), rep, requests: chunks.length + 1, text, raw: r.text, notes, usage, ms, cites }, null, 2))
   console.log(`${path.basename(file)}: ${chunks.length} parts + 1, ${Math.round(ms / 1000)} s, in ${usage.promptTokenCount}, out ${usage.candidatesTokenCount}`)
@@ -209,7 +217,7 @@ async function longJob (provider, variant, rep) {
 await Promise.all(PROVIDERS.map(async (provider) => {
   for (let rep = 1; rep <= REPS; rep++) {
     if (WHAT.includes('long')) for (const variant of ['A', 'E']) await longJob(provider, variant, rep)
-    if (WHAT.includes('summary')) for (const chatId of ['A', 'B']) for (const variant of ['A', 'E']) await summaryJob(provider, chatId, variant, rep)
+    if (WHAT.includes('summary')) for (const chatId of ['A', 'B']) for (const variant of VARIANTS) await summaryJob(provider, chatId, variant, rep)
     if (WHAT.includes('digest')) for (const variant of ['old', 'src']) await digestJob(provider, variant, rep)
   }
 }))

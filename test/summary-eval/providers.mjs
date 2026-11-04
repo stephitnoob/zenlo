@@ -45,9 +45,9 @@ function run (exe, argv, stdin, cwd) {
   })
 }
 
-export async function callClaude (request) {
+export async function callClaude (request, { model = 'sonnet', effort = 'medium' } = {}) {
   const r = await run('claude', [
-    '-p', '--model', 'sonnet', '--effort', 'medium', '--output-format', 'json',
+    '-p', '--model', model, '--effort', effort, '--output-format', 'json',
     '--tools', '', '--no-session-persistence', '--strict-mcp-config', '--setting-sources', '',
     '--disable-slash-commands', '--system-prompt', request.systemPrompt
   ], `${request.input}\n\n${request.instruction}`, os.tmpdir())
@@ -66,11 +66,11 @@ export async function callClaude (request) {
   }
 }
 
-export async function callCodex (request) {
+export async function callCodex (request, { effort = 'medium' } = {}) {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'zenlo-eval-codex-'))
   const toml = (text) => JSON.stringify(String(text))
   const config = [
-    'model_reasoning_effort="medium"', `instructions=${toml(request.systemPrompt)}`, 'project_doc_max_bytes=0',
+    `model_reasoning_effort=${toml(effort)}`, `instructions=${toml(request.systemPrompt)}`, 'project_doc_max_bytes=0',
     'web_search="disabled"', 'features.shell_tool=false', 'features.multi_agent=false', 'features.apps=false',
     'features.plugins=false', 'features.view_image=false', 'include_environment_context=false',
     'include_permissions_instructions=false', 'include_apps_instructions=false',
@@ -109,11 +109,11 @@ const KEY_FILE = path.join(ROOT, '.env.gemini')
 const KEYS = fs.existsSync(KEY_FILE) ? fs.readFileSync(KEY_FILE, 'utf8').split('\n').map((k) => k.trim()).filter((k) => k && !k.startsWith('#')) : []
 const outOfQuota = new Set()
 
-export async function callGemini (model, request) {
+export async function callGemini (model, request, effort = 'high') {
   const body = JSON.stringify({
     systemInstruction: { parts: [{ text: request.systemPrompt }] },
     contents: [{ role: 'user', parts: [{ text: `${request.input}\n\n${request.instruction}` }] }],
-    generationConfig: { thinkingConfig: { thinkingLevel: 'high' } }
+    generationConfig: { thinkingConfig: { thinkingLevel: effort } }
   })
   let lastError = ''
   for (let attempt = 1; attempt <= 8; attempt++) {
@@ -151,8 +151,24 @@ export async function callGemini (model, request) {
   return { error: lastError }
 }
 
-export const MODEL = { claude: 'claude-sonnet', codex: 'codex' }
-export const modelOf = (provider) => MODEL[provider] || provider
-export const call = (provider, request) => provider === 'claude'
-  ? callClaude(request)
-  : provider === 'codex' ? callCodex(request) : callGemini(provider, request)
+// A provider is "claude", "codex" or a Gemini model id, optionally with a model and an effort:
+// "claude:haiku@low", "codex@minimal", "gemini-3.1-flash-lite@low". Defaults as in Zenlo.
+const parse = (spec) => {
+  const [head, effort] = String(spec).split('@')
+  const [name, model] = head.split(':')
+  return { name, model, effort }
+}
+
+// The name in result files: "claude-sonnet", "claude-haiku-low", "codex-minimal", "gemini-3.6-flash-low"
+export const modelOf = (spec) => {
+  const { name, model, effort } = parse(spec)
+  const base = name === 'claude' ? `claude-${model || 'sonnet'}` : name
+  return effort ? `${base}-${effort}` : base
+}
+
+export const call = (spec, request) => {
+  const { name, model, effort } = parse(spec)
+  if (name === 'claude') return callClaude(request, { model: model || 'sonnet', effort: effort || 'medium' })
+  if (name === 'codex') return callCodex(request, { effort: effort || 'medium' })
+  return callGemini(name, request, effort || 'high')
+}
