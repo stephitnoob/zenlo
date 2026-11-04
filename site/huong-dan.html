@@ -268,10 +268,11 @@
         <p>Thanh màu cạnh mỗi model là mức đông người dùng ước lượng, không phải đo trực tiếp. Model bị làm mờ là mọi key của bạn đã hết lượt cho model đó hôm nay.</p>
 
         <h4>Effort</h4>
-        <p>Mức suy nghĩ của model. <b>high</b> (mặc định) viết kỹ hơn nhưng chậm hơn; <b>low</b> nhanh hơn, hợp với Bản tin dài.</p>
+        <p>Mức suy nghĩ của model. <b>high</b> (mặc định) viết kỹ hơn nhưng chậm hơn; <b>low</b> thường nhanh hơn nhưng dễ sót việc hơn, nhất là với Flash-Lite.</p>
 
-        <h4>Chờ model trả lời</h4>
-        <p>Model chưa trả lời chữ nào sau khoảng này thì Zenlo coi là quá tải và chuyển xuống bản thấp hơn. Mặc định 10 giây. Mạng chậm thì tăng lên; muốn nhanh thì giảm xuống.</p>
+        <h4>Chờ Gemini tối đa</h4>
+        <p>Thời gian chờ Gemini bắt đầu trả lời, tính chung cho cả lượt. Model báo quá tải thì Zenlo chuyển xuống bản thấp hơn và dùng tiếp thời gian còn lại; hết thời gian mà chưa model nào trả lời thì Zenlo dừng và báo Gemini đang nghẽn. Mặc định 45 giây.</p>
+        <p>Lúc chờ, Zenlo đếm giây; model đang suy nghĩ thì ghi rõ. Chờ quá 10 giây thì có nút <b>Chuyển model khác</b>: bấm để bỏ model đang chờ, model tiếp theo được chờ lại từ đầu.</p>
         <p>Nếu Google báo quá tải ngay (không phải chờ), Zenlo đợi 1 giây rồi thử lại đúng model đó một lần, vì quá tải thường chỉ thoáng qua; lần nữa vẫn quá tải mới chuyển xuống bản thấp hơn.</p>
 
         <h4>Thử lại model quá tải sau</h4>
@@ -363,7 +364,7 @@
         <h3>Tóm tắt chậm hoặc báo quá tải</h3>
         <p>Phần lớn thời gian chờ là lúc AI đọc và suy nghĩ; hội thoại càng dài, effort càng cao thì càng lâu.</p>
         <ul>
-          <li><b>Gemini:</b> model mới thường đông người dùng vào giờ cao điểm. Zenlo đã tự chuyển xuống bản thấp hơn; nếu vẫn chậm, chọn bắt đầu từ một model thấp hơn, giảm <b>Effort</b> xuống low, hoặc giảm <b>Chờ model trả lời</b>.</li>
+          <li><b>Gemini:</b> model mới thường đông người dùng vào giờ cao điểm. Zenlo tự chuyển xuống bản thấp hơn khi model báo quá tải. Báo nghẽn thì thử lại sau vài phút hoặc tạm chọn AI khác; thường xuyên chậm thì chọn bắt đầu từ một model thấp hơn, hoặc bấm <b>Chuyển model khác</b> khi đang chờ.</li>
           <li><b>Claude, Codex:</b> giảm <b>Effort</b>, hoặc chọn model nhẹ hơn (ví dụ Haiku, Sonnet).</li>
           <li>Chọn khoảng tin ngắn hơn, hoặc độ dài <b>Ngắn</b>.</li>
         </ul>
