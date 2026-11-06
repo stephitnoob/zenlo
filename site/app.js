@@ -60,6 +60,48 @@
     if (event.key === 'Escape' && soon) soon.classList.remove('soon--show')
   })
 
+  // A phone, or Zalo's own browser on one (an iPad says it is a Mac, but has a touch screen).
+  // The installer is no use there, so the button hands over a link to open on the computer.
+  const onPhone = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent) ||
+    (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+
+  function copyLinkInstead (a) {
+    const box = document.createElement('div')
+    box.className = 'phone-get'
+    const line = document.createElement('p')
+    const lead = document.createElement('b')
+    lead.textContent = 'Zenlo chạy trên máy tính Windows.'
+    line.append(lead, ' Sao chép link, dán vào Cloud của tôi trên Zalo rồi mở trên máy tính.')
+    const button = document.createElement('button')
+    button.className = 'btn'
+    button.type = 'button'
+    button.textContent = 'Sao chép link'
+    const shown = document.createElement('span')
+    shown.className = 'phone-get__link'
+    shown.textContent = 'zenlo.io.vn/#cai-dat'
+    box.append(line, button, shown)
+    a.replaceWith(box)
+
+    button.addEventListener('click', async () => {
+      let copied = false
+      try {
+        await navigator.clipboard.writeText('https://zenlo.io.vn/#cai-dat')
+        copied = true
+      } catch (error) {
+        // In-app browsers often refuse the clipboard: select the link, and try the old way
+        const range = document.createRange()
+        range.selectNodeContents(shown)
+        window.getSelection().removeAllRanges()
+        window.getSelection().addRange(range)
+        try { copied = document.execCommand('copy') } catch (ignored) {}
+      }
+      button.textContent = copied ? 'Đã sao chép ✓' : 'Giữ vào link để sao chép'
+      setTimeout(() => { button.textContent = 'Sao chép link' }, 2500)
+    })
+  }
+
+  if (onPhone) $$('.js-download').forEach(copyLinkInstead)
+
   function setDownload (href, label) {
     $$('.js-download').forEach((a) => {
       if (href) {

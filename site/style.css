@@ -591,6 +591,10 @@ button {
   background: var(--z-me);
 }
 
+.msg--me b {
+  justify-content: flex-end;
+}
+
 .msg--flash {
   box-shadow: 0 0 0 2px var(--accent);
   background: var(--accent-soft);
@@ -601,6 +605,54 @@ button {
   border-top: 1px solid var(--z-line);
   color: var(--z-muted);
   font-size: 13px;
+}
+
+form.zw__composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+form.zw__composer:focus-within {
+  border-top-color: var(--accent);
+}
+
+.zw__composer input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--z-text);
+  font: inherit;
+}
+
+.zw__composer input::placeholder {
+  color: var(--z-muted);
+  opacity: 1;
+}
+
+.zw__composer button {
+  display: flex;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.zw__composer input:placeholder-shown + button {
+  display: none;
+}
+
+/* Under 16px, phones zoom the page in when the box gets the focus */
+@media (max-width: 860px) {
+  .zw__composer input {
+    font-size: 16px;
+  }
 }
 
 /* Zenlo's panel inside the window */
@@ -1311,6 +1363,32 @@ button {
   color: #e4e6eb;
 }
 
+.phone-get {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 14px;
+}
+
+.phone-get p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.phone-get p b {
+  color: var(--text);
+}
+
+.phone-get__link {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+  user-select: all;
+}
+
 .download {
   display: flex;
   flex-wrap: wrap;
@@ -1393,7 +1471,7 @@ button {
 
 .note {
   max-width: 660px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .note__quote {

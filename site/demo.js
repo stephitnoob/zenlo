@@ -83,11 +83,13 @@
     ]
   }
 
-  function citeButton (label) {
+  // A citation is 'dd/mm hh:mm', or { label, t } for a message whose time another one may share
+  function citeButton (cite) {
+    const label = cite.label || cite
     const button = document.createElement('button')
     button.type = 'button'
     button.className = 'cite'
-    button.dataset.t = label.slice(-5)
+    button.dataset.t = cite.t || label.slice(-5)
     button.textContent = label
     return button
   }
@@ -180,6 +182,124 @@
     })
   })
 
+  // ---------- The message box: what is typed stays in the page ----------
+
+  const HOI_AN = [
+    ['Vy', 'ủa ai đây'],
+    ['Trang', 'nhầm nhóm hả bạn'],
+    ['Nam', 'vào rồi thì góp 300k nha'],
+    ['Huy', 'thứ 7 đi chung không'],
+    ['Khánh', '👍']
+  ]
+  const REPLIES = {
+    'demo-summary': [
+      ['Chị Hoa', '@Minh slide đâu em'],
+      ['Quang', 'file ảnh gốc nữa Minh ơi'],
+      ['Tuấn', 'ủa Minh giờ mới đọc tin à'],
+      ['Linh', 'đọc hết 35 tin chưa đó'],
+      ['Phương', '😆']
+    ],
+    'demo-cite': HOI_AN,
+    'demo-react': HOI_AN
+  }
+
+  // What was said in Team Marketing, for its summary
+  const talk = { added: 0, sent: 0, last: null, reply: null }
+
+  const two = (n) => String(n).padStart(2, '0')
+
+  function setupComposers () {
+    let keys = 0
+    document.querySelectorAll('.zw').forEach((win) => {
+      const box = win.querySelector('.zw__composer')
+      const msgs = win.querySelector('.zw__msgs')
+      if (!box || !msgs) return
+
+      const form = document.createElement('form')
+      form.className = 'zw__composer'
+      const input = document.createElement('input')
+      input.placeholder = box.textContent
+      input.setAttribute('aria-label', box.textContent)
+      input.maxLength = 120
+      input.autocomplete = 'off'
+      input.enterKeyHint = 'send'
+      const send = document.createElement('button')
+      send.type = 'submit'
+      send.setAttribute('aria-label', 'Gửi')
+      send.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>'
+      form.append(input, send)
+      box.replaceWith(form)
+
+      const replies = REPLIES[win.id] || []
+      const isTeam = win.id === 'demo-summary'
+      let answered = 0
+      let waiting = false
+      let dayShown = false
+
+      // Adds a message with today's date and time; returns how to cite it
+      function add (name, text) {
+        if (!dayShown) {
+          dayShown = true
+          const day = document.createElement('div')
+          day.className = 'zw__day'
+          day.textContent = 'Hôm nay'
+          msgs.appendChild(day)
+        }
+        const now = new Date()
+        const time = `${two(now.getHours())}:${two(now.getMinutes())}`
+        const cite = { label: `${two(now.getDate())}/${two(now.getMonth() + 1)} ${time}`, t: `typed-${++keys}` }
+        const msg = document.createElement('div')
+        msg.className = name ? 'msg' : 'msg msg--me'
+        msg.dataset.t = cite.t
+        const head = document.createElement('b')
+        if (name) head.append(`${name} `)
+        const stamp = document.createElement('span')
+        stamp.textContent = time
+        head.appendChild(stamp)
+        msg.append(head, text)
+        msgs.appendChild(msg)
+        msgs.scrollTop = msgs.scrollHeight
+        if (isTeam) talk.added++
+        return cite
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault()
+        const text = input.value.trim()
+        if (!text) return
+        input.value = ''
+        const cite = add('', text)
+        if (isTeam) {
+          talk.sent++
+          talk.last = { text, cite }
+        }
+        // One person answers at a time, and after the last one the group goes quiet
+        if (waiting || answered >= replies.length) return
+        waiting = true
+        await wait(1800)
+        const [name, reply] = replies[answered++]
+        const replyCite = add(name, reply)
+        if (isTeam && !talk.reply) talk.reply = replyCite
+        waiting = false
+      })
+    })
+  }
+
+  // The summary of Team Marketing, with what the visitor said in it
+  function teamSummary () {
+    if (!talk.last) return TEAM.medium
+    const { text, cite } = talk.last
+    const quoted = text.length > 60 ? `${text.slice(0, 60)}…` : text
+    const said = talk.sent > 1 ? `Bạn nhắn ${talk.sent} tin, mới nhất là “${quoted}”` : `Bạn nhắn “${quoted}”`
+    const line = talk.reply
+      ? { li: `${said}, chị Hoa hỏi lại về slide.`, cite: [cite, talk.reply] }
+      : { li: `${said}.`, cite: [cite] }
+    // Under "Liên quan tới bạn", before "Còn lại"
+    const blocks = TEAM.medium.slice()
+    blocks.splice(blocks.findIndex((block, i) => i > 0 && block.h), 0, line)
+    return blocks
+  }
+
   // ---------- 1. Summary ----------
 
   function setupSummary () {
@@ -194,16 +314,18 @@
       if (busy) return
       busy = true
       run.disabled = true
-      hint.textContent = 'Đang đọc 35 tin…'
+      const total = 35 + talk.added
+      summary.querySelector('.js-netlog-n').textContent = total
+      hint.textContent = `Đang đọc ${total} tin…`
       log.classList.remove('show')
       out.textContent = ''
       await wait(500)
-      hint.textContent = 'Đang tóm tắt 35 tin…'
+      hint.textContent = `Đang tóm tắt ${total} tin…`
       out.innerHTML = letter()
       await wait(1800)
       hint.textContent = ''
       out.textContent = ''
-      await stream(out, TEAM.medium)
+      await stream(out, teamSummary())
       log.classList.add('show')
       hint.textContent = 'thử bấm vào một mốc giờ'
       run.textContent = 'Tóm tắt'
@@ -494,7 +616,7 @@
   }
 
   // Each demo on its own: one that fails leaves the others working
-  for (const setup of [setupSummary, setupDigest, setupYours, setupNote, setupReact]) {
+  for (const setup of [setupComposers, setupSummary, setupDigest, setupYours, setupNote, setupReact]) {
     try {
       setup()
     } catch (error) {
