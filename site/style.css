@@ -2137,8 +2137,15 @@ button {
     display: none;
   }
 
+  /* Phones: "Phiên bản" gives way to "FAQ"; it is in the footer of every page */
+  @media (max-width: 430px) {
+    .top__link[href="phien-ban.html"] {
+      display: none;
+    }
+  }
+
   /* Small phones (360px): a little less room between the items, or the button pushes past the edge.
-     Under 360px "Phiên bản" goes too; it is in the footer of every page. */
+     Under 360px only "Hướng dẫn" stays. */
   @media (max-width: 359px) {
     .top__link + .top__link {
       display: none;
