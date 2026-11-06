@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zenlo by Stephit – tóm tắt tin nhắn Zalo bằng AI, miễn phí</title>
-<meta name="description" content="Zenlo dùng AI tóm tắt tin nhắn Zalo và nhóm chat ngay trong Zalo trên máy tính Windows: ai nhắc bạn, việc gì cần làm, hạn khi nào. Miễn phí.">
+<meta name="description" content="Tóm tắt nhóm chat ngay trong Zalo trên Windows: ai nhắc bạn, việc gì cần làm, hạn khi nào. Mã nguồn mở, không có máy chủ, dùng tài khoản AI của chính bạn.">
 <meta property="og:title" content="Zenlo by Stephit – tóm tắt tin nhắn Zalo bằng AI, miễn phí">
-<meta property="og:description" content="Ba trăm tin chưa đọc, đọc trong mười giây. Tiện ích miễn phí cho Zalo trên Windows.">
+<meta property="og:description" content="Tóm tắt nhóm chat ngay trong Zalo trên Windows: ai nhắc bạn, việc gì cần làm, hạn khi nào. Mã nguồn mở, không có máy chủ, dùng tài khoản AI của chính bạn.">
 <meta property="og:url" content="https://zenlo.io.vn/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Zenlo by Stephit">
@@ -21,7 +21,7 @@
   "@type": "SoftwareApplication",
   "name": "Zenlo",
   "alternateName": "Zenlo by Stephit",
-  "description": "Tiện ích miễn phí dùng AI tóm tắt tin nhắn Zalo ngay trong ứng dụng Zalo trên Windows: ai nhắc bạn, việc gì cần làm, hạn khi nào.",
+  "description": "Tóm tắt nhóm chat ngay trong Zalo trên Windows: ai nhắc bạn, việc gì cần làm, hạn khi nào. Mã nguồn mở, không có máy chủ, dùng tài khoản AI của chính bạn.",
   "url": "https://zenlo.io.vn/",
   "image": "https://zenlo.io.vn/og.png",
   "applicationCategory": "UtilitiesApplication",
@@ -548,6 +548,57 @@
         <figcaption class="note__sign">— stephit, founder of Zenlo</figcaption>
       </figure>
 
+    </div>
+  </section>
+
+  <!-- Answers for people who read nothing else -->
+  <section class="chapter" id="cau-hoi">
+    <div class="wrap">
+      <div class="chapter__head">
+        <h2>Câu hỏi thường gặp</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Người làm Zenlo có đọc được tin nhắn của tôi không?</summary>
+          <p>Không. Zenlo không có máy chủ. Tin nhắn chỉ được gửi tới AI bạn chọn, khi bạn bấm Tóm tắt hoặc Tạo bản tin.</p>
+        </details>
+        <details>
+          <summary>Miễn phí thì Zenlo lấy gì?</summary>
+          <p>Không lấy gì: Zenlo không có quảng cáo hay gói trả phí. Phần AI miễn phí là gói của Google, và với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Hội thoại nhạy cảm thì nên cân nhắc.</p>
+        </details>
+        <details>
+          <summary>Zenlo có virus không?</summary>
+          <p>Không. Mã nguồn công khai, mỗi bản do GitHub tự build, và ở <a class="link" href="#cai-dat">phần tải về</a> có link kết quả quét VirusTotal của đúng file đó.</p>
+        </details>
+        <details>
+          <summary>Tóm tắt có đúng không?</summary>
+          <p>AI có lúc hiểu sai. Với tiền, hạn nộp hay lịch hẹn, hãy bấm mốc giờ để đọc tin gốc.</p>
+        </details>
+        <details>
+          <summary>Windows hoặc trình duyệt cảnh báo khi tải, khi mở file?</summary>
+          <p>Bộ cài chưa có chữ ký số nên bị cảnh báo. Windows: bấm More info → Run anyway. Chrome: bấm Keep. Edge: bấm … → Keep → mũi tên cạnh Delete → Keep anyway.</p>
+        </details>
+        <details>
+          <summary>Lấy key Gemini ở đâu?</summary>
+          <p>Vào <a class="link" href="https://aistudio.google.com/apikey" rel="noopener" target="_blank">aistudio.google.com/apikey</a>, bấm Create API key rồi sao chép. Trong Zalo: nút Zenlo → bánh răng → dán key → Kiểm tra kết nối. Nếu báo key không hợp lệ thì sao chép và dán lại.</p>
+        </details>
+        <details>
+          <summary>Nút Zenlo biến mất?</summary>
+          <p>Thường do Zalo vừa cập nhật. Mở Start, gõ Zenlo, chọn Zenlo - Cài đặt, gõ <code>1</code> rồi Enter. Zalo đang mở thì gõ thêm <code>c</code> rồi Enter. Cài đặt và key vẫn còn.</p>
+        </details>
+        <details>
+          <summary>Báo hết lượt, hoặc Gemini chờ quá lâu?</summary>
+          <p>Hết lượt: chờ tới khoảng 14–15 giờ chiều, hoặc thêm key từ một dự án Google khác. Chờ lâu: bấm Chuyển model khác, hoặc thử lại sau vài phút.</p>
+        </details>
+        <details>
+          <summary>Không dùng nữa thì gỡ thế nào?</summary>
+          <p>Mở Start, gõ Zenlo, chọn Zenlo - Cài đặt, gõ <code>2</code> rồi Enter. Zalo đang mở thì gõ thêm <code>c</code> rồi Enter. Zalo trở về đúng bản gốc.</p>
+        </details>
+        <details>
+          <summary>Vẫn lỗi?</summary>
+          <p><a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">Gửi e-mail</a> kèm phiên bản Zalo, phiên bản Zenlo và dòng báo lỗi. Đừng gửi key hay ảnh chụp tin nhắn riêng tư.</p>
+        </details>
+      </div>
     </div>
   </section>
 

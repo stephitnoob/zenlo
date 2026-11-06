@@ -1423,6 +1423,62 @@ button {
   font-size: 14px;
 }
 
+/* ---------- Questions ---------- */
+
+/* A ruled list, the same "+" and "–" in monospace as "Có hợp với bạn không?" */
+.faq {
+  max-width: 760px;
+  border-top: 1px solid var(--line);
+}
+
+.faq details {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq summary {
+  position: relative;
+  padding: 14px 0 14px 26px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::before {
+  content: "+";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-weight: 400;
+}
+
+.faq details[open] summary::before {
+  content: "–";
+}
+
+.faq summary:hover {
+  color: var(--accent);
+}
+
+.faq p {
+  margin: 0;
+  padding: 0 0 16px 26px;
+  color: var(--muted);
+}
+
+.faq code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
 .aside {
   max-width: 660px;
   margin: 56px auto 0;
