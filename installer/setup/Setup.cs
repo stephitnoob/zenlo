@@ -354,7 +354,15 @@ namespace Zenlo
             }
             finally
             {
-                if (Directory.Exists(work)) DeleteDirectory(work);
+                // A temp folder that cannot be removed yet must not turn a finished install (or the
+                // error above) into another error
+                try
+                {
+                    if (Directory.Exists(work)) DeleteDirectory(work);
+                }
+                catch (Exception)
+                {
+                }
             }
 
             string marker = Path.Combine(resources, DevMarker);
@@ -493,7 +501,15 @@ namespace Zenlo
             catch (IOException)
             {
                 CopyDirectory(from, to);
-                DeleteDirectory(from);
+                // The copy is in place: a leftover original (a file an antivirus still holds) must not
+                // undo the install; it sits in the temp folder, which the caller cleans anyway
+                try
+                {
+                    DeleteDirectory(from);
+                }
+                catch (Exception)
+                {
+                }
             }
         }
 

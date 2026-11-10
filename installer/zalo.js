@@ -178,7 +178,11 @@ function install ({ dev = false, source = DIST } = {}) {
     restoreOriginal(resourcesDir)
     throw new Error(`Không chép được Zenlo vào Zalo (${error.message}). Zalo đã được đưa về bản gốc.`)
   } finally {
-    fs.rmSync(work, { recursive: true, force: true })
+    // A temp folder that cannot be removed yet (a file an antivirus still holds) must not turn a
+    // finished install, or the error above, into another error
+    try {
+      fs.rmSync(work, { recursive: true, force: true })
+    } catch (error) {}
   }
 
   const marker = path.join(resourcesDir, DEV_MARKER)
