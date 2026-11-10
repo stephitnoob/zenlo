@@ -6,7 +6,7 @@ Trình quản lí hội thoại cho **Zalo PC** (Windows), dùng AI (Gemini, Cla
 
 Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo (khung chat tự co lại, không bị che). Mở bằng nút Zenlo ở thanh trái hoặc nút trên thanh tiêu đề hội thoại; đóng bằng ×, bấm lại nút đó, hoặc Esc.
 
-- **Tóm tắt** (tab). Tóm tắt hội thoại đang mở; chưa mở hội thoại nào thì chọn ở danh sách bên trái. Chọn khoảng thời gian (30 phút … 24 giờ, "Từ tin chưa đọc", "Từ lần trước" hoặc tự nhập `dd/mm/yyyy hh:mm`) và độ dài (Ngắn / Vừa / Dài, mặc định Vừa; Ngắn vẫn giữ đủ việc của bạn, Dài kể cả diễn biến, ai nói gì); dòng ước lượng cho biết số tin, số token và số lần gọi AI trước khi gửi. Phần liên quan tới bạn được đưa lên đầu, hạn đã qua được ghi "(đã qua)"; mỗi ý có mốc giờ, bấm vào là nhảy tới tin gốc.
+- **Tóm tắt** (tab). Tóm tắt hội thoại đang mở; chưa mở hội thoại nào thì chọn ở danh sách bên trái. Chọn khoảng thời gian (30 phút … 24 giờ, "Từ tin chưa đọc", "Từ lần trước" hoặc tự nhập `dd/mm/yyyy hh:mm`) và độ dài (Ngắn / Vừa / Dài, mặc định Vừa; Ngắn vẫn giữ đủ việc của bạn, Dài kể cả diễn biến, ai nói gì); dòng ước lượng cho biết số tin, số token và số lần gọi AI trước khi gửi. Phần liên quan tới bạn được đưa lên đầu, hạn đã qua được ghi "(đã qua)"; ngay sau mỗi câu có mốc giờ của tin gốc, bấm vào là nhảy tới đúng tin đó.
 - **Bản tin** (tab). Liệt kê các hội thoại Zalo đang tính là chưa đọc (hội thoại có người nhắc bạn hoặc @All có nhãn "@ nhắc bạn" và được lùi tới 30 ngày), tick chọn hội thoại cần tóm tắt, kéo ⋮⋮ để sắp xếp ưu tiên (được nhớ lâu dài). Bản tin viết ngắn, chỉ những gì bạn sẽ lỡ nếu không đọc (việc cần làm, câu cần trả lời, lịch, hạn, tiền...), mỗi ý có mốc giờ; hội thoại không có gì như vậy chỉ ghi "Không có gì liên quan tới bạn." kèm một câu nói nhóm đang bàn gì; nhiều hội thoại được gộp vào một lần gọi AI để đỡ tốn lượt. Tạo bản tin không gửi trạng thái "Đã xem"; chỉ nút "Đã đọc" / "Đã đọc hết" mới đánh dấu đã đọc trong Zalo.
 - **Ghi chú cho AI** (nút cạnh nút Tóm tắt trên thanh tiêu đề hội thoại): mỗi hội thoại một ghi chú, tối đa 300 ký tự, ví dụ "Hoa là sếp mình" hay "chỉ cần hạn chót". AI đọc ghi chú mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên ghi chú hơn cách viết mặc định.
 - **Thả cảm xúc**: nút **+** ở cuối thanh cảm xúc mở hơn 80 cảm xúc (cái dùng gần đây lên đầu); "Sửa thanh nhanh" chọn 6 cảm xúc hiện sẵn trên thanh. Danh sách, hình và việc gửi đều do chính Zalo làm.
@@ -56,6 +56,9 @@ npm run zalo:install
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
 | `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 200 KB, không cần Node.js) kèm SHA-256 |
 | `npm run site` | Xem trang web trên máy ở http://127.0.0.1:4173 (không lưu cache, luôn thấy bản mới nhất) |
+| `npm run lint` | Kiểm tra cách viết code (standard) |
+| `npm test` | Build rồi chạy cả ba bộ test bên dưới (CI chạy lệnh này mỗi lần push) |
+| `npm run test:unit` | Thử các hàm xử lý bản chép, mốc giờ và câu trả lời của AI, không gọi AI |
 | `npm run test:gemini` | Thử chuỗi model Gemini trong tiến trình chính thật, với máy chủ Google giả (không tốn lượt) |
 | `npm run test:codex` | Thử cách gọi Codex với một Codex giả (không gọi Codex thật) |
 
@@ -71,7 +74,7 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 | `scripts/build.mjs` | Build bằng esbuild và sass |
 | `installer/` | Cài / gỡ vào Zalo PC: `zalo.js` cho các lệnh npm khi phát triển (có chế độ dev); `setup/Setup.cs` là bộ cài `Zenlo-Setup.exe` cho người dùng |
 | `scripts/build-setup.mjs` | Biên dịch bộ cài C# thành một file `.exe`, nhúng sẵn các file Zenlo đã build |
-| `test/` | `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
+| `test/` | `unit/`: thử các hàm của `core.js`; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
 | `site/` | Trang web giới thiệu và tải về (GitHub Pages) |
 | `.github/workflows/` | Build và phát hành tự động, đưa trang web lên |
 
