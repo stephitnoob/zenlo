@@ -68,6 +68,8 @@ Module._load = function (request, ...rest) {
 // here: it would send the test text to OpenAI and use the plan's quota.
 const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'zenlo-test-home-'))
 for (const name of ['LOCALAPPDATA', 'APPDATA', 'USERPROFILE', 'HOME']) process.env[name] = empty
+// Zenlo reads Claude Code's saved model list from here first; the machine's real one must not leak in
+delete process.env.CLAUDE_CONFIG_DIR
 process.env.PATH = login === 'missing' ? empty : FAKE_DIR
 process.env.FAKE_CODEX_LOGIN = login
 process.env.FAKE_CODEX_LOG = LOG

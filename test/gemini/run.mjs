@@ -276,7 +276,8 @@ await test('Trả lời trọn vẹn (STOP) vẫn xong như thường', async ()
 
 await test('Key dán kèm khoảng trắng, ký tự ẩn: được làm sạch trước khi lưu', async () => {
   const saved = handlers['zenlo:settings:setGeminiKeys'](trusted, [' AIzaFAKE\u200bKEY 0000\n'])
-  assert.equal(saved, true)
+  // The page gets the new list at once, masked
+  assert.deepEqual(saved, { masks: ['AIza…0000'] })
   script = {}
   await summarize()
   assert.equal(calls[0].key, 'AIzaFAKEKEY0000')
@@ -291,12 +292,12 @@ await test('Key có chữ có dấu: không lưu, báo rõ lý do', async () => 
 })
 
 await test('Key đã lưu: giữ theo số thứ tự, thêm key mới, bỏ key cũ', async () => {
-  assert.equal(handlers['zenlo:settings:setGeminiKeys'](trusted, [0, 'AIzaSECONDKEY1111']), true)
-  assert.equal(handlers['zenlo:settings:setGeminiKeys'](trusted, [1]), true)
+  assert.deepEqual(handlers['zenlo:settings:setGeminiKeys'](trusted, [0, 'AIzaSECONDKEY1111']), { masks: ['AIza…0000', 'AIza…1111'] })
+  assert.deepEqual(handlers['zenlo:settings:setGeminiKeys'](trusted, [1]), { masks: ['AIza…1111'] })
   script = {}
   await summarize()
   assert.equal(calls[0].key, 'AIzaSECONDKEY1111')
-  assert.equal(handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000']), true)
+  assert.deepEqual(handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000']), { masks: ['AIza…0000'] })
 })
 
 await test('Trang Zalo: chỉ trả key đã che', async () => {

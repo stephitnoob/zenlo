@@ -298,7 +298,39 @@ test('Mốc có số: số viết rời được gom vào mốc, số không có
   const { minutes, numbered } = numberedOf(BUSY)
   assert.equal(Z.cleanAnswer('Đạt nhắc nộp quỹ (21:10 #4), tin #6 nói Khoa chưa nộp.', minutes, null, numbered),
     'Đạt nhắc nộp quỹ [20/10 21:10 ~104], tin [20/10 21:40 ~106] nói Khoa chưa nộp.')
-  assert.equal(Z.cleanAnswer('- x [20/10 08:00 #99], y [#99].', minutes, null, numbered), '- x [20/10 08:00], y .')
+  assert.equal(Z.cleanAnswer('- x [20/10 08:00 #99], y [#99].', minutes, null, numbered), '- x [20/10 08:00], y.')
+})
+
+// Three messages in one minute, for a line with a citation after each clause
+const CLAUSES = (first) => [
+  nm('201', '2', 'Huy', 21, 10, 3, first),
+  nm('202', '3', 'Đạt', 21, 10, 30, 'nộp quỹ lớp 50k trước thứ 6 nha'),
+  nm('203', '4', 'Lan', 21, 10, 50, 'mai họp phòng A2')
+]
+
+test('Mốc có số: hai mốc trong một câu, mỗi mốc xét vế đứng trước nó', () => {
+  const line = 'Đạt nhắc nộp quỹ 50k [20/10 21:10 #2], Lan báo mai họp phòng A2 [20/10 21:10 #1].'
+  const want = 'Đạt nhắc nộp quỹ 50k [20/10 21:10 ~202], Lan báo mai họp phòng A2 [20/10 21:10 ~203].'
+  // #1 shares "nộp" with the first clause only; "haha" shares nothing, and the first clause must not win
+  for (const first of ['ok nộp rồi', 'haha']) {
+    const { minutes, numbered } = numberedOf(CLAUSES(first))
+    assert.equal(Z.cleanAnswer(line, minutes, null, numbered), want, first)
+  }
+})
+
+test('Mốc có số: mốc viết trước câu thì xét cả dòng', () => {
+  const { minutes, numbered } = numberedOf(CLAUSES('ok nộp rồi'))
+  assert.equal(Z.cleanAnswer('- [20/10 21:10 #1] Lan báo mai họp phòng A2', minutes, null, numbered), '- [20/10 21:10 ~203] Lan báo mai họp phòng A2')
+})
+
+test('Lời dẫn có mốc là nội dung, không bị cắt', () => {
+  const { minutes, numbered } = numberedOf(CLAUSES('ok'))
+  assert.equal(Z.cleanAnswer('Đây là lịch họp mới [20/10 21:10 #3]:\n- Phòng A2', minutes, null, numbered), 'Đây là lịch họp mới [20/10 21:10 ~203]:\n- Phòng A2')
+  assert.equal(Z.cleanAnswer('Dưới đây là bản tóm tắt:\n- Phòng A2'), '- Phòng A2')
+})
+
+test('Link: mốc viết dính sau link không làm mất link', () => {
+  assert.deepEqual(renderedLinks('Tài liệu ở https://known.com/a[20/10 08:30], hạn mai.'), ['https://known.com/a'])
 })
 
 test('Mốc có số: sao chép và lúc đang viết không lộ mã tin', () => {
