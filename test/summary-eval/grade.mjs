@@ -18,7 +18,7 @@ import { CHATS as BASE } from './chats.mjs'
 const CHATS = { ...BASE, D: BASE.A }
 
 const [mode, OUT, only] = process.argv.slice(2)
-const results = fs.readdirSync(OUT).filter((f) => /^[A-D]-[A-F]-.+-r\d+\.json$/.test(f))
+const results = fs.readdirSync(OUT).filter((f) => /^[A-D]-[A-H]-.+-r\d+\.json$/.test(f))
   .map((f) => ({ file: f, ...JSON.parse(fs.readFileSync(path.join(OUT, f), 'utf8')) }))
   .filter((r) => r.text)
 

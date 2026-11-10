@@ -96,10 +96,37 @@ function chatBuilder ({ convName, members, seed }) {
       const roll = random()
       const d = new Date(ms)
       const at = `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-      if (roll < 0.12) add(at, who, { type: 'chat.sticker', id: 1, catId: 1 }, { second: d.getSeconds() })
-      else if (roll < 0.16) add(at, who, { type: 'chat.photo', title: '' }, { second: d.getSeconds() })
-      else add(at, who, FILLER[Math.floor(random() * FILLER.length)], { second: d.getSeconds() })
+      let msg
+      if (roll < 0.12) msg = add(at, who, { type: 'chat.sticker', id: 1, catId: 1 }, { second: d.getSeconds() })
+      else if (roll < 0.16) msg = add(at, who, { type: 'chat.photo', title: '' }, { second: d.getSeconds() })
+      else msg = add(at, who, FILLER[Math.floor(random() * FILLER.length)], { second: d.getSeconds() })
+      msg.filler = true
       added++
+    }
+  }
+
+  // Chit-chat in the same minute just before most scripted messages, as in a busy group: a citation
+  // "[21:10]" then means one of several messages. Call it before filler(); protected windows untouched.
+  function crowd (protect = []) {
+    const random = rng(seed + 1)
+    const toMs = (at) => {
+      const [date, time] = at.split(' ')
+      const [d, mo] = date.split('/').map(Number)
+      const [h, mi] = time.split(':').map(Number)
+      return new Date(2026, mo - 1, d, h, mi).getTime()
+    }
+    const windows = protect.map(([a, b]) => [toMs(a), toMs(b)])
+    for (const scripted of messages.slice()) {
+      const ms = Number(scripted.sendDttm)
+      if (scripted.msgType === -4 || windows.some(([a, b]) => ms >= a && ms <= b)) continue
+      scripted.sendDttm = String(ms + 40 * 1000)
+      const count = random() < 0.25 ? 0 : random() < 0.5 ? 1 : 2
+      const d = new Date(ms)
+      const at = `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+      for (let i = 0; i < count; i++) {
+        const who = members[Math.floor(random() * members.length)]
+        add(at, who, FILLER[Math.floor(random() * FILLER.length)], { second: 5 + i * 15 + Math.floor(random() * 10) }).filler = true
+      }
     }
   }
 
@@ -108,12 +135,12 @@ function chatBuilder ({ convName, members, seed }) {
     return { convName, messages }
   }
 
-  return { add, filler, done }
+  return { add, filler, crowd, done }
 }
 
 // ---------- Chat A: a class group, one day ----------
 
-function chatA (fillerCount = 320, seed = 7) {
+function chatA (fillerCount = 320, seed = 7, crowded = false) {
   const members = ['Tiến Đạt', 'Lan Anh', 'Đức Huy', 'Thu Hà', 'Quốc Tuấn', 'Bảo Ngọc', 'Gia Linh', 'Mai Phương', 'Hải Đăng', 'Thanh Tùng']
   const c = chatBuilder({ convName: '12A5 – Cả lớp', members, seed })
   const A = c.add
@@ -151,7 +178,9 @@ function chatA (fillerCount = 320, seed = 7) {
   A('30/10 21:15', 'Tiến Đạt', { type: 'chat.photo', title: 'thời khóa biểu mới áp dụng từ thứ 2 (2/11)' })
   A('30/10 21:40', 'Tiến Đạt', 'cập nhật quỹ: đã thu 31 bạn, còn Khoa, Thu Hà, Hải Đăng chưa nộp nha')
 
-  c.filler(fillerCount, '30/10 07:00', '30/10 22:30', [['30/10 07:44', '30/10 07:53'], ['30/10 18:58', '30/10 19:13'], ['30/10 20:29', '30/10 20:36'], ['30/10 17:09', '30/10 17:14']])
+  const protect = [['30/10 07:44', '30/10 07:53'], ['30/10 18:58', '30/10 19:13'], ['30/10 20:29', '30/10 20:36'], ['30/10 17:09', '30/10 17:14']]
+  if (crowded) c.crowd(protect)
+  c.filler(fillerCount, '30/10 07:00', '30/10 22:30', protect)
 
   return {
     ...c.done(),
@@ -187,7 +216,7 @@ function chatA (fillerCount = 320, seed = 7) {
 
 // ---------- Chat B: a project group, two days, more noise ----------
 
-function chatB () {
+function chatB (crowded = false) {
   const members = ['Phạm Quân', 'Ngọc Trâm', 'Hoàng Việt', 'Khánh Linh', 'Cô Thu Hương']
   const c = chatBuilder({ convName: 'KHKT – Máy lọc nước', members: members.slice(0, 4), seed: 11 })
   const A = c.add
@@ -221,7 +250,9 @@ function chatB () {
   const sys = c.done().messages.find((m) => m.msgType === -4)
   sys.message = 'Hoàng Việt đã thêm Khánh Linh vào nhóm'
 
-  c.filler(850, '29/10 07:00', '30/10 21:20', [['29/10 23:00', '30/10 07:00'], ['30/10 18:58', '30/10 19:10'], ['30/10 14:29', '30/10 14:32'], ['29/10 14:09', '29/10 14:11']])
+  const protect = [['29/10 23:00', '30/10 07:00'], ['30/10 18:58', '30/10 19:10'], ['30/10 14:29', '30/10 14:32'], ['29/10 14:09', '29/10 14:11']]
+  if (crowded) c.crowd(protect)
+  c.filler(850, '29/10 07:00', '30/10 21:20', protect)
 
   return {
     ...c.done(),
@@ -255,6 +286,8 @@ function chatB () {
 
 // Chat C: chat A's facts in a much busier day (about 1,800 messages), for long-chat handling
 export const CHATS = { A: chatA(), B: chatB(), C: { ...chatA(1450, 23), convName: '12A5 – Cả lớp' } }
+// The same chats with chit-chat in the same minute before most scripted messages (citation tests)
+export const CROWDED = { A: chatA(320, 7, true), B: chatB(true) }
 
 // Chat D: chat A's facts in about 15,000 messages, past Zenlo's 300,000-character part size, so the
 // summary is made from part notes. Built on demand: it is slow to build.

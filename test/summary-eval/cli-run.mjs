@@ -16,7 +16,8 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { loadCore } from './load-core.mjs'
-import { CHATS, MY_UID, MY_NAME, DIGEST_CONVERSATIONS, DIGEST_NOW, OLD_COMMIT, longChat } from './chats.mjs'
+import { CHATS as PLAIN, CROWDED, MY_UID, MY_NAME, DIGEST_CONVERSATIONS, DIGEST_NOW, OLD_COMMIT, longChat } from './chats.mjs'
+import { open } from './cites.mjs'
 import * as V2 from './v2.mjs'
 import { call, modelOf } from './providers.mjs'
 
@@ -29,8 +30,11 @@ if (!OUT) throw new Error('--out <folder> is required')
 const PROVIDERS = String(args.providers || 'claude,codex').split(',')
 const WHAT = String(args.what || 'summary,digest').split(',')
 const REPS = Number(args.reps || 2)
-// Summary prompts: A = before v3, E = current, F = current with the check asked for in any case
+// Summary prompts: A = before v3, E = current, F = current with the check asked for in any case.
+// (G and H, numbered messages cited "[dd/mm hh:mm #n]" or "[#n]", were tried 10/11/2026; G is now E.)
 const VARIANTS = String(args.variants || 'A,E').split(',')
+// --crowded: chit-chat in the same minute before most scripted messages (citation tests)
+const CHATS = args.crowded ? CROWDED : PLAIN
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 
 const Z = loadCore()
@@ -39,6 +43,8 @@ fs.mkdirSync(OUT, { recursive: true })
 
 // "dd/mm hh:mm" of every message, as checkCitations wants them
 const minuteKeys = (messages, now) => Z.buildTranscript(messages, { myUid: MY_UID, now }).minutes
+// The transcript as Zenlo sends it now: every message numbered
+const transcriptOf = (messages, now) => Z.buildTranscript(messages, { myUid: MY_UID, now, numbered: true })
 
 // ---------- Requests, built as each version of Zenlo builds them ----------
 
@@ -57,7 +63,7 @@ function summaryRequest (chat, variant) {
       instruction: OLD.buildSummaryInstruction({ convName: chat.convName, isGroup: chat.isGroup, from: chat.from, to: chat.to, count })
     }
   }
-  const { lines, count } = Z.buildTranscript(chat.messages, { myUid: MY_UID, now: chat.now })
+  const { lines, count } = transcriptOf(chat.messages, chat.now)
   return {
     systemPrompt: Z.buildSystemPrompt({ systemPrompt: variant === 'F' ? SUMMARY_PROMPT_F : Z.SUMMARY_PROMPT, now: chat.now, myName: MY_NAME }),
     input: `<transcript>\n${lines.join('\n')}\n</transcript>`,
@@ -78,7 +84,7 @@ function digestOldRequests () {
 
 function digestSrcRequest () {
   const entries = DIGEST_CONVERSATIONS.map((c) => {
-    const { lines, count } = Z.buildTranscript(c.messages, { myUid: MY_UID, now: DIGEST_NOW })
+    const { lines, count } = transcriptOf(c.messages, DIGEST_NOW)
     return { name: c.convName, isGroup: c.isGroup, from: c.from, to: c.to, count, lines }
   })
   return {
@@ -110,13 +116,33 @@ function singleDay (chat) {
 
 // --rescore: recount the citations of the answers already written, without calling any AI
 if (args.rescore) {
-  for (const f of fs.readdirSync(OUT).filter((f) => /^[AB]-[AE]-.+\.json$/.test(f))) {
+  for (const f of fs.readdirSync(OUT).filter((f) => /^[AB]-[A-H]-.+\.json$/.test(f))) {
     const r = JSON.parse(fs.readFileSync(path.join(OUT, f), 'utf8'))
-    const chat = CHATS[r.chatId]
+    const chat = (r.crowded ? CROWDED : PLAIN)[r.chatId]
+    if (r.opened) Object.assign(r, finish(chat, r.variant, r.raw))
     r.cites = V2.checkCitations(r.text, new Set(minuteKeys(chat.messages, chat.now).keys()), singleDay(chat))
     fs.writeFileSync(path.join(OUT, f), JSON.stringify(r, null, 2))
   }
   process.exit(0)
+}
+
+// The answer as Zenlo shows it (message numbers turned into the messages' times) and what a click
+// on each citation opens, by Zenlo's own code: the message id the citation kept, else the first
+// message of its minute. A hit is a scripted message, never chit-chat.
+function finish (chat, variant, raw) {
+  const base = { messages: chat.messages, describe: Z.describeContent, defaultDay: singleDay(chat) }
+  if (variant === 'A') return { text: raw, opened: { first: openStats(open(raw, { ...base, mode: 'first' }).items) } }
+  const cleaned = Z.cleanAnswer(raw, minuteKeys(chat.messages, chat.now), null, transcriptOf(chat.messages, chat.now).numbered)
+  return { text: Z.plainCitations(cleaned), opened: { id: openStats(open(cleaned, { ...base, mode: 'id' }).items) } }
+}
+function openStats (items) {
+  return {
+    cites: items.length,
+    hit: items.filter((i) => i.msg && !i.msg.filler).length,
+    chitchat: items.filter((i) => i.msg && i.msg.filler).length,
+    none: items.filter((i) => !i.msg).length,
+    mismatch: items.filter((i) => i.mismatch).length
+  }
 }
 
 async function summaryJob (provider, chatId, variant, rep) {
@@ -127,9 +153,9 @@ async function summaryJob (provider, chatId, variant, rep) {
   const r = await call(provider, summaryRequest(chat, variant))
   if (r.error) return console.log(`${path.basename(file)}: ERROR ${r.error}`)
   // The current Zenlo cleans the answer before showing it; the raw answer is kept
-  const text = variant !== 'A' ? Z.cleanAnswer(r.text, minutes) : r.text
+  const { text, opened } = finish(chat, variant, r.text)
   const cites = V2.checkCitations(text, new Set(minutes.keys()), singleDay(chat))
-  fs.writeFileSync(file, JSON.stringify({ chatId, variant, model: modelOf(provider), rep, text, raw: r.text, usage: r.usage, ms: r.ms, cites }, null, 2))
+  fs.writeFileSync(file, JSON.stringify({ chatId, variant, model: modelOf(provider), rep, crowded: !!args.crowded, text, raw: r.text, usage: r.usage, ms: r.ms, cites, opened }, null, 2))
   console.log(`${path.basename(file)}: ${Math.round(r.ms / 1000)} s, in ${r.usage.promptTokenCount}, out ${r.usage.candidatesTokenCount}`)
 }
 
@@ -154,7 +180,8 @@ async function digestJob (provider, variant, rep) {
     const r = await call(provider, digestSrcRequest())
     if (r.error) return console.log(`${path.basename(file)}: ERROR ${r.error}`)
     sections = Z.splitDigest(r.text)
-    for (const n of Object.keys(sections)) sections[n] = Z.cleanAnswer(sections[n], minutes[n - 1])
+    const numbered = DIGEST_CONVERSATIONS.map((c) => transcriptOf(c.messages, DIGEST_NOW).numbered)
+    for (const n of Object.keys(sections)) sections[n] = Z.plainCitations(Z.cleanAnswer(sections[n], minutes[n - 1], null, numbered[n - 1]))
     sum(usage, r.usage)
     ms = r.ms
     requests = 1
@@ -173,7 +200,7 @@ async function longJob (provider, variant, rep) {
   const chat = LONG
   const C = variant === 'A' ? OLD : Z
   const minutes = minuteKeys(chat.messages, chat.now)
-  const { lines, count } = variant === 'A' ? OLD.buildTranscript(chat.messages, { myUid: MY_UID }) : Z.buildTranscript(chat.messages, { myUid: MY_UID, now: chat.now })
+  const { lines, count, numbered } = variant === 'A' ? OLD.buildTranscript(chat.messages, { myUid: MY_UID }) : transcriptOf(chat.messages, chat.now)
   const systemPrompt = variant === 'A'
     ? OLD.buildSystemPrompt({ systemPrompt: OLD.SUMMARY_PROMPT, length: 'medium', now: chat.now, myName: MY_NAME })
     : Z.buildSystemPrompt({ systemPrompt: Z.SUMMARY_PROMPT, now: chat.now, myName: MY_NAME })
@@ -207,7 +234,7 @@ async function longJob (provider, variant, rep) {
   if (r.error) return console.log(`${path.basename(file)}: ERROR ${r.error}`)
   sum(usage, r.usage)
   ms += r.ms
-  const text = variant !== 'A' ? Z.cleanAnswer(r.text, minutes) : r.text
+  const text = variant !== 'A' ? Z.plainCitations(Z.cleanAnswer(r.text, minutes, null, numbered)) : r.text
   const cites = V2.checkCitations(text, new Set(minutes.keys()), singleDay(chat))
   fs.writeFileSync(file, JSON.stringify({ chatId: 'D', variant, model: modelOf(provider), rep, requests: chunks.length + 1, text, raw: r.text, notes, usage, ms, cites }, null, 2))
   console.log(`${path.basename(file)}: ${chunks.length} parts + 1, ${Math.round(ms / 1000)} s, in ${usage.promptTokenCount}, out ${usage.candidatesTokenCount}`)
