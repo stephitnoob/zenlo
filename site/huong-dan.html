@@ -160,7 +160,7 @@
           <tr><td>Từ lần trước</td><td>Từ chỗ lần tóm tắt trước của hội thoại này dừng lại. Hợp với nhóm bạn theo dõi đều đặn.</td></tr>
         </table>
         <p>Muốn khoảng khác thì sửa ô <b>Từ</b> và <b>Đến</b> theo dạng <code>dd/mm/yyyy hh:mm</code>. Chữ <b>Hiện tại</b> cạnh ô Đến đặt nó về lúc này.</p>
-        <p>Dưới các nút có dòng ước lượng, ví dụ <code>120 tin · ước tính ~3.400 token đầu vào, 1 lần request</code>. Con số này đếm trên máy, chưa gửi gì đi.</p>
+        <p>Dưới các nút có dòng ước lượng, ví dụ <code>120 tin · ước tính ~3.400 token đầu vào, 1 lần request · Gemini 3.6 Flash (high)</code>. Con số này đếm trên máy, chưa gửi gì đi.</p>
         <p>Bấm <b>Tóm tắt</b>. Chữ hiện dần khi AI viết; bấm <b>Dừng</b> để ngắt. Xong thì <b>Sao chép</b> để lấy cả bản tóm tắt; văn bản sao chép có thêm một dòng ghi nguồn Zenlo ở cuối.</p>
         <p>Link trong tin nhắn hiện gọn thành chữ, rê chuột vào để xem địa chỉ, bấm vào để mở trong trình duyệt.</p>
         <div class="tip">"Từ tin chưa đọc" cần Zenlo đang chạy lúc bạn mở hội thoại, vì Zalo xoá số tin chưa đọc ngay khi mở. Nếu Zenlo báo không ghi nhận tin chưa đọc nào, dùng các nút theo giờ.</div>
@@ -173,12 +173,12 @@
           <li><b>Vừa</b>: mỗi ý một hai câu, đủ những gì đáng chú ý trong nhóm. Đây là mặc định.</li>
           <li><b>Dài</b>: kể cả bối cảnh, ai nói gì, diễn biến và kết cục. Khi cần nắm kỹ một cuộc bàn bạc, hay không muốn lỡ drama.</li>
         </ul>
-        <p>Mức nào cũng không bỏ chuyện vui hay tranh cãi đáng kể; độ dài chỉ quyết định viết bao nhiêu. Đổi ngay trong khung Tóm tắt; mức chọn sẵn đặt trong <a class="link" href="#mac-dinh">Cài đặt</a>.</p>
+        <p>Mức nào cũng không bỏ chuyện vui hay tranh cãi đáng kể; độ dài chỉ quyết định viết bao nhiêu. Đổi ngay trong khung Tóm tắt; Zenlo nhớ mức vừa chọn cho lần sau. Đổi trong <a class="link" href="#mac-dinh">Cài đặt</a> cũng được.</p>
       </section>
 
       <section id="moc-gio">
         <h3>Mốc giờ</h3>
-        <p>Cuối mỗi ý có một mốc như <code>19/10 08:20</code>. Bấm vào, Zalo cuộn tới đúng tin nhắn đó và làm nổi nó lên.</p>
+        <p>Ngay sau mỗi câu có mốc giờ của tin nhắn gốc, như <code>19/10 08:20</code>. Bấm vào, Zalo cuộn tới đúng tin nhắn đó và làm nổi nó lên.</p>
         <p>AI có lúc hiểu sai hoặc nhầm người. Với việc quan trọng như tiền, hạn nộp, lịch hẹn, bấm mốc giờ để đọc lại tin gốc trước khi làm theo.</p>
         <p>Bản tóm tắt gần nhất của mỗi hội thoại được lưu trên máy, mở lại vẫn thấy.</p>
       </section>
@@ -261,7 +261,7 @@
       <section id="gemini">
         <h3>Gemini</h3>
         <h4>API key</h4>
-        <p>Thêm tối đa 5 key bằng <b>+ Thêm API key</b>. Nút con mắt hiện key, <b>×</b> xoá key. Khi một key hết lượt trong ngày, Zenlo tự dùng key tiếp theo.</p>
+        <p>Thêm tối đa 5 key bằng <b>+ Thêm API key</b>. Nút con mắt hiện key đang dán; key đã lưu chỉ hiện 4 ký tự đầu và 4 ký tự cuối. <b>×</b> xoá key. Khi một key hết lượt trong ngày, Zenlo tự dùng key tiếp theo.</p>
         <p>Lượt miễn phí tính theo <b>dự án</b> (project) trên Google, không theo key. Hai key cùng một dự án dùng chung lượt; muốn thêm lượt thì tạo key ở dự án khác. Lượt được làm mới lúc 0 giờ theo giờ Thái Bình Dương, khoảng 14–15 giờ chiều ở Việt Nam.</p>
 
         <h4>Model</h4>
@@ -307,7 +307,7 @@
       <section id="mac-dinh">
         <h3>Độ dài mặc định, lùi tối đa</h3>
         <ul>
-          <li><b>Độ dài Tóm tắt</b>: mức chọn sẵn mỗi lần mở. Mặc định là Vừa.</li>
+          <li><b>Độ dài Tóm tắt</b>: mức chọn sẵn mỗi lần mở, cũng là mức bạn chọn gần nhất trong khung Tóm tắt. Mặc định là Vừa.</li>
           <li><b>Tìm tin chưa đọc lùi tối đa</b> (1, 3 hoặc 7 ngày, mặc định 3): Bản tin chỉ lấy tin chưa đọc trong khoảng này. Hội thoại có tin chưa đọc cũ hơn được bỏ qua, và Zenlo báo số hội thoại bị bỏ. Hội thoại có người nhắc tên bạn thì luôn được lùi tới 30 ngày.</li>
         </ul>
       </section>

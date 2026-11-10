@@ -29,36 +29,37 @@
 
   // ---------- Summaries ----------
 
-  // A summary is a list of blocks: { h: 'heading' } or { li: 'text', cite: ['dd/mm hh:mm', ...] }
-  // The "Team Marketing" chat of the first window
+  // A summary is a list of blocks: { h: 'heading' } or { li: 'text [dd/mm hh:mm], text [dd/mm hh:mm].' },
+  // each citation right after the words it comes from, as the app's prompt asks. The "Team Marketing"
+  // chat of the first window; "now" is after its last message (18:02), so 15h is "(đã qua)".
   const TEAM = {
     short: [
       { h: 'Liên quan tới bạn' },
-      { li: 'Gửi chị Hoa slide trước 9h mai.', cite: ['19/10 08:30'] },
-      { li: 'Gửi Quang ảnh sản phẩm gốc tối nay.', cite: ['19/10 17:45'] },
-      { li: 'Nộp báo cáo trước 12h trưa mai.', cite: ['19/10 17:30'] },
+      { li: 'Gửi chị Hoa slide trước 9h mai [19/10 08:30].' },
+      { li: 'Gửi Quang ảnh sản phẩm gốc tối nay [19/10 17:45].' },
+      { li: 'Nộp báo cáo trước 12h trưa mai [19/10 17:30].' },
       { h: 'Còn lại' },
-      { li: 'Chốt ra mắt thứ 6 (23/10).', cite: ['19/10 11:40'] }
+      { li: 'Chốt ra mắt thứ 6 (23/10) [19/10 11:40].' }
     ],
     medium: [
       { h: 'Liên quan tới bạn' },
-      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai.', cite: ['19/10 08:30'] },
-      { li: 'Gửi Quang file ảnh sản phẩm gốc ngay tối nay, khách cần gấp.', cite: ['19/10 17:45'] },
-      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
+      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai [19/10 08:30].' },
+      { li: 'Gửi Quang file ảnh sản phẩm gốc ngay tối nay, khách cần gấp [19/10 17:45].' },
+      { li: 'Nộp báo cáo tuần trước 12h trưa mai [19/10 17:30].' },
       { h: 'Còn lại' },
-      { li: 'Chốt ra mắt sản phẩm thứ 6 (23/10).', cite: ['19/10 11:40'] },
-      { li: 'Khách ABC đổi logo sang xanh đậm.', cite: ['19/10 09:10'] },
-      { li: 'Mừng sinh nhật chị Hoa lúc 15h ở pantry.', cite: ['19/10 15:00'] }
+      { li: 'Chốt ra mắt sản phẩm thứ 6 (23/10) [19/10 11:40].' },
+      { li: 'Khách ABC đổi logo sang xanh đậm [19/10 09:10].' },
+      { li: 'Mừng sinh nhật chị Hoa lúc 15h ở pantry (đã qua) [19/10 15:00].' }
     ],
     long: [
       { h: 'Liên quan tới bạn' },
-      { li: 'Chị Hoa nhắc tên bạn: gửi bản slide trước 9h sáng mai để chị xem lại số liệu.', cite: ['19/10 08:30'] },
-      { li: 'Quang cần file ảnh sản phẩm bản gốc ngay tối nay vì khách cần gấp.', cite: ['19/10 17:45'] },
-      { li: 'Cả nhóm (@All) nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
+      { li: 'Chị Hoa nhắc tên bạn: gửi bản slide trước 9h sáng mai để chị xem lại số liệu [19/10 08:30].' },
+      { li: 'Quang cần file ảnh sản phẩm bản gốc ngay tối nay vì khách cần gấp [19/10 17:45].' },
+      { li: 'Cả nhóm (@All) nộp báo cáo tuần trước 12h trưa mai [19/10 17:30].' },
       { h: 'Còn lại' },
-      { li: 'Chốt ra mắt sản phẩm thứ 6 (23/10): Linh lo bài đăng Facebook, Quang làm việc lại với khách.', cite: ['19/10 11:40'] },
-      { li: 'Khách ABC muốn đổi logo sang xanh đậm, lần đổi thứ 4.', cite: ['19/10 09:10'] },
-      { li: 'Chuyện khác: gọi cà phê, rủ ăn bún bò, bánh sinh nhật chị Hoa lúc 15h.', cite: ['19/10 08:12', '19/10 15:00'] }
+      { li: 'Chốt ra mắt sản phẩm thứ 6 (23/10): Linh lo bài đăng Facebook, Quang làm việc lại với khách [19/10 11:40].' },
+      { li: 'Khách ABC muốn đổi logo sang xanh đậm [19/10 09:10], lần đổi thứ 4 [19/10 09:13].' },
+      { li: 'Chuyện khác: gọi cà phê [19/10 08:12], rủ ăn bún bò [19/10 11:02], bánh sinh nhật chị Hoa lúc 15h (đã qua) [19/10 15:00].' }
     ]
   }
 
@@ -67,35 +68,54 @@
     none: TEAM.medium,
     deadline: [
       { h: 'Hạn chót' },
-      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai.', cite: ['19/10 08:30'] },
-      { li: 'Gửi Quang file ảnh sản phẩm gốc ngay tối nay.', cite: ['19/10 17:45'] },
-      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
-      { li: 'Ra mắt sản phẩm thứ 6 (23/10).', cite: ['19/10 11:40'] }
+      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai [19/10 08:30].' },
+      { li: 'Gửi Quang file ảnh sản phẩm gốc ngay tối nay [19/10 17:45].' },
+      { li: 'Nộp báo cáo tuần trước 12h trưa mai [19/10 17:30].' },
+      { li: 'Ra mắt sản phẩm thứ 6 (23/10) [19/10 11:40].' }
     ],
     client: [
       { h: 'Liên quan tới bạn' },
-      { li: 'Khách ABC muốn đổi logo sang xanh đậm, đây là lần đổi thứ 4.', cite: ['19/10 09:10'] },
-      { li: 'Quang cần file ảnh sản phẩm gốc ngay tối nay vì khách cần gấp.', cite: ['19/10 17:45'] },
-      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai.', cite: ['19/10 08:30'] },
-      { li: 'Nộp báo cáo tuần trước 12h trưa mai.', cite: ['19/10 17:30'] },
+      { li: 'Khách ABC muốn đổi logo sang xanh đậm [19/10 09:10], đây là lần đổi thứ 4 [19/10 09:13].' },
+      { li: 'Quang cần file ảnh sản phẩm gốc ngay tối nay vì khách cần gấp [19/10 17:45].' },
+      { li: 'Gửi chị Hoa bản slide trước 9h sáng mai [19/10 08:30].' },
+      { li: 'Nộp báo cáo tuần trước 12h trưa mai [19/10 17:30].' },
       { h: 'Còn lại' },
-      { li: 'Ra mắt chốt thứ 6 (23/10); Quang làm việc lại với khách.', cite: ['19/10 11:40'] }
+      { li: 'Ra mắt chốt thứ 6 (23/10); Quang làm việc lại với khách [19/10 11:40].' }
     ]
   }
 
-  // A citation is 'dd/mm hh:mm', or { label, t } for a message whose time another one may share
-  function citeButton (cite) {
+  // The text and citations of a point, in order: { text } and { cite }. A point written in the page
+  // (what the visitor typed, which may hold brackets of its own) comes as a list already: strings
+  // and citations.
+  const CITE = /\[(\d{2}\/\d{2} \d{2}:\d{2})\]/g
+  function pieces (li) {
+    if (Array.isArray(li)) return li.map((piece) => typeof piece === 'string' ? { text: piece } : { cite: piece })
+    const out = []
+    let last = 0
+    for (const match of li.matchAll(CITE)) {
+      if (match.index > last) out.push({ text: li.slice(last, match.index) })
+      out.push({ cite: match[1] })
+      last = match.index + match[0].length
+    }
+    if (last < li.length) out.push({ text: li.slice(last) })
+    return out
+  }
+
+  // A citation is 'dd/mm hh:mm', or { label, t } for a message whose time another one may share.
+  // chat: the id of the chat window it scrolls to, when it is drawn outside that window.
+  function citeButton (cite, chat) {
     const label = cite.label || cite
     const button = document.createElement('button')
     button.type = 'button'
     button.className = 'cite'
     button.dataset.t = cite.t || label.slice(-5)
+    if (chat) button.dataset.chat = chat
     button.textContent = label
     return button
   }
 
   // Draws a summary at once
-  function render (box, blocks) {
+  function render (box, blocks, chat) {
     box.textContent = ''
     let list = null
     for (const block of blocks) {
@@ -107,11 +127,22 @@
         box.appendChild(list)
       } else {
         const li = document.createElement('li')
-        li.textContent = block.li
-        for (const label of block.cite) li.appendChild(citeButton(label))
+        for (const piece of pieces(block.li)) li.append(piece.cite ? citeButton(piece.cite, chat) : piece.text)
         list.appendChild(li)
       }
     }
+  }
+
+  // Types text into target, before the caret, a few characters at a time; false once stopped
+  async function typeInto (target, caret, text, isStopped, ms) {
+    const node = document.createTextNode('')
+    target.insertBefore(node, caret)
+    for (let i = 0; i < text.length; i += 3) {
+      if (isStopped()) return false
+      node.data = text.slice(0, i + 3)
+      await wait(ms)
+    }
+    return true
   }
 
   // Types a summary out a few characters at a time, the way the model's answer arrives
@@ -143,16 +174,12 @@
         target = document.createElement('li')
         list.appendChild(target)
       }
-      const text = block.h || block.li
-      const node = document.createTextNode('')
-      target.appendChild(node)
       target.appendChild(caret)
-      for (let i = 0; i < text.length; i += 3) {
+      for (const piece of block.h ? [{ text: block.h }] : pieces(block.li)) {
         if (isStopped()) return
-        node.data = text.slice(0, i + 3)
-        await wait(18)
+        if (piece.cite) target.insertBefore(citeButton(piece.cite), caret)
+        else if (!await typeInto(target, caret, piece.text, isStopped, 18)) return
       }
-      if (block.cite) for (const label of block.cite) target.insertBefore(citeButton(label), caret)
       await wait(120)
     }
     caret.remove()
@@ -180,6 +207,17 @@
       const cite = event.target.closest('.cite')
       if (cite) jump(win, cite.dataset.t)
     })
+  })
+
+  // A citation of Team Marketing outside its window (a digest card, the length and note demos)
+  // scrolls the page back to that chat, then to the message
+  document.addEventListener('click', (event) => {
+    const cite = event.target.closest('.cite[data-chat]')
+    const win = cite && document.getElementById(cite.dataset.chat)
+    if (!win) return
+    const box = win.getBoundingClientRect()
+    window.scrollTo({ top: window.scrollY + box.top - Math.max(16, (window.innerHeight - box.height) / 2), behavior: still ? 'auto' : 'smooth' })
+    setTimeout(() => jump(win, cite.dataset.t), still ? 0 : 450)
   })
 
   // ---------- The message box: what is typed stays in the page ----------
@@ -292,8 +330,8 @@
     const quoted = text.length > 60 ? `${text.slice(0, 60)}…` : text
     const said = talk.sent > 1 ? `Bạn nhắn ${talk.sent} tin, mới nhất là “${quoted}”` : `Bạn nhắn “${quoted}”`
     const line = talk.reply
-      ? { li: `${said}, chị Hoa hỏi lại về slide.`, cite: [cite, talk.reply] }
-      : { li: `${said}.`, cite: [cite] }
+      ? { li: [`${said} `, cite, ', chị Hoa hỏi lại về slide ', talk.reply, '.'] }
+      : { li: [`${said} `, cite, '.'] }
     // Under "Liên quan tới bạn", before "Còn lại"
     const blocks = TEAM.medium.slice()
     blocks.splice(blocks.findIndex((block, i) => i > 0 && block.h), 0, line)
@@ -336,13 +374,14 @@
 
   // ---------- 2. Digest ----------
 
+  // One sentence per point, as the digest prompt asks
   const DIGEST = {
-    team: { text: 'Gửi chị Hoa slide trước 9h mai, gửi Quang ảnh gốc tối nay; cả nhóm nộp báo cáo trước 12h trưa mai.', cite: ['19/10 08:30', '19/10 17:45', '19/10 17:30'], chat: 'demo-summary', count: 35 },
-    ph: { text: 'Họp phụ huynh 19h thứ 5; nộp quỹ lớp 200k trước thứ 6.', cite: ['19/10 20:05'], count: 37 },
-    run: { text: 'Chạy sáng chủ nhật 5h30 ở biển Mỹ Khê; đăng ký giải 10K trước thứ 6.', cite: ['19/10 20:15'], count: 52 },
-    nha: { text: 'Giỗ ông trưa chủ nhật, 9h cả nhà về quê.', cite: ['19/10 16:40'], count: 4 },
-    cc: { text: 'Cúp nước 8h–12h sáng thứ 4 để sửa đường ống.', cite: ['19/10 09:12'], count: 23 },
-    shop: { text: 'Đơn hàng đang giao, kèm mã giảm 10%.', cite: ['19/10 10:12'], count: 6 }
+    team: { text: 'Gửi chị Hoa slide trước 9h mai [19/10 08:30]. Gửi Quang ảnh gốc tối nay [19/10 17:45]. Cả nhóm nộp báo cáo trước 12h trưa mai [19/10 17:30].', chat: 'demo-summary', count: 35 },
+    ph: { text: 'Họp phụ huynh 19h thứ 5 [19/10 20:05]. Nộp quỹ lớp 200k trước thứ 6 [19/10 20:12].', count: 37 },
+    run: { text: 'Chạy sáng chủ nhật 5h30 ở biển Mỹ Khê [19/10 20:15]. Đăng ký giải 10K trước thứ 6 [19/10 20:21].', count: 52 },
+    nha: { text: 'Giỗ ông trưa chủ nhật, 9h cả nhà về quê [19/10 16:40].', count: 4 },
+    cc: { text: 'Cúp nước 8h–12h sáng thứ 4 để sửa đường ống [19/10 09:12].', count: 23 },
+    shop: { text: 'Đơn hàng đang giao, kèm mã giảm 10% [19/10 10:12].', count: 6 }
   }
 
   function setupDigest () {
@@ -365,31 +404,25 @@
       const item = DIGEST[card.dataset.id]
       const box = card.querySelector('.dcard__sum')
       box.textContent = ''
-      const node = document.createTextNode('')
       const caret = document.createElement('span')
       caret.className = 'caret'
-      box.append(node, caret)
-      const unticked = () => !card.querySelector('.dcard__check').checked
-      for (let i = 0; i < item.text.length; i += 3) {
-        if (mine !== round || unticked()) return
-        node.data = item.text.slice(0, i + 3)
-        await wait(16)
-      }
-      caret.remove()
-      if (unticked()) return
-      for (const label of item.cite) {
-        // Only the Team Marketing chat is on the page: its citations scroll it; the others are labels
-        if (item.chat) {
-          const button = citeButton(label)
-          button.dataset.chat = item.chat
-          box.appendChild(button)
+      box.append(caret)
+      const stopped = () => mine !== round || !card.querySelector('.dcard__check').checked
+      for (const piece of pieces(item.text)) {
+        if (stopped()) return
+        if (!piece.cite) {
+          if (!await typeInto(box, caret, piece.text, stopped, 16)) return
+        } else if (item.chat) {
+          // Only the Team Marketing chat is on the page: its citations scroll to it; the others are labels
+          box.insertBefore(citeButton(piece.cite, item.chat), caret)
         } else {
           const span = document.createElement('span')
           span.className = 'cite cite--static'
-          span.textContent = label
-          box.appendChild(span)
+          span.textContent = piece.cite
+          box.insertBefore(span, caret)
         }
       }
+      caret.remove()
     }
 
     async function make () {
@@ -406,6 +439,8 @@
           const card = chosen[next++]
           if (!card.querySelector('.dcard__check').checked) continue
           await wait(900)
+          // "Tạo bản tin" pressed again meanwhile: this card belongs to the new round now
+          if (mine !== round) return
           await fill(card, mine)
         }
       }
@@ -413,15 +448,6 @@
     }
 
     run.addEventListener('click', make)
-    // A citation on the Team Marketing card scrolls to that chat and to the message
-    cards.addEventListener('click', (event) => {
-      const cite = event.target.closest('.cite[data-chat]')
-      const win = cite && document.getElementById(cite.dataset.chat)
-      if (!win) return
-      const box = win.getBoundingClientRect()
-      window.scrollTo({ top: window.scrollY + box.top - Math.max(16, (window.innerHeight - box.height) / 2), behavior: still ? 'auto' : 'smooth' })
-      setTimeout(() => jump(win, cite.dataset.t), still ? 0 : 450)
-    })
     // Alt + ↑/↓ moves the focused card, for keyboards and phones where dragging does not work
     cards.addEventListener('keydown', (event) => {
       if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return
@@ -494,17 +520,17 @@
     const pick = (group, button) => group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === button)))
 
     const lengths = yours.querySelector('.js-length')
-    render(lengthOut, TEAM.medium)
+    render(lengthOut, TEAM.medium, 'demo-summary')
     lengths.addEventListener('click', (event) => {
       const button = event.target.closest('button')
       if (!button) return
       pick(lengths, button)
-      render(lengthOut, TEAM[button.dataset.len])
+      render(lengthOut, TEAM[button.dataset.len], 'demo-summary')
     })
 
     const AI = {
       gemini: {
-        field: ['API key Gemini', 'AIza••••••••k3Qf'],
+        field: ['API key Gemini', 'AIza…k3Qf'],
         log: ['generativelanguage.googleapis.com', 'HTTPS · bằng key của bạn'],
         note: 'Key miễn phí, không cần thẻ. Với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm.'
       },
@@ -551,12 +577,12 @@
     if (!box) return
     const out = box.querySelector('.js-note-out')
     const choice = box.querySelector('.js-note')
-    render(out, NOTED.none)
+    render(out, NOTED.none, 'demo-summary')
     choice.addEventListener('click', (event) => {
       const button = event.target.closest('button')
       if (!button) return
       choice.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === button)))
-      render(out, NOTED[button.dataset.note])
+      render(out, NOTED[button.dataset.note], 'demo-summary')
     })
   }
 
