@@ -279,7 +279,7 @@ test('Mốc có số: mở đúng tin đó, kể cả khi cùng phút có tin kh
   const { minutes, numbered } = numberedOf(BUSY)
   const out = Z.cleanAnswer('- Nộp quỹ 50k trước thứ 6 [20/10 21:10 #4].', minutes, null, numbered)
   assert.equal(out, '- Nộp quỹ 50k trước thứ 6 [20/10 21:10 ~104].')
-  assert.match(Z.renderMarkdown(out), /data-msg="104"[^>]*>20\/10 21:10<\/a>/)
+  assert.match(Z.renderMarkdown(out), /data-msg="104"[^>]*data-label="20\/10 21:10">1<\/a>/)
 })
 
 test('Mốc có số: giờ AI ghi sai thì lấy giờ của tin mang số đó', () => {
@@ -342,10 +342,52 @@ test('Mốc có số: sao chép và lúc đang viết không lộ mã tin', () =
 
 test('Mốc cũ không có mã tin vẫn bấm được theo giờ', () => {
   const html = Z.renderMarkdown('- a [20/10 21:10]')
-  assert.match(html, /class="zenlo-cite" data-times="\d+" title/)
+  assert.match(html, /class="zenlo-cite" data-times="\d+" data-label="20\/10 21:10">1</)
+})
+
+test('Mốc thành chú thích: đánh số theo thứ tự, cùng tin cùng số, dính sát vế', () => {
+  const html = Z.renderMarkdown('- a [20/10 21:10 ~1, 21:10 ~2], b [20/10 21:10 ~1] c [20/10 21:12 ~3]\n- d [20/10 21:13 ~4]\n\n**e** [20/10 21:10 ~2]', { convId: 'g1' })
+  const numbers = [...html.matchAll(/data-msg="(\d)"[^>]*>(\d)</g)].map((m) => `${m[1]}:${m[2]}`)
+  // Numbers count on through every line and list, as the copy with sources does
+  assert.deepEqual(numbers, ['1:1', '2:2', '1:1', '3:3', '4:4', '2:2'])
+  assert.match(html, /a<sup class="zenlo-cites">/)
+  assert.match(html, /data-conv="g1"/)
+  // A bracket that is not a citation stays text
+  assert.match(Z.renderMarkdown('khoá [2027-2028]'), /khoá \[2027-2028\]/)
+})
+
+test('Sao chép thường: bỏ hết mốc, giữ ngoặc không phải mốc', () => {
+  assert.equal(Z.stripCitations('- Nộp quỹ [20/10 21:10 ~104, 21:40 ~106], khoá [2027-2028] [20/10 21:12].'), '- Nộp quỹ, khoá [2027-2028].')
+})
+
+// withSources reads Zalo's store, which a test has not: every source keeps only its time
+const withSourcesOut = await Z.withSources('- a [20/10 21:10 ~1], b [20/10 21:10 ~1, 21:12 ~2]', 'c', null)
+test('Sao chép kèm nguồn: số [n] và danh sách nguồn; tin không còn trên máy giữ giờ', () => {
+  assert.equal(withSourcesOut, '- a[1], b[1][2]\n\nNguồn:\n[1] 20/10 21:10\n[2] 21:12')
+})
+
+test('Dòng nguồn: cắt gần 80 ký tự ở ranh giới từ, tin tới 100 ký tự giữ nguyên', () => {
+  const m = (text, fromUid = '5') => ({ msgId: '1', fromUid, dName: 'Lan', sendDttm: at(19, 12), message: text })
+  const long = 'Mọi người nhớ nộp quỹ lớp năm mươi nghìn trước thứ sáu này nha, ai chưa nộp thì nhắn mình để mình ghi lại'
+  const line = Z.sourceLine(m(long))
+  assert.ok(line.startsWith('20/10 19:12 · Lan: Mọi người'), line)
+  assert.ok(line.endsWith('…') && line.length < 'xx/xx xx:xx · Lan: '.length + 82, line)
+  assert.equal(Z.sourceLine(m('a'.repeat(100))), `20/10 19:12 · Lan: ${'a'.repeat(100)}`)
+  assert.equal(Z.sourceLine(m('dòng 1\ndòng 2', '0')), '20/10 19:12 · Tôi: dòng 1 / dòng 2')
 })
 
 // ---------- Times ----------
+
+test('Cảm xúc: ghi rõ từng loại, không chỉ tổng số người', () => {
+  const a = msg('1', 'Lan', 21, 10, 'mai nghỉ học nhé')
+  const b = msg('2', 'Minh', 21, 11, 'ok')
+  const c = msg('3', 'Huy', 21, 12, 'đi học')
+  const reactions = new Map([[a.msgId, [['😡', 5], ['❤️', 1]]], [b.msgId, 3], [c.msgId, [['❤️', 2], ['khác', 1]]]])
+  const lines = Z.buildTranscript([a, b, c], { reactions, now: at(22, 0) }).lines.join('\n')
+  assert.match(lines, /mai nghỉ học nhé \(5 😡, 1 ❤️\)/)
+  assert.match(lines, /ok \(3 cảm xúc\)/)
+  assert.match(lines, /đi học \(2 ❤️, 1 cảm xúc khác\)/)
+})
 
 test('Ô "Đến" lấy hết phút đó, ô "Từ" từ đầu phút', () => {
   assert.equal(Z.parseTime('20/10/2026 14:30'), at(14, 30))

@@ -241,10 +241,10 @@
   function cardSummary (item) {
     if (item.status === 'error') return `<div class="zenlo__status zenlo__status--error">Lỗi: ${escapeHTML(item.error)}</div>`
     if (item.status === 'running' && !item.summary) return `<div class="zenlo__status zenlo-loader-row">${Z.letterLoader('zenlo-loader--small')}${escapeHTML(waitText(item))}</div>`
-    if (item.status === 'running') return `<pre>${escapeHTML(Z.plainCitations(item.summary))}</pre>`
+    if (item.status === 'running') return `<pre>${escapeHTML(Z.stripCitations(item.summary))}</pre>`
     if (!item.summary) return ''
     const model = item.model ? `<div class="zenlo__status zenlo-digest__model">bằng ${escapeHTML(item.model)}</div>` : ''
-    return Z.renderMarkdown(item.summary, { range: { from: item.start, to: item.lastTime } }) + model
+    return Z.renderMarkdown(item.summary, { range: { from: item.start, to: item.lastTime }, convId: item.convId }) + model
   }
 
   function renderItems () {
@@ -574,15 +574,24 @@
     overlay.querySelector('.js-digest-copy').hidden = !done
   }
 
-  // Every summarized conversation as plain text, with where it came from
-  function copyDigest () {
-    const text = items
-      .filter((item) => item.status === 'done' && item.summary)
-      .map((item) => `## ${item.name}\n${String(item.summary).trim()}`)
-      .join('\n\n')
-    if (!text) return
-    navigator.clipboard.writeText(Z.withCredit(text))
-      .then(() => setStatus('Đã sao chép bản tin.'), () => setStatus('Không sao chép được, thử lại.', true))
+  // Every summarized conversation as plain text, with where it came from; withSources: each
+  // conversation with "[1]" marks and its own list of sources
+  async function copyDigest (withSources = false) {
+    const done = items.filter((item) => item.status === 'done' && item.summary)
+    if (!done.length) return
+    if (withSources) setStatus('Đang lấy tin gốc cho phần nguồn…')
+    try {
+      const parts = await Promise.all(done.map(async (item) => {
+        const summary = withSources
+          ? await Z.withSources(item.summary, item.convId, { from: item.start, to: item.lastTime })
+          : String(item.summary).trim()
+        return `## ${item.name}\n${summary}`
+      }))
+      await navigator.clipboard.writeText(Z.withCredit(parts.join('\n\n')))
+      setStatus(withSources ? 'Đã sao chép bản tin kèm nguồn.' : 'Đã sao chép bản tin.')
+    } catch (error) {
+      setStatus('Không sao chép được, thử lại.', true)
+    }
   }
 
   function buildOverlay () {
@@ -595,7 +604,7 @@
         <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
         <button class="zenlo__btn js-digest-stop" hidden>Dừng</button>
         <button class="zenlo__btn js-digest-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
-        <button class="zenlo__btn js-digest-copy" hidden>Sao chép</button>
+        ${Z.copyButtonHTML('js-digest-copy')}
         <button class="zenlo__btn js-digest-refresh">Làm mới</button>
         <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc trong Zalo mọi hội thoại trong danh sách">Đã đọc hết</button>
       </div>
@@ -612,7 +621,7 @@
     `
 
     el.querySelector('.js-digest-run').addEventListener('click', runDigest)
-    el.querySelector('.js-digest-copy').addEventListener('click', copyDigest)
+    Z.bindCopyButton(el.querySelector('.js-digest-copy'), { plain: () => copyDigest(false), sources: () => copyDigest(true) })
     el.querySelector('.js-digest-stop').addEventListener('click', () => {
       if (running) running.cancel()
     })

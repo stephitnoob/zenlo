@@ -119,9 +119,10 @@
     const el = panel.querySelector('.zenlo__result')
     el.hidden = !text
     el.classList.toggle('zenlo__result--streaming', streaming)
-    el.innerHTML = streaming ? `<pre>${escapeHTML(Z.plainCitations(text))}</pre>` : Z.renderMarkdown(text, { range })
+    el.innerHTML = streaming ? `<pre>${escapeHTML(Z.stripCitations(text))}</pre>` : Z.renderMarkdown(text, { range, convId: panel.dataset.convId })
     panel.querySelector('.js-summary-copy').hidden = streaming || !text
     panel.dataset.result = text
+    panel.dataset.range = range ? JSON.stringify(range) : ''
   }
 
   // "Ghi chú cho AI: …" under the conversation's name, or an invitation to write one
@@ -184,7 +185,7 @@
         <button class="zenlo__btn zenlo__btn--primary js-summary-run">Tóm tắt</button>
         <button class="zenlo__btn js-summary-stop" hidden>Dừng</button>
         <button class="zenlo__btn js-summary-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
-        <button class="zenlo__btn js-summary-copy" hidden>Sao chép</button>
+        ${Z.copyButtonHTML('js-summary-copy')}
       </div>
 
       <div class="zenlo__status zenlo__estimate"></div>
@@ -254,9 +255,16 @@
       event.currentTarget.hidden = true
       if (activeJob) activeJob.skip()
     })
-    el.querySelector('.js-summary-copy').addEventListener('click', () => {
-      navigator.clipboard.writeText(Z.withCredit(el.dataset.result))
-        .then(() => setStatus('Đã sao chép bản tóm tắt.'), () => setStatus('Không sao chép được, thử lại.', true))
+    const copy = (getText, done) => Promise.resolve()
+      .then(getText)
+      .then((text) => navigator.clipboard.writeText(Z.withCredit(text)))
+      .then(() => setStatus(done), () => setStatus('Không sao chép được, thử lại.', true))
+    Z.bindCopyButton(el.querySelector('.js-summary-copy'), {
+      plain: () => copy(() => el.dataset.result, 'Đã sao chép bản tóm tắt.'),
+      sources: () => {
+        setStatus('Đang lấy tin gốc cho phần nguồn…')
+        copy(() => Z.withSources(el.dataset.result, el.dataset.convId, el.dataset.range ? JSON.parse(el.dataset.range) : null), 'Đã sao chép bản tóm tắt kèm nguồn.')
+      }
     })
     el.querySelector('.zenlo__note-line').addEventListener('click', (event) => {
       const edit = event.target.closest('.js-note-edit')

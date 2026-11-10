@@ -551,22 +551,100 @@ html.zenlo-dark {
   cursor: pointer;
 }
 
-// Source citation "[dd/mm hh:mm]" in a summary: opens the original message
+// Source citations in a summary: small numbered footnotes "[1][2]" right after the clause; a click
+// opens the original message, a hover shows it
+.zenlo .zenlo-cites {
+  margin-left: 1px;
+  font-size: 10px;
+  line-height: 0;
+  white-space: nowrap;
+  vertical-align: super;
+}
+
 .zenlo .zenlo-cite {
-  display: inline-block;
-  margin-left: 4px;
-  padding: 0 5px;
-  border-radius: 4px;
-  background: var(--zenlo-accent-soft);
   color: var(--zenlo-accent);
   font-family: var(--zenlo-mono);
-  font-size: 11px;
-  line-height: 16px;
-  white-space: nowrap;
   cursor: pointer;
+
+  &::before {
+    content: "[";
+  }
+
+  &::after {
+    content: "]";
+  }
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+// The cited message, shown while a footnote is hovered
+.zenlo-cite-tip {
+  position: fixed;
+  z-index: 10000;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--border, #d6dbe1);
+  border-radius: 8px;
+  background: var(--layer-background, #fff);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+  color: var(--text-primary, #081c36);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+// "Sao chép" with an arrow that opens "Sao chép kèm nguồn"
+.zenlo-copy {
+  position: relative;
+  display: inline-flex;
+
+  &__main {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  &__more {
+    margin-left: -1px;
+    padding: 0 8px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  &__menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    border: 1px solid var(--border, #d6dbe1);
+    border-radius: 8px;
+    background: var(--layer-background, #fff);
+    box-shadow: 0 8px 24px var(--shadow-overlay, rgba(0, 0, 0, 0.16));
+  }
+
+  &__item {
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-primary, #081c36);
+    font-size: 13px;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--layer-background-hover, #f1f2f4);
+    }
   }
 }
 
