@@ -119,7 +119,7 @@
     const el = panel.querySelector('.zenlo__result')
     el.hidden = !text
     el.classList.toggle('zenlo__result--streaming', streaming)
-    el.innerHTML = streaming ? `<pre>${escapeHTML(text)}</pre>` : Z.renderMarkdown(text, { range })
+    el.innerHTML = streaming ? `<pre>${escapeHTML(Z.plainCitations(text))}</pre>` : Z.renderMarkdown(text, { range })
     panel.querySelector('.js-summary-copy').hidden = streaming || !text
     panel.dataset.result = text
   }
@@ -235,7 +235,7 @@
     el.querySelector('.zenlo__result').addEventListener('click', (event) => {
       const cite = event.target.closest('.zenlo-cite')
       if (!cite) return
-      Z.jumpToMessage(el.dataset.convId, cite.dataset.times.split(',').map(Number))
+      Z.jumpToMessage(el.dataset.convId, cite.dataset.times.split(',').map(Number), cite.dataset.msg)
         .catch((error) => setStatus(`Lỗi: ${error.message || error}`, true))
     })
 
@@ -354,7 +354,7 @@
 
     try {
       setStatus('Đang đọc tin nhắn…')
-      const { messages, localHistoryStart, lines, minutes, count: messageCount } = await loadRange(convId, fromMs, toMs, (count, oldest) => {
+      const { messages, localHistoryStart, lines, minutes, numbered, count: messageCount } = await loadRange(convId, fromMs, toMs, (count, oldest) => {
         setStatus(`Đang đọc tin nhắn… ${count} tin (đã lùi tới ${formatTime(oldest, true)})`)
       })
       if (cancelled) throw new Error('Đã dừng.')
@@ -446,7 +446,7 @@
           setStatus(`Đang tóm tắt ${messageCount} tin nhắn bằng ${usedModel}…${historyNote}`)
         }
         streamed += text
-        showResult(Z.cleanAnswer(streamed, null, source), true)
+        showResult(Z.cleanAnswer(streamed, null, source, numbered), true)
       }, (modelStatus) => {
         // Gemini: which model is answering, and which ones were skipped
         usedModel = Z.describeModelStatus(modelStatus)
@@ -466,7 +466,7 @@
         waitTimer = setInterval(showWait, 1000)
         showWait()
       })
-      const result = Z.cleanAnswer(await currentCall.promise, minutes, source)
+      const result = Z.cleanAnswer(await currentCall.promise, minutes, source, numbered)
 
       showResult(result, false, { from: fromMs, to: toMs })
       const seconds = Math.round((Date.now() - started) / 1000)

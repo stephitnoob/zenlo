@@ -76,11 +76,11 @@
       onProgress(i + 1, unread.length)
 
       // One conversation Zalo cannot read is left out, not the whole list
-      let start, messages, lines, count, minutes
+      let start, messages, lines, count, minutes, numbered
       try {
         start = await Z.getUnreadStart(convId, state, now)
         ;({ messages } = await Z.loadMessagesInRange(convId, start, now))
-        ;({ lines, count, minutes } = await Z.prepareTranscript(messages))
+        ;({ lines, count, minutes, numbered } = await Z.prepareTranscript(messages))
       } catch (error) {
         Z.log('digest: cannot read', convId, error)
         failed++
@@ -104,6 +104,7 @@
         lastTime,
         lines,
         minutes,
+        numbered,
         summary: '',
         status: 'pending',
         error: '',
@@ -446,7 +447,7 @@
     const show = (text) => {
       const sections = Z.splitDigest(text)
       batch.forEach((item, i) => {
-        if (sections[i + 1] !== undefined) item.summary = Z.cleanAnswer(sections[i + 1], null, item.lines.join('\n'))
+        if (sections[i + 1] !== undefined) item.summary = Z.cleanAnswer(sections[i + 1], null, item.lines.join('\n'), item.numbered)
       })
       scheduleRender()
     }
@@ -496,7 +497,7 @@
       // A lone conversation answered without its "### 1" line: the whole answer is its summary
       if (batch.length === 1 && !Object.keys(sections).length && answer.trim()) sections[1] = answer
       batch.forEach((item, i) => {
-        const text = sections[i + 1] && Z.cleanAnswer(sections[i + 1], item.minutes, item.lines.join('\n'))
+        const text = sections[i + 1] && Z.cleanAnswer(sections[i + 1], item.minutes, item.lines.join('\n'), item.numbered)
         if (text) {
           item.summary = text
           item.status = 'done'
@@ -654,7 +655,7 @@
 
       const cite = event.target.closest('.zenlo-cite')
       if (cite) {
-        Z.jumpToMessage(item.convId, cite.dataset.times.split(',').map(Number)).catch((error) => {
+        Z.jumpToMessage(item.convId, cite.dataset.times.split(',').map(Number), cite.dataset.msg).catch((error) => {
           setStatus(`Lỗi: ${error.message || error}`, true)
         })
       } else if (event.target.closest('.js-digest-read')) {

@@ -254,6 +254,65 @@ test('Độ dài: không mức nào bảo AI bỏ chuyện phiếm hay drama', (
   for (const { rule } of Z.LENGTHS) assert.doesNotMatch(rule, /bỏ chuyện|bỏ qua chuyện|chuyện phiếm/i, rule)
 })
 
+// ---------- Numbered citations ----------
+
+// Messages with plain ids, as Zalo's; several in one minute, the point's message not the first
+const nm = (id, fromUid, dName, h, m, s, text) => ({ msgId: id, fromUid, dName, sendDttm: at(h, m, s), msgType: 1, message: text })
+const BUSY = [
+  nm('101', '1', 'Lan', 8, 0, 5, 'a'),
+  nm('102', '1', 'Lan', 8, 0, 20, 'b'),
+  nm('103', '2', 'Huy', 21, 10, 3, 'haha'),
+  nm('104', '3', 'Đạt', 21, 10, 30, 'nộp quỹ lớp 50k trước thứ 6 nha'),
+  nm('105', '2', 'Huy', 21, 10, 50, 'ok'),
+  nm('106', '4', 'Linh', 21, 40, 0, 'còn Khoa chưa nộp quỹ')
+]
+const numberedOf = (messages) => Z.buildTranscript(messages, { now: at(23, 0), numbered: true })
+
+test('Bản chép đánh số: số sau giờ, cả tin nối', () => {
+  assert.deepEqual(lines([msg('1', 'Lan', 8, 0, 'a'), msg('1', 'Lan', 8, 0, 'b'), msg('1', 'Lan', 8, 5, 'c')], { numbered: true }),
+    ['08:00 #1 Lan: a | #2 b | 08:05 #3 c'])
+  const { numbered } = numberedOf(BUSY)
+  assert.equal(numbered.map((m) => m.msgId).join(), '101,102,103,104,105,106')
+})
+
+test('Mốc có số: mở đúng tin đó, kể cả khi cùng phút có tin khác trước nó', () => {
+  const { minutes, numbered } = numberedOf(BUSY)
+  const out = Z.cleanAnswer('- Nộp quỹ 50k trước thứ 6 [20/10 21:10 #4].', minutes, null, numbered)
+  assert.equal(out, '- Nộp quỹ 50k trước thứ 6 [20/10 21:10 ~104].')
+  assert.match(Z.renderMarkdown(out), /data-msg="104"[^>]*>20\/10 21:10<\/a>/)
+})
+
+test('Mốc có số: giờ AI ghi sai thì lấy giờ của tin mang số đó', () => {
+  const { minutes, numbered } = numberedOf(BUSY)
+  assert.equal(Z.cleanAnswer('- Khoa chưa nộp quỹ [20/10 21:54 #6].', minutes, null, numbered), '- Khoa chưa nộp quỹ [20/10 21:40 ~106].')
+})
+
+test('Mốc có số: số trỏ nhầm tin không liên quan trong phút đó thì lấy tin khớp nội dung', () => {
+  const { minutes, numbered } = numberedOf(BUSY)
+  assert.equal(Z.cleanAnswer('- Đạt nhắc nộp quỹ lớp 50k [20/10 21:10 #3].', minutes, null, numbered), '- Đạt nhắc nộp quỹ lớp 50k [20/10 21:10 ~104].')
+  // The number's message shares a word with the point: the number wins
+  assert.equal(Z.cleanAnswer('- Khoa chưa nộp quỹ [20/10 21:10 #6].', minutes, null, numbered), '- Khoa chưa nộp quỹ [20/10 21:40 ~106].')
+})
+
+test('Mốc có số: số viết rời được gom vào mốc, số không có thì bỏ', () => {
+  const { minutes, numbered } = numberedOf(BUSY)
+  assert.equal(Z.cleanAnswer('Đạt nhắc nộp quỹ (21:10 #4), tin #6 nói Khoa chưa nộp.', minutes, null, numbered),
+    'Đạt nhắc nộp quỹ [20/10 21:10 ~104], tin [20/10 21:40 ~106] nói Khoa chưa nộp.')
+  assert.equal(Z.cleanAnswer('- x [20/10 08:00 #99], y [#99].', minutes, null, numbered), '- x [20/10 08:00], y .')
+})
+
+test('Mốc có số: sao chép và lúc đang viết không lộ mã tin', () => {
+  const { minutes, numbered } = numberedOf(BUSY)
+  const out = Z.cleanAnswer('- Nộp quỹ [20/10 21:10 #4, 21:40 #6].', minutes, null, numbered)
+  assert.equal(Z.plainCitations(out), '- Nộp quỹ [20/10 21:10, 20/10 21:40].')
+  assert.doesNotMatch(Z.withCredit(out), /~/)
+})
+
+test('Mốc cũ không có mã tin vẫn bấm được theo giờ', () => {
+  const html = Z.renderMarkdown('- a [20/10 21:10]')
+  assert.match(html, /class="zenlo-cite" data-times="\d+" title/)
+})
+
 // ---------- Times ----------
 
 test('Ô "Đến" lấy hết phút đó, ô "Từ" từ đầu phút', () => {

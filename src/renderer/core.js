@@ -42,7 +42,7 @@
   // Added under a summary when it is copied (not shown in the panel), so a summary pasted into a
   // chat says where it came from
   const COPY_CREDIT = `Bản tóm tắt được tạo bởi Zenlo by Stephit – ${LINKS.site}`
-  const withCredit = (text) => `${String(text || '').trim()}\n\n${COPY_CREDIT}`
+  const withCredit = (text) => `${plainCitations(text).trim()}\n\n${COPY_CREDIT}`
 
   function openLink (url) {
     if (url && window.$zenlo && window.$zenlo.openExternal) window.$zenlo.openExternal(url)
@@ -161,7 +161,7 @@
     'Ghi đủ thông tin hữu ích, gọn ở câu chữ.',
     'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn, giờ hẹn hay sự kiện đã qua so với bây giờ thì ghi "(đã qua)".',
     'Giữ đúng mức độ của tin gốc: lời nhờ không phải lời hứa; câu trả lời của một người là ý kiến của người đó (viết "Đăng nói không cần", không viết "không cần").',
-    'Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm] (ví dụ [19/10 07:30]); ý lấy từ nhiều tin thì ghi các mốc, ví dụ [19/10 07:30, 09:15].',
+    'Mỗi tin nhắn có số thứ tự (#12) ngay sau giờ. Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm #số] (ví dụ [19/10 07:30 #12]); ý lấy từ nhiều tin thì ghi các mốc, ví dụ [19/10 07:30 #12, 09:15 #40].',
     'Khi suy nghĩ trước lúc viết: với mỗi việc, hạn, câu hỏi, quyết định định ghi, đọc các tin sau nó để xem đã được làm, trả lời, đổi hay huỷ chưa, và so hạn với bây giờ.'
   ].join('\n')
 
@@ -175,7 +175,7 @@
     return [
       `Cuộc trò chuyện Zalo "${neutralizeTags(convName)}"${type}, ${formatTime(from, true)} – ${formatTime(to, true)}, ${count} ${what}.`,
       notes ? 'Dữ liệu là ghi chú đã tóm tắt từng phần, xếp theo thời gian; phần sau cập nhật phần trước (việc đã xong, hạn dời, quyết định đổi).' : '',
-      'Tóm tắt giúp mình. Nhớ: mở đầu bằng những gì liên quan tới mình; mỗi ý kèm mốc [dd/mm hh:mm] của đúng tin chứa thông tin đó.'
+      'Tóm tắt giúp mình. Nhớ: mở đầu bằng những gì liên quan tới mình; mỗi ý kèm mốc [dd/mm hh:mm #số] của đúng tin chứa thông tin đó.'
     ].filter(Boolean).join('\n')
   }
 
@@ -197,7 +197,7 @@
   function buildPartInstruction ({ convName, part, parts }) {
     return [
       `Đây là phần ${part}/${parts} của cuộc trò chuyện Zalo "${neutralizeTags(convName)}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt.`,
-      'Ghi lại đầy đủ những gì đáng chú ý trong phần này: ghi rõ trạng thái (đã xong, đã có người trả lời, còn chờ), mỗi ý kèm mốc đủ ngày [dd/mm hh:mm].'
+      'Ghi lại đầy đủ những gì đáng chú ý trong phần này: ghi rõ trạng thái (đã xong, đã có người trả lời, còn chờ), mỗi ý kèm mốc đủ ngày [dd/mm hh:mm #số].'
     ].join('\n')
   }
 
@@ -213,7 +213,7 @@
     'Với mỗi hội thoại, ghi những gì người dùng sẽ lỡ nếu không đọc nó: trước hết việc người dùng cần làm hay cần trả lời, rồi thông tin chung có ảnh hưởng tới người dùng dù không ai gọi tên (lịch, hạn, địa điểm, tiền, thay đổi kế hoạch, câu hỏi chung đã có lời đáp). Tự xét theo nội dung; bỏ chuyện phiếm và việc người dùng đã tự làm xong mà không ai phản hồi thêm.',
     'Ghi đủ các ý đó nhưng thật ngắn gọn, mỗi ý một câu. Hội thoại không có gì người dùng sẽ lỡ thì ghi "Không có gì liên quan tới bạn." kèm một câu dưới 15 chữ nói nhóm đang bàn gì.',
     'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn, giờ hẹn hay sự kiện đã qua so với bây giờ thì ghi "(đã qua)". Lời nhờ không phải lời hứa; câu trả lời của một người là ý kiến của người đó.',
-    'Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm] (ví dụ [19/10 07:30]).',
+    'Trong mỗi hội thoại, mỗi tin nhắn có số thứ tự (#12) ngay sau giờ. Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm #số] (ví dụ [19/10 07:30 #12]).',
     'Viết lần lượt từng hội thoại, mỗi hội thoại mở đầu bằng một dòng "### số" đúng số của nó; không lẫn thông tin giữa các hội thoại; không viết lời dẫn hay lời kết.'
   ].join('\n')
 
@@ -359,8 +359,12 @@
 
   // Source citations the model writes after a point. The rule asks for "[dd/mm hh:mm]", but models
   // also write "[hh:mm dd/mm]", "[21:30]", ranges "[21:30–21:51]", "[22/10 16:54 - 17:20]" and lists
-  // "[22/10 18:00, 18:10]", so the code accepts any bracket that holds only dates and times.
-  const CITATION_BLOCK = /\[([\d\s/:,;\-–—]+)\]/g
+  // "[22/10 18:00, 18:10]", so the code accepts any bracket that holds only dates and times. The
+  // transcript numbers every message, the model cites "[dd/mm hh:mm #12]", and cleanAnswer turns the
+  // number into the message's own time and Zalo id: "[dd/mm hh:mm ~<msgId>]" (kept in saved results,
+  // so a click still opens that very message later; never shown or copied).
+  const CITATION_BLOCK = /\[((?:[\d\s/:,;\-–—#]|~[\w-]+)+)\]/g
+  const MESSAGE_REF = /\s*~([\w-]+)/
 
   // The time a citation points to; the year is the latest one that is not in the future
   function citationTime (day, month, hour, minute, now = Date.now()) {
@@ -369,14 +373,15 @@
     return time > now + MAX_RANGE ? new Date(year - 1, month - 1, day, hour, minute).getTime() : time
   }
 
-  // The body of one bracket -> [{ day, month, hour, minute, label }], or null when it is not a citation.
-  // Segments are split by "," or ";". A range keeps only its first time. A segment without a date
-  // takes the date of the segment before it.
+  // The body of one bracket -> [{ day, month, hour, minute, label, msgId }], or null when it is not a
+  // citation. Segments are split by "," or ";". A range keeps only its first time. A segment without
+  // a date takes the date of the segment before it. A message number the answer kept is not shown.
   function parseCitation (body) {
     const cites = []
     let date = null
     for (const segment of body.split(/[,;]/)) {
-      const label = segment.trim().replace(/\s+/g, ' ')
+      const ref = segment.match(MESSAGE_REF)
+      const label = segment.replace(MESSAGE_REF, '').replace(/#\s*\d+/g, '').trim().replace(/\s+/g, ' ')
       if (!label) continue
       const d = label.match(/(\d{1,2})\/(\d{1,2})/)
       if (d) date = { day: Number(d[1]), month: Number(d[2]) }
@@ -389,10 +394,13 @@
       const minute = Number(t[2])
       if (hour > 23 || minute > 59) return null
       if (date && (date.day < 1 || date.day > 31 || date.month < 1 || date.month > 12)) return null
-      cites.push({ ...(date || {}), hour, minute, label })
+      cites.push({ ...(date || {}), hour, minute, label, msgId: ref ? ref[1] : '' })
     }
     return cites.length ? cites : null
   }
+
+  // The answer as the user reads or copies it: citations without the message ids
+  const plainCitations = (text) => String(text || '').replace(CITATION_BLOCK, (match) => match.replace(/\s*~[\w-]+/g, ''))
 
   // Possible times for a citation, most likely first. Without a date, that time on each day of the
   // summarized range (latest day first); the jump then uses the first one that has a message.
@@ -421,7 +429,8 @@
       if (!cites) return match
       return cites.map((cite) => {
         const times = citationCandidates(cite, range)
-        return `<a class="zenlo-cite" data-times="${times.join(',')}" title="Mở tin nhắn gốc">${cite.label}</a>`
+        const msg = cite.msgId ? ` data-msg="${cite.msgId}"` : ''
+        return `<a class="zenlo-cite" data-times="${times.join(',')}"${msg} title="Mở tin nhắn gốc">${cite.label}</a>`
       }).join('')
     })
   }
@@ -1107,14 +1116,15 @@
     return required(cache.jump, 'chức năng nhảy tới tin nhắn')
   }
 
-  // Opens the conversation and scrolls to its first message in the minute starting at `time`.
-  // `time` can be a list of candidate minutes (a citation without a date): the first one with a message wins.
-  async function jumpToMessage (convId, time) {
+  // Opens the conversation and scrolls to the message `msgId` (a numbered citation) or else to the
+  // first message in the minute starting at `time`. `time` can be a list of candidate minutes (a
+  // citation without a date): the first one with a message wins.
+  async function jumpToMessage (convId, time, msgId = '') {
     const candidates = [].concat(time)
     let message = null
     for (const start of candidates) {
       const { messages } = await loadMessagesInRange(convId, start, start + MINUTE - 1)
-      message = messages.find((m) => describeContent(m))
+      message = (msgId && messages.find((m) => String(m.msgId) === String(msgId))) || messages.find((m) => describeContent(m))
       if (message) break
     }
     if (!message) throw new Error(`Không tìm thấy tin nhắn lúc ${formatTime(candidates[0])} trên máy.`)
@@ -1292,10 +1302,13 @@
   //   data states, never a guess (who is meant, who answers whom is for the AI to judge)
   // options.myUid: the user's real Zalo id (mentions and quotes use it, not "0")
   // options.reactions: Map msgId -> number of people who reacted
-  // Returns { lines, count, minutes }: minutes maps "dd/mm hh:mm" of every message to its minute
-  // (ms), for checking the answer's citations (cleanAnswer)
-  function buildTranscript (messages, { myUid = '', reactions = null, now = Date.now() } = {}) {
+  // options.numbered: every message gets a number after its time ("21:10 #12 Lan: a | #13 b"), so a
+  // citation can point to one message among several sent in the same minute
+  // Returns { lines, count, minutes, numbered }: minutes maps "dd/mm hh:mm" of every message to its
+  // minute (ms), for checking the answer's citations (cleanAnswer); numbered[n - 1] is message #n
+  function buildTranscript (messages, { myUid = '', reactions = null, now = Date.now(), numbered = false } = {}) {
     const lines = []
+    const list = []
     const minutes = new Map()
     let count = 0
     let lastTime = null
@@ -1362,18 +1375,19 @@
       const newDay = lastTime === null || day !== new Date(lastTime).toDateString()
       if (newDay) lines.push(`[${formatDay(time)}${day === today ? ' – hôm nay' : day === yesterday ? ' – hôm qua' : ''}]`)
 
+      const number = numbered ? `#${list.push(message)} ` : ''
       if (senderId === lastSender && !newDay && time - lastTime <= JOIN_GAP) {
         const last = new Date(lastTime)
         const ownTime = last.getHours() !== d.getHours() || last.getMinutes() !== d.getMinutes() ? hhmm + ' ' : ''
-        lines[lines.length - 1] += ` | ${ownTime}${neutralizeTags(text)}`
+        lines[lines.length - 1] += ` | ${ownTime}${number}${neutralizeTags(text)}`
       } else {
-        lines.push(`${hhmm} ${neutralizeTags(sender)}: ${neutralizeTags(text)}`)
+        lines.push(`${hhmm} ${number}${neutralizeTags(sender)}: ${neutralizeTags(text)}`)
         lastSender = senderId
       }
       lastTime = time
     }
 
-    return { lines, count, minutes }
+    return { lines, count, minutes, numbered: list }
   }
 
   // The user's real Zalo id, as used in mentions and quotes
@@ -1404,8 +1418,9 @@
   }
 
   // buildTranscript with the marks that need Zalo data (mentions of the user, reaction counts)
+  // Every message numbered, so a citation names the very message (cleanAnswer)
   async function prepareTranscript (messages) {
-    return buildTranscript(messages, { myUid: getMyUid(), reactions: await getReactionCounts(messages) })
+    return buildTranscript(messages, { myUid: getMyUid(), reactions: await getReactionCounts(messages), numbered: true })
   }
 
   // Splits transcript lines into groups whose total size stays under CHUNK_CHARS. A group that
@@ -1490,15 +1505,93 @@
     return out
   }
 
+  // Message numbers in an answer ("[30/10 21:10 #12]", or loose ones: "(21:10 #12)", "(#12)",
+  // "tin #12") -> "[dd/mm hh:mm ~<msgId>]" of that message. The number is usually right even when the
+  // time is not (weak models misread the minute) but now and then names a neighbour: #n is kept
+  // unless it shares no word with the point while another message of the cited minute does; then
+  // that minute's message that matches the point best. A number no message has is dropped.
+  function resolveMessageNumbers (text, numbered) {
+    const minuteOf = (message) => Math.floor(Number(message.sendDttm) / MINUTE)
+    const byMinute = new Map()
+    for (const message of numbered) {
+      const key = minuteOf(message)
+      if (!byMinute.has(key)) byMinute.set(key, [])
+      byMinute.get(key).push(message)
+    }
+    const year = new Date(Number(numbered[0].sendDttm)).getFullYear()
+    const words = (value) => new Set(String(value || '').toLowerCase().normalize('NFC').match(/[\p{L}\p{N}]+/gu) || [])
+    const overlap = (message, context, withName) => {
+      let score = 0
+      for (const w of words(describeContent(message))) if (context.has(w)) score += w.length > 1 ? 1 : 0.25
+      if (withName) for (const w of words(message.dName)) if (context.has(w)) score += 0.5
+      return score
+    }
+    const stamp = (message) => {
+      const d = new Date(Number(message.sendDttm))
+      const id = /^[\w-]+$/.test(String(message.msgId)) ? ` ~${message.msgId}` : ''
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}${id}`
+    }
+    // n: the cited number; date "dd/mm" and time match of the citation, if any (no date: the day of
+    // message #n); context: the point's words
+    const pick = (n, date, t, context) => {
+      const message = numbered[n - 1] || null
+      if (!t || !(date || message)) return message
+      const [day, month] = (date || stamp(message).slice(0, 5)).split('/').map(Number)
+      const others = (byMinute.get(Math.floor(new Date(year, month - 1, day, Number(t[1]), Number(t[2])).getTime() / MINUTE)) || [])
+        .filter((m) => m !== message)
+      if (!others.length || (message && overlap(message, context, false) > 0)) return message
+      let best = null
+      let bestScore = 0
+      for (const m of others) {
+        const score = overlap(m, context, true)
+        if (score > bestScore) [best, bestScore] = [m, score]
+      }
+      return best || message
+    }
+    return text.split('\n').map((line) => {
+      const context = words(line.replace(CITATION_BLOCK, ' ').replace(/#\s*\d+/g, ' '))
+      // Loose numbers outside a citation
+      line = line
+        .replace(/\((?:(\d{1,2})\/(\d{1,2})\s+)?(\d{1,2}):(\d{2}),?\s*#(\d+)\)/g, (match, d, mo, h, mi, n) => {
+          const message = pick(Number(n), d ? `${pad(d)}/${pad(mo)}` : null, [match, h, mi], context)
+          return message ? `[${stamp(message)}]` : match
+        })
+        .replace(/\(#(\d+)\)/g, (match, n) => (numbered[n - 1] ? `[${stamp(numbered[n - 1])}]` : match))
+        .replace(/\b(tin nhắn|tin) #(\d+)/gi, (match, word, n) => (numbered[n - 1] ? `${word} [${stamp(numbered[n - 1])}]` : match))
+      // Citations: every segment with a number becomes that message's time and id
+      return line.replace(CITATION_BLOCK, (match, body) => {
+        if (!body.includes('#')) return match
+        let date = null
+        const parts = []
+        for (const segment of body.split(/[,;]/)) {
+          const d = segment.match(/(\d{1,2})\/(\d{1,2})/)
+          if (d) date = `${pad(d[1])}/${pad(d[2])}`
+          const t = segment.match(/(\d{1,2}):(\d{2})/)
+          const n = segment.match(/#\s*(\d+)/)
+          if (!n) {
+            if (segment.trim()) parts.push(segment.trim())
+            continue
+          }
+          const message = pick(Number(n[1]), date, t, context)
+          if (message) parts.push(stamp(message))
+          else if (t) parts.push(segment.replace(/#\s*\d+/, '').trim())
+        }
+        return parts.length ? `[${parts.join(', ')}]` : ''
+      })
+    }).join('\n')
+  }
+
   // What a model adds that the reader does not need: a lead-in line ("Dưới đây là bản tóm tắt…")
   // and code fences around the whole answer. A citation one or two minutes off a real message
   // (minutes from buildTranscript) is moved onto it; any other citation is left as it is. With the
-  // transcript (source), links not in it lose their address (keepSourceLinks).
-  function cleanAnswer (text, minutes = null, source = null) {
+  // transcript (source), links not in it lose their address (keepSourceLinks). With the numbered
+  // messages (buildTranscript), message numbers become the messages' times and ids.
+  function cleanAnswer (text, minutes = null, source = null, numbered = null) {
     let out = String(text).trim()
       .replace(/^```[a-z]*\n([\s\S]*?)\n```$/i, '$1')
       .replace(/^(dưới đây|sau đây|đây là|chào bạn)[^\n]{0,160}:\s*\n+/i, '')
     if (source !== null) out = keepSourceLinks(out, source)
+    if (numbered && numbered.length) out = resolveMessageNumbers(out, numbered)
     if (!minutes || !minutes.size) return out
     const known = [...minutes]
     const year = new Date([...minutes.values()][0]).getFullYear()
@@ -1728,6 +1821,7 @@
     prepareTranscript,
     splitIntoChunks,
     cleanAnswer,
+    plainCitations,
     SUMMARY_PROMPT,
     DIGEST_PROMPT,
     buildDigestInput,
