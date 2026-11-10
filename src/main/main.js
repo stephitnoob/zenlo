@@ -1429,7 +1429,8 @@ ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {
   } catch (error) {
     return { error: error.message }
   }
-  return true
+  // The new list right away, so the page numbers its rows again before anything else is saved
+  return { masks: getGeminiKeys().map(maskKey) }
 })
 
 // A mirror of Zenlo's localStorage (settings, saved summaries, digest order and ticks) in its own

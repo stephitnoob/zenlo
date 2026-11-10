@@ -232,8 +232,16 @@
   }
 
   // A saved key is sent back as its index, a new one as typed; then the rows are drawn again from
-  // what was saved, so a new key turns into its mask
-  async function saveGeminiKeys () {
+  // what was saved, so a new key turns into its mask. Saves run one after another, each reading the
+  // rows the previous one drew: an index read before a save lands would name another key (removing
+  // two keys quickly once dropped a third).
+  let keySave = Promise.resolve()
+  function saveGeminiKeys () {
+    keySave = keySave.then(writeGeminiKeys)
+    return keySave
+  }
+
+  async function writeGeminiKeys () {
     const status = overlay.querySelector('.js-settings-keys-status')
     const keys = [...overlay.querySelectorAll('.zenlo-settings__key')]
       .map((row) => row.dataset.index !== undefined ? Number(row.dataset.index) : row.querySelector('.js-settings-key').value.trim())
@@ -241,9 +249,9 @@
     try {
       const saved = await window.$zenlo.setGeminiKeys(keys)
       if (saved && saved.error) throw new Error(saved.error)
-      const settings = await window.$zenlo.getSettings()
-      renderKeys(settings.geminiKeys || [])
-      const count = (settings.geminiKeys || []).length
+      const masks = saved && Array.isArray(saved.masks) ? saved.masks : ((await window.$zenlo.getSettings()) || {}).geminiKeys || []
+      renderKeys(masks)
+      const count = masks.length
       status.textContent = count ? `Đã lưu ${count} key (mã hoá bằng Windows trên máy này).` : 'Đã xoá mọi key.'
       status.classList.remove('zenlo__status--error')
       loadGeminiModels()
