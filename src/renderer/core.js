@@ -161,7 +161,7 @@
     'Ghi đủ thông tin hữu ích, gọn ở câu chữ.',
     'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn, giờ hẹn hay sự kiện đã qua so với bây giờ thì ghi "(đã qua)".',
     'Giữ đúng mức độ của tin gốc: lời nhờ không phải lời hứa; câu trả lời của một người là ý kiến của người đó (viết "Đăng nói không cần", không viết "không cần").',
-    'Mỗi tin nhắn có số thứ tự (#12) ngay sau giờ. Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm #số] (ví dụ [19/10 07:30 #12]); ý lấy từ nhiều tin thì ghi các mốc, ví dụ [19/10 07:30 #12, 09:15 #40].',
+    'Mỗi tin nhắn có số thứ tự (#12) ngay sau giờ. Ghi mốc của đúng tin nhắn chứa thông tin, dạng [dd/mm hh:mm #số], ngay sau câu hoặc vế lấy từ tin đó, không dồn các mốc xuống cuối đoạn; ví dụ: "Lớp dời họp sang 9h [19/10 07:30 #12], hai bạn xin vắng [19/10 09:15 #40]."',
     'Khi suy nghĩ trước lúc viết: với mỗi việc, hạn, câu hỏi, quyết định định ghi, đọc các tin sau nó để xem đã được làm, trả lời, đổi hay huỷ chưa, và so hạn với bây giờ.'
   ].join('\n')
 
@@ -175,7 +175,7 @@
     return [
       `Cuộc trò chuyện Zalo "${neutralizeTags(convName)}"${type}, ${formatTime(from, true)} – ${formatTime(to, true)}, ${count} ${what}.`,
       notes ? 'Dữ liệu là ghi chú đã tóm tắt từng phần, xếp theo thời gian; phần sau cập nhật phần trước (việc đã xong, hạn dời, quyết định đổi).' : '',
-      'Tóm tắt giúp mình. Nhớ: mở đầu bằng những gì liên quan tới mình; mỗi ý kèm mốc [dd/mm hh:mm #số] của đúng tin chứa thông tin đó.'
+      'Tóm tắt giúp mình. Nhớ: mở đầu bằng những gì liên quan tới mình; mốc [dd/mm hh:mm #số] của đúng tin đặt ngay sau câu lấy từ tin đó.'
     ].filter(Boolean).join('\n')
   }
 
@@ -197,7 +197,7 @@
   function buildPartInstruction ({ convName, part, parts }) {
     return [
       `Đây là phần ${part}/${parts} của cuộc trò chuyện Zalo "${neutralizeTags(convName)}"; ghi chú này sẽ được gộp với các phần khác để tóm tắt.`,
-      'Ghi lại đầy đủ những gì đáng chú ý trong phần này: ghi rõ trạng thái (đã xong, đã có người trả lời, còn chờ), mỗi ý kèm mốc đủ ngày [dd/mm hh:mm #số].'
+      'Ghi lại đầy đủ những gì đáng chú ý trong phần này: ghi rõ trạng thái (đã xong, đã có người trả lời, còn chờ), mốc đủ ngày [dd/mm hh:mm #số] đặt ngay sau câu lấy từ tin đó.'
     ].join('\n')
   }
 
@@ -213,7 +213,7 @@
     'Với mỗi hội thoại, ghi những gì người dùng sẽ lỡ nếu không đọc nó: trước hết việc người dùng cần làm hay cần trả lời, rồi thông tin chung có ảnh hưởng tới người dùng dù không ai gọi tên (lịch, hạn, địa điểm, tiền, thay đổi kế hoạch, câu hỏi chung đã có lời đáp). Tự xét theo nội dung; bỏ chuyện phiếm và việc người dùng đã tự làm xong mà không ai phản hồi thêm.',
     'Ghi đủ các ý đó nhưng thật ngắn gọn, mỗi ý một câu. Hội thoại không có gì người dùng sẽ lỡ thì ghi "Không có gì liên quan tới bạn." kèm một câu dưới 15 chữ nói nhóm đang bàn gì.',
     'Ghi theo trạng thái cuối cùng: việc đã xong, câu hỏi đã có người trả lời, hạn đã dời thì ghi đúng như vậy; hạn, giờ hẹn hay sự kiện đã qua so với bây giờ thì ghi "(đã qua)". Lời nhờ không phải lời hứa; câu trả lời của một người là ý kiến của người đó.',
-    'Trong mỗi hội thoại, mỗi tin nhắn có số thứ tự (#12) ngay sau giờ. Mỗi ý kết thúc bằng mốc của đúng tin nhắn chứa thông tin đó, dạng [dd/mm hh:mm #số] (ví dụ [19/10 07:30 #12]).',
+    'Trong mỗi hội thoại, mỗi tin nhắn có số thứ tự (#12) ngay sau giờ. Ghi mốc của đúng tin nhắn chứa thông tin, dạng [dd/mm hh:mm #số], ngay sau câu hoặc vế lấy từ tin đó, không dồn các mốc xuống cuối đoạn (ví dụ [19/10 07:30 #12]).',
     'Viết lần lượt từng hội thoại, mỗi hội thoại mở đầu bằng một dòng "### số" đúng số của nó; không lẫn thông tin giữa các hội thoại; không viết lời dẫn hay lời kết.'
   ].join('\n')
 
@@ -357,7 +357,7 @@
 
   // ---------- Citations ----------
 
-  // Source citations the model writes after a point. The rule asks for "[dd/mm hh:mm]", but models
+  // Source citations the model writes right after the sentence or clause they come from. The rule asks for "[dd/mm hh:mm]", but models
   // also write "[hh:mm dd/mm]", "[21:30]", ranges "[21:30–21:51]", "[22/10 16:54 - 17:20]" and lists
   // "[22/10 18:00, 18:10]", so the code accepts any bracket that holds only dates and times. The
   // transcript numbers every message, the model cites "[dd/mm hh:mm #12]", and cleanAnswer turns the
@@ -442,8 +442,9 @@
   // Links, [text](url) or a bare address, become "zenlo-link": the text only (the address in its
   // tooltip), opened in the browser on a click.
   // options.range: { from, to } of the summarized messages, to date citations written without a day.
-  // [text](https://…) or a bare https://… (without the punctuation that ends a sentence)
-  const LINK = /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/(?:(?!&quot;|&gt;|&lt;)[^\s<()])*[^\s<().,;:!?'"\]&])/g
+  // [text](https://…) or a bare https://… (without the punctuation that ends a sentence, and
+  // stopping at "[", so a citation written with no space, "https://x.yz/a[19/10 08:30]", stays out)
+  const LINK = /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/(?:(?!&quot;|&gt;|&lt;)[^\s<()[])*[^\s<().,;:!?'"[\]&])/g
 
   function renderMarkdown (text, { range = null } = {}) {
     const lines = escapeHTML(text).split('\n')
@@ -1492,7 +1493,7 @@
       // A decoded line break would let an address run on into the next message of the transcript
       return key.length > 3 && !/[\r\n]/.test(key) && known.includes(key)
     }
-    const once = (s) => s.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>()"]+/g, (match, label, url) => {
+    const once = (s) => s.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>()"[]+/g, (match, label, url) => {
       if (url) return isKnown(url) ? `[${keepSourceLinks(label, source)}](${url})` : label
       return isKnown(match) ? match : match.replace(/^https?:\/\//, '')
     })
@@ -1509,7 +1510,16 @@
   // "tin #12") -> "[dd/mm hh:mm ~<msgId>]" of that message. The number is usually right even when the
   // time is not (weak models misread the minute) but now and then names a neighbour: #n is kept
   // unless it shares no word with the point while another message of the cited minute does; then
-  // that minute's message that matches the point best. A number no message has is dropped.
+  // that minute's message that matches the point best. The point is the clause the citation closes
+  // (the text since the previous citation in the line), since a line often holds several clauses,
+  // each with its own citation; the whole line when the clause matches no message of that minute.
+  // A number no message has is dropped, with the space before it.
+  const LOOSE_TIME = /\((?:(\d{1,2})\/(\d{1,2})\s+)?(\d{1,2}):(\d{2}),?\s*#(\d+)\)/
+  const LOOSE_NUMBER = /\(#(\d+)\)/
+  const LOOSE_WORD = /\b(tin nhắn|tin) #(\d+)/
+  // Spaces before it; a citation (1 group) or a loose number "(21:10 #12)" (5), "(#12)" (1), "tin #12" (2)
+  const NUMBER_REF = new RegExp(`([ \\t]*)(?:${[CITATION_BLOCK, LOOSE_TIME, LOOSE_NUMBER, LOOSE_WORD].map((r) => r.source).join('|')})`, 'gi')
+
   function resolveMessageNumbers (text, numbered) {
     const minuteOf = (message) => Math.floor(Number(message.sendDttm) / MINUTE)
     const byMinute = new Map()
@@ -1532,34 +1542,41 @@
       return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}${id}`
     }
     // n: the cited number; date "dd/mm" and time match of the citation, if any (no date: the day of
-    // message #n); context: the point's words
-    const pick = (n, date, t, context) => {
+    // message #n); contexts: the words of the clause, then of the whole line
+    const pick = (n, date, t, contexts) => {
       const message = numbered[n - 1] || null
       if (!t || !(date || message)) return message
       const [day, month] = (date || stamp(message).slice(0, 5)).split('/').map(Number)
       const others = (byMinute.get(Math.floor(new Date(year, month - 1, day, Number(t[1]), Number(t[2])).getTime() / MINUTE)) || [])
         .filter((m) => m !== message)
-      if (!others.length || (message && overlap(message, context, false) > 0)) return message
-      let best = null
-      let bestScore = 0
-      for (const m of others) {
-        const score = overlap(m, context, true)
-        if (score > bestScore) [best, bestScore] = [m, score]
+      if (!others.length) return message
+      for (const context of contexts) {
+        if (message && overlap(message, context, false) > 0) return message
+        let best = null
+        let bestScore = 0
+        for (const m of others) {
+          const score = overlap(m, context, true)
+          if (score > bestScore) [best, bestScore] = [m, score]
+        }
+        if (best) return best
       }
-      return best || message
+      return message
     }
+    const contextOf = (value) => words(value.replace(CITATION_BLOCK, ' ').replace(/#\s*\d+/g, ' '))
     return text.split('\n').map((line) => {
-      const context = words(line.replace(CITATION_BLOCK, ' ').replace(/#\s*\d+/g, ' '))
-      // Loose numbers outside a citation
-      line = line
-        .replace(/\((?:(\d{1,2})\/(\d{1,2})\s+)?(\d{1,2}):(\d{2}),?\s*#(\d+)\)/g, (match, d, mo, h, mi, n) => {
-          const message = pick(Number(n), d ? `${pad(d)}/${pad(mo)}` : null, [match, h, mi], context)
-          return message ? `[${stamp(message)}]` : match
-        })
-        .replace(/\(#(\d+)\)/g, (match, n) => (numbered[n - 1] ? `[${stamp(numbered[n - 1])}]` : match))
-        .replace(/\b(tin nhắn|tin) #(\d+)/gi, (match, word, n) => (numbered[n - 1] ? `${word} [${stamp(numbered[n - 1])}]` : match))
-      // Citations: every segment with a number becomes that message's time and id
-      return line.replace(CITATION_BLOCK, (match, body) => {
+      const whole = contextOf(line)
+      let clauseStart = 0
+      return line.replace(NUMBER_REF, (match, lead, body, d, mo, h, mi, nTime, nNumber, word, nWord, offset) => {
+        const contexts = [contextOf(line.slice(clauseStart, offset)), whole]
+        clauseStart = offset + match.length
+        // Loose numbers outside a citation
+        if (nTime) {
+          const message = pick(Number(nTime), d ? `${pad(d)}/${pad(mo)}` : null, [match, h, mi], contexts)
+          return message ? `${lead}[${stamp(message)}]` : match
+        }
+        if (nNumber) return numbered[nNumber - 1] ? `${lead}[${stamp(numbered[nNumber - 1])}]` : match
+        if (nWord) return numbered[nWord - 1] ? `${lead}${word} [${stamp(numbered[nWord - 1])}]` : match
+        // Citations: every segment with a number becomes that message's time and id
         if (!body.includes('#')) return match
         let date = null
         const parts = []
@@ -1572,11 +1589,11 @@
             if (segment.trim()) parts.push(segment.trim())
             continue
           }
-          const message = pick(Number(n[1]), date, t, context)
+          const message = pick(Number(n[1]), date, t, contexts)
           if (message) parts.push(stamp(message))
           else if (t) parts.push(segment.replace(/#\s*\d+/, '').trim())
         }
-        return parts.length ? `[${parts.join(', ')}]` : ''
+        return parts.length ? `${lead}[${parts.join(', ')}]` : ''
       })
     }).join('\n')
   }
@@ -1589,7 +1606,8 @@
   function cleanAnswer (text, minutes = null, source = null, numbered = null) {
     let out = String(text).trim()
       .replace(/^```[a-z]*\n([\s\S]*?)\n```$/i, '$1')
-      .replace(/^(dưới đây|sau đây|đây là|chào bạn)[^\n]{0,160}:\s*\n+/i, '')
+      // A first line with a citation is content ("Đây là lịch thi mới cô gửi [30/10 16:40 #33]:")
+      .replace(/^(dưới đây|sau đây|đây là|chào bạn)[^\n]{0,160}:\s*\n+/i, (lead) => /\[[^\]\n]*\d:\d\d[^\]\n]*\]/.test(lead) ? lead : '')
     if (source !== null) out = keepSourceLinks(out, source)
     if (numbered && numbered.length) out = resolveMessageNumbers(out, numbered)
     if (!minutes || !minutes.size) return out
