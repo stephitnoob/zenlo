@@ -7,6 +7,8 @@
   FAKE_CODEX_LOGIN    chatgpt (default) | none | apikey (older CLIs) | apikey-new | bedrock |
                       unknown (prints nothing)
   FAKE_CODEX_AUTHMODE the app server's authMode, when it should differ from the login above
+  FAKE_CODEX_AUTH_LATE 1: the app server tells the login only when account/read asks (newer Codex)
+  FAKE_CODEX_ACCOUNT_SILENT 1: account/read is never answered
   FAKE_CODEX_SCENARIO success (default) | usage | usage-plus | upgrade | badmodel | unauthorized |
                       network | crash | tooLong
   FAKE_CODEX_LOG      a file to write the arguments and the prompt read from stdin to
@@ -145,6 +147,8 @@ internal static class FakeCodex
     static int AppServer(string[] args, StreamWriter stdout, StreamWriter stderr, string login, string scenario, string log)
     {
         string mode = Environment.GetEnvironmentVariable("FAKE_CODEX_APPSERVER") ?? "ok";
+        string authMode = Environment.GetEnvironmentVariable("FAKE_CODEX_AUTHMODE") ?? (login.StartsWith("apikey") || login == "bedrock" ? "apikey" : "chatgpt");
+        bool authLate = Environment.GetEnvironmentVariable("FAKE_CODEX_AUTH_LATE") == "1";
         if (mode == "missing") { stderr.WriteLine("error: unrecognized subcommand 'app-server'"); return 2; }
         var json = new JavaScriptSerializer();
         var input = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(false));
@@ -166,7 +170,17 @@ internal static class FakeCodex
             if (method == "initialize")
             {
                 stdout.WriteLine(reply(new Dictionary<string, object> { { "userAgent", "fake" } }));
-                stdout.WriteLine(note("account/updated", new Dictionary<string, object> { { "authMode", Environment.GetEnvironmentVariable("FAKE_CODEX_AUTHMODE") ?? (login.StartsWith("apikey") || login == "bedrock" ? "apikey" : "chatgpt") }, { "planType", "plus" } }));
+                if (!authLate) stdout.WriteLine(note("account/updated", new Dictionary<string, object> { { "authMode", authMode }, { "planType", "plus" } }));
+            }
+            else if (method == "account/read" && Environment.GetEnvironmentVariable("FAKE_CODEX_ACCOUNT_SILENT") == "1")
+            {
+                // A Codex that ignores the method and never answers it
+            }
+            else if (method == "account/read")
+            {
+                // Like Codex in Nov 2026: the login is told once asked for
+                if (authLate) stdout.WriteLine(note("account/updated", new Dictionary<string, object> { { "authMode", authMode }, { "planType", "plus" } }));
+                stdout.WriteLine(reply(new Dictionary<string, object> { { "account", new Dictionary<string, object> { { "type", authMode == "apikey" ? "apiKey" : authMode } } } }));
             }
             else if (method == "config/read")
             {

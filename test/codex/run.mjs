@@ -178,6 +178,33 @@ if (login === 'chatgpt') {
     assert.ok(logArgs().includes('turn.model=null'))
   })
 
+  await test('Codex chỉ báo đăng nhập khi được hỏi: vẫn chạy app-server, chữ chạy dần', async () => {
+    process.env.FAKE_CODEX_AUTH_LATE = '1'
+    let result
+    try {
+      result = await summarize('success')
+    } finally {
+      delete process.env.FAKE_CODEX_AUTH_LATE
+    }
+    assert.equal(result.last.type, 'done')
+    assert.equal(logArgs()[0], 'app-server')
+    assert.ok(result.events.filter((e) => e.type === 'text').length >= 3)
+  })
+
+  await test('Codex không trả lời account/read: chờ vài giây rồi vẫn chạy app-server', async () => {
+    process.env.FAKE_CODEX_ACCOUNT_SILENT = '1'
+    const start = Date.now()
+    let result
+    try {
+      result = await summarize('success')
+    } finally {
+      delete process.env.FAKE_CODEX_ACCOUNT_SILENT
+    }
+    assert.equal(result.last.type, 'done')
+    assert.equal(logArgs()[0], 'app-server')
+    assert.ok(Date.now() - start < 15000, `took ${Date.now() - start} ms`)
+  })
+
   for (const [mode, why] of [['missing', 'Codex cũ không có app-server'], ['mcp', 'MCP server vẫn chạy'], ['hook', 'có hook']]) {
     await test(`Quay về codex exec khi ${why}, trước khi gửi tin nhắn`, async () => {
       process.env.FAKE_CODEX_APPSERVER = mode
