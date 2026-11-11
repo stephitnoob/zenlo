@@ -129,8 +129,12 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
         continue
       }
 
-      if (event.type === 'stream_event' && event.event && event.event.type === 'content_block_delta' && event.event.delta && event.event.delta.type === 'text_delta') {
-        send({ type: 'text', text: event.event.delta.text })
+      const part = event.type === 'stream_event' && event.event ? event.event : {}
+      if (part.type === 'content_block_delta' && part.delta && part.delta.type === 'text_delta') {
+        send({ type: 'text', text: part.delta.text })
+      } else if (part.type === 'content_block_start' && part.content_block && /thinking/.test(part.content_block.type)) {
+        // The page shows that Claude is thinking, not stuck
+        send({ type: 'thinking' })
       } else if (event.type === 'result') {
         finish({ type: 'done', isError: !!event.is_error, result: event.result || '' })
       }
@@ -503,6 +507,9 @@ const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, co
       authMode = params.authMode || null
     } else if (method === 'mcpServer/startupStatus/updated' && params.status !== 'disabled') {
       giveUp('mcp')
+    } else if (method === 'item/started' && params.item && params.item.type === 'reasoning') {
+      // The page shows that Codex is thinking, not stuck
+      send({ type: 'thinking' })
     } else if (method === 'item/agentMessage/delta' && params.delta) {
       streamed += params.delta
       send({ type: 'text', text: params.delta })
@@ -562,6 +569,17 @@ const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, co
   ;(async () => {
     await call('initialize', { clientInfo: { name: 'zenlo', title: 'Zenlo', version: typeof ZENLO_VERSION === 'string' ? ZENLO_VERSION : 'dev' } })
     write({ method: 'initialized' })
+    // Codex (Nov 2026) tells the login only once something asks for it; without asking, the check
+    // below saw no login yet and every summary fell back to exec (no streaming, no "thinking").
+    // An older Codex without account/read still sends account/updated by itself.
+    // Not answered within a few seconds (a Codex that ignores the method): go on without it
+    const account = (await Promise.race([
+      call('account/read', { refreshToken: false }).catch(() => ({})),
+      new Promise((resolve) => setTimeout(() => resolve({}), 5000))
+    ])).account
+    // Stopped meanwhile: Codex is gone, nothing more to ask it
+    if (over) return
+    if (!authMode && account && account.type) authMode = account.type
     const effective = (await call('config/read', {})).config || {}
     const off = {}
     for (const name of Object.keys(effective.mcp_servers || {})) off[name] = { enabled: false }
@@ -673,7 +691,9 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
           continue
         }
         const item = event.item || {}
-        if (event.type === 'item.completed' && item.type === 'agent_message' && item.text) {
+        if (event.type === 'item.started' && item.type === 'reasoning') {
+          send({ type: 'thinking' })
+        } else if (event.type === 'item.completed' && item.type === 'agent_message' && item.text) {
           // Codex sends each message whole, not word by word
           answer = item.text
           send({ type: 'text', text: item.text })
@@ -1097,7 +1117,7 @@ const runGemini = async (send, finish, { id, model, effort, systemPrompt, instru
     let moveOn = false
     for (const key of usable) {
       if (cancelled) return finish({ type: 'error', message: 'Đã dừng.' })
-      send({ type: 'status', model: current, label: geminiLabel(current), skipped: skipped.map(geminiLabel) })
+      send({ type: 'status', model: current, label: geminiLabel(current), skipped: skipped.map(geminiLabel), canSkip: true })
       let response
       try {
         // Thinking models sometimes finish with no text at all: ask the same model once more.
@@ -1287,6 +1307,9 @@ ipcMain.on('zenlo:summary:run', (event, request) => {
   // leaving the panel at "Đang tóm tắt…"
   const fail = (error) => finish({ type: 'error', message: String((error && error.message) || error) })
   const run = request.provider === 'gemini' ? runGemini : request.provider === 'codex' ? runCodex : runClaude
+  // Claude and Codex: the page counts the seconds until the first word, like Gemini (which reports
+  // each model it tries itself, and can skip one)
+  if (run !== runGemini) send({ type: 'status' })
   try {
     Promise.resolve(run(send, finish, request)).catch(fail)
   } catch (error) {

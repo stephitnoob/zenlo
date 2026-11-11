@@ -42,7 +42,9 @@
   // Added under a summary when it is copied (not shown in the panel), so a summary pasted into a
   // chat says where it came from
   const COPY_CREDIT = `Bản tóm tắt được tạo bởi Zenlo by Stephit – ${LINKS.site}`
-  const withCredit = (text) => `${stripCitations(text).trim()}\n\n${COPY_CREDIT}`
+  // cited: the text already has its "[1]" marks and "Nguồn:" list (withSources), whose quoted
+  // messages may hold brackets of their own ("Họp lúc [19:00]") that must stay
+  const withCredit = (text, { cited = false } = {}) => `${(cited ? String(text) : stripCitations(text)).trim()}\n\n${COPY_CREDIT}`
 
   function openLink (url) {
     if (url && window.$zenlo && window.$zenlo.openExternal) window.$zenlo.openExternal(url)
@@ -470,10 +472,12 @@
   function sourceLine (message) {
     const text = String(describeContent(message) || '').replace(/\s*\n\s*/g, ' / ').replace(/\s+/g, ' ').trim()
     let shown = text
-    if (text.length > 100) {
-      const head = text.slice(0, 81)
+    // Counted in characters, not UTF-16 units, so an emoji is never cut in half
+    const chars = Array.from(text)
+    if (chars.length > 100) {
+      const head = chars.slice(0, 81).join('')
       const space = head.lastIndexOf(' ')
-      shown = (space > 40 ? head.slice(0, space) : head.slice(0, 80)).replace(/[\s,.;:/|–-]+$/, '') + '…'
+      shown = (space > 40 ? head.slice(0, space) : chars.slice(0, 80).join('')).replace(/[\s,.;:/|–-]+$/, '') + '…'
     }
     const d = new Date(Number(message.sendDttm))
     const who = message.fromUid === '0' ? 'Tôi' : String(message.dName || '').trim() || 'Ai đó'
@@ -663,14 +667,17 @@
     return `${model} (bỏ qua ${skipped.map((s) => s.replace(/^Gemini /, '')).join(', ')} vì quá tải hoặc hết lượt)`
   }
 
-  function getAILabel () {
-    const { provider, model, effort } = getAISettings()
-    const label = provider === 'gemini'
+  function modelLabel (provider, model) {
+    return provider === 'gemini'
       ? geminiLabel(model)
       : provider === 'codex'
         ? `Codex${model === 'default' ? '' : ` ${(codexModels().find((m) => m.value === model) || {}).label || model}`}`
         : (MODELS.find((m) => m.value === model) || {}).label || model
-    return `${label} (${effort})`
+  }
+
+  function getAILabel () {
+    const { provider, model, effort } = getAISettings()
+    return `${modelLabel(provider, model)} (${effort})`
   }
 
   // feature: "summary". '' (the default): no length asked, the AI decides
@@ -1802,7 +1809,8 @@
         if (event.type === 'text') {
           onText(event.text)
         } else if (event.type === 'status') {
-          status = { model: event.label, skipped: event.skipped || [] }
+          // Claude and Codex send no label: the model chosen for this run
+          status = { model: event.label || modelLabel(request.provider, request.model), skipped: event.skipped || [], canSkip: !!event.canSkip }
           onStatus({ ...status, done: false })
         } else if (event.type === 'thinking') {
           onStatus({ ...status, done: false, thinking: true })
@@ -1916,17 +1924,30 @@
 
   function bindCopyButton (wrap, { plain, sources }) {
     const menu = wrap.querySelector('.zenlo-copy__menu')
-    wrap.querySelector('.js-copy-plain').addEventListener('click', plain)
-    wrap.querySelector('.js-copy-more').addEventListener('click', (event) => {
+    const more = wrap.querySelector('.js-copy-more')
+    const setOpen = (open) => {
+      menu.hidden = !open
+      more.setAttribute('aria-expanded', String(open))
+    }
+    setOpen(false)
+    wrap.querySelector('.js-copy-plain').addEventListener('click', () => {
+      setOpen(false)
+      plain()
+    })
+    more.addEventListener('click', (event) => {
       event.stopPropagation()
-      menu.hidden = !menu.hidden
+      setOpen(menu.hidden)
     })
     wrap.querySelector('.js-copy-sources').addEventListener('click', () => {
-      menu.hidden = true
+      setOpen(false)
       sources()
     })
     document.addEventListener('click', (event) => {
-      if (!wrap.contains(event.target)) menu.hidden = true
+      if (!wrap.contains(event.target)) setOpen(false)
+    })
+    // Esc also closes the panel: the menu must not be open the next time it shows
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setOpen(false)
     })
   }
 

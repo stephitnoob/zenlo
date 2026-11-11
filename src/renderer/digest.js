@@ -223,7 +223,7 @@
     el.classList.toggle('zenlo__status--error', isError)
   }
 
-  // Gemini requests that have written nothing yet: { start, model, thinking, call }. While one waits, its
+  // AI requests that have written nothing yet: { start, model, thinking, canSkip, call }. While one waits, its
   // cards count the seconds, and after WAIT_HINT "Chuyển model khác" moves it to the next model.
   const waits = new Set()
 
@@ -232,11 +232,11 @@
     if (!wait || !wait.start) return `Đang tóm tắt${item.model ? ` bằng ${item.model}` : ''}…`
     const seconds = Math.round((Date.now() - wait.start) / 1000)
     if (wait.thinking) return `${wait.model} đang suy nghĩ… ${seconds} giây`
-    return `Đang chờ ${wait.model} trả lời… ${seconds} giây${seconds * 1000 >= WAIT_HINT ? ' (Gemini đang đông)' : ''}`
+    return `Đang chờ ${wait.model} trả lời… ${seconds} giây${wait.canSkip && seconds * 1000 >= WAIT_HINT ? ' (Gemini đang đông)' : ''}`
   }
 
-  // A thinking model is working: moving on would only throw that away
-  const longWaits = () => [...waits].filter((wait) => !wait.thinking && Date.now() - wait.start >= WAIT_HINT)
+  // A thinking model is working: moving on would only throw that away. Only Gemini has a next model.
+  const longWaits = () => [...waits].filter((wait) => wait.canSkip && !wait.thinking && Date.now() - wait.start >= WAIT_HINT)
 
   function cardSummary (item) {
     if (item.status === 'error') return `<div class="zenlo__status zenlo__status--error">Lỗi: ${escapeHTML(item.error)}</div>`
@@ -292,6 +292,18 @@
     overlay.querySelector('.zenlo-digest__select').hidden = !items.length
     overlay.querySelectorAll('.zenlo-digest__select button').forEach((button) => {
       button.disabled = locked
+    })
+  }
+
+  // The seconds on the waiting cards, without drawing the list again: Claude or Codex can think for
+  // a minute, and a redraw every second would drop a selection or a hovered citation in done cards
+  function tickWaits () {
+    overlay.querySelectorAll('.zenlo-digest__card').forEach((card) => {
+      const item = items[Number(card.dataset.index)]
+      if (!item || item.status !== 'running' || item.summary) return
+      const row = card.querySelector('.zenlo-digest__summary .zenlo-loader-row')
+      const text = row && row.lastChild
+      if (text && text.nodeType === 3) text.textContent = waitText(item)
     })
   }
 
@@ -483,6 +495,7 @@
           for (const item of batch) item.summary = ''
           wait.start = Date.now()
           wait.model = modelStatus.model
+          wait.canSkip = !!modelStatus.canSkip
           wait.thinking = false
           waits.add(wait)
         }
@@ -538,7 +551,7 @@
     // The waiting cards count the seconds; the skip button shows once a request waits long
     const ticker = setInterval(() => {
       skipButton.hidden = !longWaits().length
-      if (waits.size) scheduleRender()
+      if (waits.size) tickWaits()
     }, 1000)
     overlay.querySelector('.js-digest-copy').hidden = true
     setStatus(`Đang tạo bản tin bằng ${Z.getAILabel()}…`)
@@ -587,7 +600,7 @@
           : String(item.summary).trim()
         return `## ${item.name}\n${summary}`
       }))
-      await navigator.clipboard.writeText(Z.withCredit(parts.join('\n\n')))
+      await navigator.clipboard.writeText(Z.withCredit(parts.join('\n\n'), { cited: withSources }))
       setStatus(withSources ? 'Đã sao chép bản tin kèm nguồn.' : 'Đã sao chép bản tin.')
     } catch (error) {
       setStatus('Không sao chép được, thử lại.', true)

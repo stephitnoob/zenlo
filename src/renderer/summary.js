@@ -255,15 +255,15 @@
       event.currentTarget.hidden = true
       if (activeJob) activeJob.skip()
     })
-    const copy = (getText, done) => Promise.resolve()
+    const copy = (getText, done, cited = false) => Promise.resolve()
       .then(getText)
-      .then((text) => navigator.clipboard.writeText(Z.withCredit(text)))
+      .then((text) => navigator.clipboard.writeText(Z.withCredit(text, { cited })))
       .then(() => setStatus(done), () => setStatus('Không sao chép được, thử lại.', true))
     Z.bindCopyButton(el.querySelector('.js-summary-copy'), {
       plain: () => copy(() => el.dataset.result, 'Đã sao chép bản tóm tắt.'),
       sources: () => {
         setStatus('Đang lấy tin gốc cho phần nguồn…')
-        copy(() => Z.withSources(el.dataset.result, el.dataset.convId, el.dataset.range ? JSON.parse(el.dataset.range) : null), 'Đã sao chép bản tóm tắt kèm nguồn.')
+        copy(() => Z.withSources(el.dataset.result, el.dataset.convId, el.dataset.range ? JSON.parse(el.dataset.range) : null), 'Đã sao chép bản tóm tắt kèm nguồn.', true)
       }
     })
     el.querySelector('.zenlo__note-line').addEventListener('click', (event) => {
@@ -428,6 +428,7 @@
       let waitStart = 0
       let waitModel = ''
       let thinking = false
+      let canSkip = false
       const showWait = () => {
         const skip = panel.querySelector('.js-summary-skip')
         if (!waitStart) {
@@ -437,9 +438,9 @@
         const seconds = Math.round((Date.now() - waitStart) / 1000)
         setStatus(thinking
           ? `${waitModel} đang suy nghĩ… ${seconds} giây${historyNote}`
-          : `Đang chờ ${waitModel} trả lời… ${seconds} giây${seconds * 1000 >= WAIT_HINT ? ' (Gemini đang đông)' : ''}${historyNote}`)
-        // A thinking model is working: moving on would only throw that away
-        skip.hidden = thinking || seconds * 1000 < WAIT_HINT
+          : `Đang chờ ${waitModel} trả lời… ${seconds} giây${canSkip && seconds * 1000 >= WAIT_HINT ? ' (Gemini đang đông)' : ''}${historyNote}`)
+        // A thinking model is working: moving on would only throw that away. Only Gemini has a next model.
+        skip.hidden = !canSkip || thinking || seconds * 1000 < WAIT_HINT
       }
       currentCall = Z.runAI({
         systemPrompt: Z.SUMMARY_PROMPT,
@@ -469,6 +470,7 @@
         setLoading(true)
         waitStart = Date.now()
         waitModel = modelStatus.model
+        canSkip = !!modelStatus.canSkip
         thinking = false
         clearInterval(waitTimer)
         waitTimer = setInterval(showWait, 1000)
