@@ -8,7 +8,7 @@
   - Gemini: the Gemini API with the user's own API key, kept encrypted with Windows' safeStorage
 */
 
-const { app, session, ipcMain, safeStorage, shell, Notification } = require('electron')
+const { app, session, ipcMain, safeStorage, shell, Notification, BrowserWindow } = require('electron')
 const { spawn } = require('child_process')
 const https = require('https')
 const crypto = require('crypto')
@@ -1390,6 +1390,14 @@ ipcMain.handle('zenlo:update:notify', (event, tag) => {
   return true
 })
 
+// The narrowest Zalo lets its window be: Zalo's own layout fits there, so it tells how narrow
+// the chat may get (the drawer's width keeps to it)
+ipcMain.handle('zenlo:window:min-width', (event) => {
+  if (!isTrustedSender(event)) return 0
+  const win = BrowserWindow.fromWebContents(event.sender)
+  return win ? win.getMinimumSize()[0] : 0
+})
+
 // The newest Zenlo release, asked only when the user presses "Kiểm tra bản mới" or turned on the
 // daily check in the settings. A plain request to GitHub's public API; nothing about the user is sent.
 const LATEST_RELEASE = 'https://api.github.com/repos/stephitnoob/zenlo/releases/latest'
@@ -1499,6 +1507,31 @@ if (DEV_MODE) {
       contents.reloadIgnoringCache()
     })
   })
+}
+
+// Opened for tests by scripts/zalo-behind.ps1 (ZENLO_BEHIND=1): Zalo's windows never come up by themselves,
+// so they do not cover the window in use. A window Zalo wants shown goes to the taskbar minimized instead,
+// and the user still opens it from there (Windows does that, not these methods). Timers are not slowed down
+// while minimized, so tests run as they would with the window in front.
+if (process.env.ZENLO_BEHIND === '1') {
+  const keepBehind = (win) => {
+    const show = () => {
+      if (!win.isVisible()) win.minimize()
+    }
+    win.show = show
+    win.showInactive = show
+    for (const name of ['focus', 'moveTop', 'setAlwaysOnTop']) win[name] = () => {}
+    // Zalo's own buttons use these (maximize, restore down): blocked only while minimized, where
+    // they would bring the window up
+    for (const name of ['restore', 'maximize', 'setFullScreen']) {
+      const original = win[name].bind(win)
+      win[name] = (...args) => (win.isMinimized() ? undefined : original(...args))
+    }
+    win.webContents.setBackgroundThrottling(false)
+  }
+  app.focus = () => {}
+  app.on('browser-window-created', (event, win) => keepBehind(win))
+  app.whenReady().then(() => BrowserWindow.getAllWindows().forEach(keepBehind))
 }
 
 // Zalo may create its windows before our whenReady callback runs,

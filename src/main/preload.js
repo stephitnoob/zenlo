@@ -57,6 +57,8 @@ function exposeBridge () {
     // { tag } of the newest release on GitHub, or { error }
     latestRelease: () => ipcRenderer.invoke('zenlo:update:latest'),
     // A Windows notification for a newer version (the text and link are fixed in the main process)
-    notifyUpdate: (tag) => ipcRenderer.invoke('zenlo:update:notify', tag)
+    notifyUpdate: (tag) => ipcRenderer.invoke('zenlo:update:notify', tag),
+    // The narrowest Zalo lets its window be, in CSS pixels (0: unknown)
+    windowMinWidth: () => ipcRenderer.invoke('zenlo:window:min-width')
   })
 }

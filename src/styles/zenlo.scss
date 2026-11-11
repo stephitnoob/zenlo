@@ -35,15 +35,23 @@ html.zenlo-dark {
 
 // ---------- Drawer ----------
 
-// Docked as the last column of Zalo's window row: the chat narrows, nothing is covered
-.zenlo-drawer {
-  // Always the rightmost column, even when Zalo adds its conversation-info panel after it
+// The room of the docked drawer, the last column of Zalo's window row: the chat narrows, nothing is
+// covered. Always the rightmost column, even when Zalo adds its conversation-info panel after it.
+.zenlo-drawer-space {
   order: 999;
+  flex: 0 0 auto;
+}
+
+// Over that room, at the right end of the window. It is not inside Zalo's window row: see attach()
+// in drawer.js. Its top, right and bottom follow that row.
+.zenlo-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
   width: 400px;
-  min-height: 0;
   box-sizing: border-box;
   border-left: 1px solid var(--border, #d6dbe1);
   background: var(--layer-background, #fff);
@@ -51,8 +59,60 @@ html.zenlo-dark {
   font-size: 14px;
   line-height: 1.5;
 
+  // Opened without room beside the chat: over it, like Zalo's info panel in a small window
+  &--float {
+    z-index: 11;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  // Docked but out of the way while the window is too small
+  &--away {
+    display: none;
+  }
+
+  &--dragging {
+    user-select: none;
+  }
+
+  // Shows where the left edge will be while the width is dragged
+  @at-root .zenlo-resize-line {
+    position: fixed;
+    z-index: 1000;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--zenlo-accent);
+    pointer-events: none;
+    will-change: transform;
+  }
+
   &[hidden] {
     display: none;
+  }
+
+  // The left edge: drag to change the width, double click for the default. Inside the drawer (what
+  // sticks out of it is cut off), and wider than the line it shows, so it is easy to catch.
+  &__resize {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    width: 8px;
+    cursor: col-resize;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 3px;
+    }
+
+    &:hover::before,
+    .zenlo-drawer--dragging &::before {
+      background: var(--zenlo-accent-line);
+    }
   }
 
   &__head {
@@ -1189,27 +1249,6 @@ html.zenlo-dark {
 }
 
 // ---------- Note for the AI ----------
-
-// Grey until the conversation has a note, then the accent colour with a dot
-.zenlo-note-btn {
-  position: relative;
-  color: var(--text-secondary, #5a6981);
-
-  &--on {
-    color: var(--zenlo-accent);
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--zenlo-accent);
-    }
-  }
-}
 
 .zenlo-note {
   position: fixed;

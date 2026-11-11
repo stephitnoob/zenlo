@@ -71,7 +71,9 @@
     // The newest version a Windows notification was already shown for
     updateNotified: '@Zenlo:UPDATE_NOTIFIED',
     // What "Kiểm tra kết nối" found on this machine, per provider: { at, available, known }
-    modelCatalog: '@Zenlo:MODEL_CATALOG:'
+    modelCatalog: '@Zenlo:MODEL_CATALOG:',
+    // The drawer's width the user dragged it to
+    drawerWidth: '@Zenlo:DRAWER_WIDTH'
   }
 
   // A note the user writes for one conversation, sent to the AI with every summary of it

@@ -25,7 +25,6 @@
   ]
 
   const ICON_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h10"/><path d="M18 3l1.2 2.8L22 7l-2.8 1.2L18 11l-1.2-2.8L14 7l2.8-1.2z"/></svg>'
-  const NOTE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4"/><path d="M8 12h8M8 16h5"/></svg>'
 
   // dd/mm/yyyy hh:mm (24h)
   function toInputValue (ms) {
@@ -495,7 +494,7 @@
 
   // ---------- The note for the AI ----------
 
-  // A small box under the "Ghi chú" button: one note per conversation, sent to the AI with every
+  // A small box opened from the note line in the Tóm tắt panel: one note per conversation, sent to the AI with every
   // summary of it (Tóm tắt and Bản tin)
   let notePop = null
 
@@ -531,7 +530,6 @@
     const save = (value) => {
       Z.setNote(convId, value)
       closeNote()
-      updateNoteButton(true)
       if (panel && panel.dataset.convId === convId) renderNoteLine()
     }
     pop.querySelector('.js-note-save').addEventListener('click', () => save(text.value))
@@ -558,20 +556,6 @@
   // A click anywhere else closes the box without saving
   document.addEventListener('mousedown', () => closeNote())
 
-  // The button lights up when the open conversation has a note
-  let noteConvId = null
-  function updateNoteButton (force = false) {
-    const button = document.querySelector('#headerBtns .zenlo-note-btn')
-    if (!button) return
-    const conv = Z.getCurrentConversation()
-    const id = conv ? conv.id : ''
-    if (!force && id === noteConvId) return
-    noteConvId = id
-    const note = Z.getNote(id)
-    button.classList.toggle('zenlo-note-btn--on', !!note)
-    button.title = note ? `Zenlo · Ghi chú cho AI: ${note}` : 'Zenlo · Ghi chú cho AI'
-  }
-
   function injectHeaderButton () {
     const headerBtns = document.getElementById('headerBtns')
     if (!headerBtns || headerBtns.querySelector('.zenlo-btn')) return
@@ -584,28 +568,13 @@
       event.stopPropagation()
       Z.drawer.toggle('summary')
     })
-
-    const noteButton = document.createElement('div')
-    noteButton.className = 'z--btn--v2 btn-tertiary-neutral medium --rounded zenlo-btn zenlo-note-btn'
-    noteButton.title = 'Zenlo · Ghi chú cho AI'
-    noteButton.innerHTML = NOTE_SVG
-    noteButton.addEventListener('click', (event) => {
-      event.stopPropagation()
-      if (notePop) return closeNote()
-      const conv = Z.getCurrentConversation()
-      if (conv) openNote(conv.id, conv.name, noteButton)
-    })
-    noteButton.addEventListener('mousedown', (event) => event.stopPropagation())
-
-    headerBtns.prepend(button, noteButton)
-    noteConvId = null
+    headerBtns.prepend(button)
   }
 
   Z.drawer.onShow('summary', syncPanel)
 
   Z.onDomChange(() => {
     injectHeaderButton()
-    updateNoteButton()
     // Keep the tab in sync when the user picks another conversation in Zalo's list
     if (Z.drawer.isOpen('summary') && !activeJob) {
       const conv = Z.getCurrentConversation()
