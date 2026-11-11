@@ -4,11 +4,11 @@ Trình quản lí hội thoại cho **Zalo PC** (Windows), dùng AI (Gemini, Cla
 
 ## Tính năng
 
-Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo (khung chat tự co lại, không bị che). Mở bằng nút Zenlo ở thanh trái hoặc nút trên thanh tiêu đề hội thoại; đóng bằng ×, bấm lại nút đó, hoặc Esc.
+Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo (khung chat tự co lại, không bị che). Mở bằng nút Zenlo ở thanh trái hoặc nút trên thanh tiêu đề hội thoại; đóng bằng ×, bấm lại nút đó, hoặc Esc. Kéo mép trái của khung để đổi độ rộng (được nhớ), bấm đúp để về mặc định.
 
 - **Tóm tắt** (tab). Tóm tắt hội thoại đang mở; chưa mở hội thoại nào thì chọn ở danh sách bên trái. Chọn khoảng thời gian (30 phút … 24 giờ, "Từ tin chưa đọc", "Từ lần trước" hoặc tự nhập `dd/mm/yyyy hh:mm`) và độ dài (Ngắn / Vừa / Dài, mặc định Vừa; Ngắn vẫn giữ đủ việc của bạn, Dài kể cả diễn biến, ai nói gì); dòng ước lượng cho biết số tin, số token và số lần gọi AI trước khi gửi. Phần liên quan tới bạn được đưa lên đầu, hạn đã qua được ghi "(đã qua)"; ngay sau mỗi câu có số nguồn nhỏ `[1]` trỏ tới tin gốc: rê chuột để xem tin, bấm để nhảy tới đúng tin đó.
 - **Bản tin** (tab). Liệt kê các hội thoại Zalo đang tính là chưa đọc (hội thoại có người nhắc bạn hoặc @All có nhãn "@ nhắc bạn" và được lùi tới 30 ngày), tick chọn hội thoại cần tóm tắt, kéo ⋮⋮ để sắp xếp ưu tiên (được nhớ lâu dài). Bản tin viết ngắn, chỉ những gì bạn sẽ lỡ nếu không đọc (việc cần làm, câu cần trả lời, lịch, hạn, tiền...), mỗi ý có số nguồn trỏ tới tin gốc; hội thoại không có gì như vậy chỉ ghi "Không có gì liên quan tới bạn." kèm một câu nói nhóm đang bàn gì; nhiều hội thoại được gộp vào một lần gọi AI để đỡ tốn lượt. Tạo bản tin không gửi trạng thái "Đã xem"; chỉ nút "Đã đọc" / "Đã đọc hết" mới đánh dấu đã đọc trong Zalo.
-- **Ghi chú cho AI** (nút cạnh nút Tóm tắt trên thanh tiêu đề hội thoại): mỗi hội thoại một ghi chú, tối đa 300 ký tự, ví dụ "Hoa là sếp mình" hay "chỉ cần hạn chót". AI đọc ghi chú mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên ghi chú hơn cách viết mặc định.
+- **Ghi chú cho AI** ("Thêm ghi chú" / "Sửa" dưới tên hội thoại trong tab Tóm tắt): mỗi hội thoại một ghi chú, tối đa 300 ký tự, ví dụ "Hoa là sếp mình" hay "chỉ cần hạn chót". AI đọc ghi chú mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên ghi chú hơn cách viết mặc định.
 - **Thả cảm xúc**: nút **+** ở cuối thanh cảm xúc mở hơn 80 cảm xúc (cái dùng gần đây lên đầu); "Sửa thanh nhanh" chọn 6 cảm xúc hiện sẵn trên thanh. Danh sách, hình và việc gửi đều do chính Zalo làm.
 - **Sao chép** bản tóm tắt hoặc bản tin (không kèm số nguồn), hoặc **Sao chép kèm nguồn** ở mũi tên ▾ cạnh nút: giữ số `[n]` và thêm danh sách "Nguồn:" (giờ, người gửi, nội dung tin, cắt khoảng 80 ký tự). Văn bản sao chép có thêm một dòng ghi nguồn Zenlo ở cuối.
 - **Cài đặt** (bánh răng trên hàng tab): chọn AI (Gemini, Claude hoặc Codex), model, effort, độ dài mặc định, số ngày tìm tin chưa đọc, xoá bản tóm tắt đã lưu, kiểm tra kết nối, xem phiên bản và kiểm tra bản mới.
@@ -28,7 +28,7 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 
 Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases của kho mã này, giải nén, mở `Zenlo-Setup.exe` và chọn "1. Cài Zenlo" (trình duyệt ít cảnh báo file zip hơn; trong zip chỉ có đúng file `.exe` đó, cũng có trên Releases). Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
 
-Bộ cài sửa file `resources\app.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc.
+Bộ cài sửa file `resources\app.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc (mọi thư mục phiên bản Zalo có Zenlo). Bộ cài sửa bản Zalo đang chạy; Zalo đang tắt thì sửa bản mới nhất, bỏ qua thư mục thiếu `Zalo.exe` hay có số phiên bản là một ngày quá xa trong tương lai (như `Zalo-27.12.31`).
 
 Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://zenlo.io.vn/ky-so.html) · [Các phiên bản](https://zenlo.io.vn/phien-ban.html)
 
@@ -74,7 +74,7 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 | `scripts/build.mjs` | Build bằng esbuild và sass |
 | `installer/` | Cài / gỡ vào Zalo PC: `zalo.js` cho các lệnh npm khi phát triển (có chế độ dev); `setup/Setup.cs` là bộ cài `Zenlo-Setup.exe` cho người dùng |
 | `scripts/build-setup.mjs` | Biên dịch bộ cài C# thành một file `.exe`, nhúng sẵn các file Zenlo đã build |
-| `test/` | `unit/`: thử các hàm của `core.js`; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
+| `test/` | `unit/`: thử các hàm của `core.js` và cách bộ cài chọn thư mục Zalo; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
 | `site/` | Trang web giới thiệu và tải về (GitHub Pages) |
 | `.github/workflows/` | Build và phát hành tự động, đưa trang web lên |
 

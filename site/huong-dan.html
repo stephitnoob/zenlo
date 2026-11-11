@@ -129,11 +129,11 @@
         <h3>Mở và đóng Zenlo</h3>
         <ul>
           <li><b>Nút Zenlo ở thanh bên trái</b> mở tab <b>Bản tin</b>.</li>
-          <li><b>Nút Tóm tắt ở thanh trên cùng khung chat</b> mở tab <b>Tóm tắt</b> cho hội thoại đang mở. Nút <b>Ghi chú</b> nằm ngay cạnh, xem <a class="link" href="#ghi-chu">Ghi chú cho AI</a>.</li>
+          <li><b>Nút Tóm tắt ở thanh trên cùng khung chat</b> mở tab <b>Tóm tắt</b> cho hội thoại đang mở.</li>
           <li><b>Bánh răng</b> trong khung Zenlo mở Cài đặt.</li>
           <li>Đóng: bấm <b>×</b>, bấm lại đúng nút đã mở, hoặc nhấn <span class="kbd">Esc</span>.</li>
         </ul>
-        <p>Khung Zenlo nằm cột phải cùng của Zalo, không che khung chat, nên vừa đọc bản tóm tắt vừa xem tin gốc được.</p>
+        <p>Khung Zenlo nằm cột phải cùng của Zalo, không che khung chat, nên vừa đọc bản tóm tắt vừa xem tin gốc được. Kéo mép trái của khung để đổi độ rộng; bấm đúp vào mép đó để về độ rộng mặc định.</p>
       </section>
     </section>
 
@@ -190,10 +190,10 @@
         <p>Khi AI cần biết thêm điều gì đó mà tin nhắn không nói ra: ai là sếp, bạn phụ trách việc gì, hay bạn chỉ quan tâm một phần của nhóm.</p>
         <h4>Cách làm</h4>
         <ol>
-          <li>Mở hội thoại, bấm nút <b>Ghi chú</b> (hình tờ giấy) ngay cạnh nút Tóm tắt trên thanh trên cùng khung chat.</li>
+          <li>Mở hội thoại, mở tab Tóm tắt. Dưới tên hội thoại, bấm <b>Thêm ghi chú</b> (có ghi chú rồi thì bấm <b>Sửa</b>).</li>
           <li>Viết ghi chú, tối đa 300 ký tự, rồi bấm <b>Lưu</b> (hoặc <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span>). Bấm <b>Xoá</b> để bỏ ghi chú.</li>
         </ol>
-        <p>Mỗi hội thoại một ghi chú riêng. AI đọc nó mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên làm theo ghi chú hơn cách viết mặc định. Hội thoại nào có ghi chú thì nút Ghi chú sáng màu tím, và khung Tóm tắt hiện dòng "Ghi chú cho AI: …" dưới tên hội thoại.</p>
+        <p>Mỗi hội thoại một ghi chú riêng. AI đọc nó mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên làm theo ghi chú hơn cách viết mặc định. Hội thoại nào có ghi chú thì khung Tóm tắt hiện dòng "Ghi chú cho AI: …" dưới tên hội thoại.</p>
         <div class="tip">Ví dụ: "Hoa là sếp mình." · "Mình phụ trách khách ABC." · "Chỉ cần hạn chót và lịch họp, bỏ qua chuyện phiếm."</div>
         <p>Ghi chú được lưu trên máy bạn và được gửi tới AI cùng tin nhắn, giống phần còn lại của bản tóm tắt.</p>
       </section>
@@ -346,7 +346,7 @@
     <section class="part" id="go-zenlo">
       <h2>Gỡ Zenlo</h2>
       <p>Mở <b>Zenlo - Cài đặt</b> (hoặc <code>Zenlo-Setup.exe</code>), gõ <code>2</code>, Enter; Zalo đang mở thì gõ <code>c</code> để đồng ý tắt. Zalo trở về đúng bản gốc; lối tắt trong Start và bản bộ cài giữ trên máy cũng được xoá. Gỡ bằng <b>Zenlo - Cài đặt</b> thì bộ cài không tự xoá được chính nó: xoá tay file <code>%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe</code> mà nó báo.</p>
-      <p>Dữ liệu của Zenlo vẫn để lại trên máy, phòng khi bạn cài lại: thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu, API key) và vài mục nhỏ trong bộ nhớ của Zalo (cài đặt, ghi chú, thứ tự Bản tin, cảm xúc dùng gần đây). Muốn xoá gần hết: trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, xoá ghi chú trong từng hội thoại; gỡ xong thì xoá thư mục <code>%APPDATA%\Zenlo</code>. Chỉ còn ô tick, thứ tự Bản tin và cảm xúc bạn chọn, không có nội dung tin nhắn.</p>
+      <p>Dữ liệu của Zenlo vẫn để lại trên máy, phòng khi bạn cài lại: thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu, API key) và vài mục nhỏ trong bộ nhớ của Zalo (cài đặt, ghi chú, thứ tự Bản tin, cảm xúc dùng gần đây). Muốn xoá gần hết: trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, xoá ghi chú trong từng hội thoại; gỡ xong thì xoá thư mục <code>%APPDATA%\Zenlo</code>. Chỉ còn ô tick, thứ tự Bản tin, cảm xúc bạn chọn và độ rộng khung Zenlo, không có nội dung tin nhắn.</p>
     </section>
 
     <section class="part" id="su-co">
@@ -355,6 +355,7 @@
       <section id="su-co-mat-nut">
         <h3>Không thấy nút Zenlo</h3>
         <p>Gần như luôn là do Zalo vừa cập nhật. Làm theo <a class="link" href="#zalo-cap-nhat">Khi Zalo cập nhật</a>.</p>
+        <p>Vừa cài xong mà vẫn không thấy: mở Zalo trước, rồi chạy bộ cài Zenlo bản mới nhất (tải ở <a class="link" href="./#cai-dat">trang chủ</a>) và chọn <code>1</code>. Bộ cài sẽ cài vào đúng bản Zalo đang mở.</p>
       </section>
 
       <section id="su-co-het-luot">

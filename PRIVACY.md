@@ -19,7 +19,7 @@ Khi bạn mở khung Zenlo (để đếm tin và ước lượng trước khi g�
 - tên hội thoại, và đó là nhóm hay trò chuyện riêng;
 - số người thả từng loại cảm xúc cho mỗi tin (ví dụ 3 ❤️, 2 😡; không có tên người thả), và tin nào nhắc tới bạn;
 - tên Zalo của bạn, để AI biết tin nào đang nói với bạn;
-- ghi chú bạn tự viết cho hội thoại đó (nút Ghi chú), nếu có;
+- ghi chú bạn tự viết cho hội thoại đó (Thêm ghi chú trong tab Tóm tắt), nếu có;
 - số tin chưa đọc mà Zalo ghi nhận.
 
 Zenlo không đọc ảnh, video, tệp đính kèm hay tin nhắn thoại; chỉ đọc tên tệp và chú thích ảnh nếu có. Việc đọc này không làm Zalo gửi trạng thái "Đã xem" cho ai.
@@ -76,7 +76,7 @@ Mọi thứ chỉ nằm trên máy bạn:
 
 - Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, và xoá từng API key bằng nút ×.
 - Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` (bản sao lưu, API key, ghi nhận hết lượt). Gỡ bằng lối tắt **Zenlo - Cài đặt** thì xoá thêm file `%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe` mà bộ cài báo còn lại.
-- Gỡ xong, cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng `@Zenlo:`). Zalo không dùng tới và không gửi chúng đi. Trước khi gỡ, bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm **Kiểm tra kết nối**, và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.
+- Gỡ xong, cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng `@Zenlo:`). Zalo không dùng tới và không gửi chúng đi. Trước khi gỡ, bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm **Kiểm tra kết nối**, và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.
 
 ## Trang web
 
