@@ -6,6 +6,7 @@
 */
 
 import assert from 'node:assert/strict'
+import { createRequire } from 'node:module'
 import { loadCore } from '../summary-eval/load-core.mjs'
 
 const Z = loadCore()
@@ -394,6 +395,32 @@ test('Ô "Đến" lấy hết phút đó, ô "Từ" từ đầu phút', () => {
   assert.equal(Z.parseTime('20/10/2026 14:30', true), at(14, 30, 59) + 999)
   assert.ok(Number.isNaN(Z.parseTime('31/02/2026 14:30')))
   assert.ok(Number.isNaN(Z.parseTime('20/10/2026 24:00')))
+})
+
+// ---------- Installer: which Zalo version folder ----------
+
+const { pickVersionDir, pickTargetDirs, isFutureVersion } = createRequire(import.meta.url)('../../installer/zalo.js')
+const NOV_11 = new Date(2026, 10, 11).getTime()
+const FOLDERS = ['Zalo-26.9.10', 'Zalo-26.10.20', 'Zalo-26.11.10', 'Zalo-27.12.31']
+
+test('Bộ cài: Zalo đang chạy thư mục nào thì cài vào thư mục đó', () => {
+  assert.equal(pickVersionDir(FOLDERS, { running: ['Zalo-26.10.20'], now: NOV_11 }), 'Zalo-26.10.20')
+})
+
+test('Bộ cài: Zalo đã tắt thì bỏ qua thư mục có ngày phiên bản quá xa (27.12.31)', () => {
+  assert.equal(pickVersionDir(FOLDERS, { now: NOV_11 }), 'Zalo-26.11.10')
+  // A release a few weeks ahead of the clock is still real
+  assert.equal(pickVersionDir([...FOLDERS, 'Zalo-26.12.1'], { now: NOV_11 }), 'Zalo-26.12.1')
+  // Only odd folders: the newest of them rather than nothing
+  assert.equal(pickVersionDir(['Zalo-27.12.31'], { now: NOV_11 }), 'Zalo-27.12.31')
+  // Not a date: not judged by it
+  assert.equal(isFutureVersion([26, 13, 40], NOV_11), false)
+})
+
+test('Bộ cài: Zalo đã tải sẵn bản mới mà vẫn chạy bản cũ thì cài vào cả hai', () => {
+  const names = ['Zalo-26.10.20', 'Zalo-26.11.10', 'Zalo-26.11.20', 'Zalo-27.12.31']
+  assert.deepEqual(pickTargetDirs(names, { running: ['Zalo-26.11.10'], now: NOV_11 }), ['Zalo-26.11.10', 'Zalo-26.11.20'])
+  assert.deepEqual(pickTargetDirs(names, { now: NOV_11 }), ['Zalo-26.11.20'])
 })
 
 console.log(results.join('\n'))
