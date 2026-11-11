@@ -26,12 +26,23 @@ const PAGE_SCRIPT = 'zenlo.js'
 
 const log = (...args) => console.log(...args)
 
-// Zalo keeps each version in its own "Zalo-x.y.z" folder; the newest one is the one that runs
-function findResourcesDir () {
-  if (process.platform !== 'win32') throw new Error('Zenlo chỉ hỗ trợ Zalo PC trên Windows.')
-  if (!fs.existsSync(ZALO_ROOT)) throw new Error(`Không thấy Zalo PC ở ${ZALO_ROOT}.`)
+const versionOf = (name) => name.slice('Zalo-'.length).split('.').map(Number)
 
-  const versionOf = (name) => name.slice('Zalo-'.length).split('.').map(Number)
+// Zalo's versions are dates ("26.11.10" for 10/11/2026): one more than two months ahead is not a
+// release. A "Zalo-27.12.31" made to stop updates once took Zenlo in while Zalo ran 26.11.10.
+function isFutureVersion (version, now = Date.now()) {
+  if (version.length < 3) return false
+  const [year, month, day] = version
+  const date = new Date(2000 + year, month - 1, day)
+  if (date.getMonth() !== month - 1 || date.getDate() !== day) return false
+  return date.getTime() > now + 60 * 24 * 60 * 60 * 1000
+}
+
+// Of the version folders that can run, the one to patch: the folder Zalo runs from (running: the
+// names of those folders), else the newest real version
+function pickVersionDir (names, { running = [], now = Date.now() } = {}) {
+  const live = names.find((name) => running.some((r) => r.toLowerCase() === name.toLowerCase()))
+  if (live) return live
   const newerFirst = (a, b) => {
     const [va, vb] = [versionOf(a), versionOf(b)]
     for (let i = 0; i < Math.max(va.length, vb.length); i++) {
@@ -39,14 +50,60 @@ function findResourcesDir () {
     }
     return 0
   }
-
-  const versions = fs.readdirSync(ZALO_ROOT)
-    .filter((name) => /^Zalo-\d+(\.\d+)*$/.test(name))
-    .filter((name) => fs.existsSync(path.join(ZALO_ROOT, name, 'resources')))
-    .sort(newerFirst)
-  if (!versions.length) throw new Error('Không tìm thấy thư mục phiên bản Zalo nào.')
-  return path.join(ZALO_ROOT, versions[0], 'resources')
+  const real = names.filter((name) => !isFutureVersion(versionOf(name), now))
+  return [...(real.length ? real : names)].sort(newerFirst)[0]
 }
+
+// Every "Zalo-x.y.z" folder that can run: Zalo.exe, and the app (or its backup while Zenlo is in)
+function zaloVersionDirs () {
+  if (process.platform !== 'win32') throw new Error('Zenlo chỉ hỗ trợ Zalo PC trên Windows.')
+  if (!fs.existsSync(ZALO_ROOT)) throw new Error(`Không thấy Zalo PC ở ${ZALO_ROOT}.`)
+  return fs.readdirSync(ZALO_ROOT)
+    .filter((name) => /^Zalo-\d+(\.\d+)*$/.test(name))
+    .filter((name) => isFile(path.join(ZALO_ROOT, name, 'Zalo.exe')))
+    .filter((name) => ['app.asar', 'app.asar.bak'].some((file) => fs.existsSync(path.join(ZALO_ROOT, name, 'resources', file))))
+}
+
+// The version folders of the Zalo.exe running now, under ZALO_ROOT
+function runningVersionNames () {
+  // The full path, so a "powershell" planted somewhere on PATH is never run instead
+  const powershell = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
+  let output = ''
+  try {
+    output = execFileSync(powershell, ['-NoProfile', '-NonInteractive', '-Command',
+      '[Console]::OutputEncoding = [Text.Encoding]::UTF8; Get-Process -Name Zalo -ErrorAction SilentlyContinue | ForEach-Object { $_.Path }'],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  } catch (error) {
+    return []
+  }
+  return output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+    .filter((exe) => path.dirname(path.dirname(exe)).toLowerCase() === ZALO_ROOT.toLowerCase())
+    .map((exe) => path.basename(path.dirname(exe)))
+}
+
+// The folders to patch: the one pickVersionDir names, and every real version newer than it (Zalo may
+// have downloaded an update it starts next time, while it still runs the older one)
+function pickTargetDirs (names, { running = [], now = Date.now() } = {}) {
+  const first = pickVersionDir(names, { running, now })
+  const firstVersion = versionOf(first)
+  const newer = (name) => {
+    const v = versionOf(name)
+    for (let i = 0; i < Math.max(v.length, firstVersion.length); i++) {
+      if ((v[i] || 0) !== (firstVersion[i] || 0)) return (v[i] || 0) > (firstVersion[i] || 0)
+    }
+    return false
+  }
+  return [first, ...names.filter((name) => newer(name) && !isFutureVersion(versionOf(name), now))]
+}
+
+// Picked before Zalo is closed, while it still tells which folder it runs
+function targetResourcesDirs () {
+  const names = zaloVersionDirs()
+  if (!names.length) throw new Error('Không tìm thấy thư mục phiên bản Zalo nào.')
+  return pickTargetDirs(names, { running: runningVersionNames() }).map((name) => path.join(ZALO_ROOT, name, 'resources'))
+}
+
+const findResourcesDir = () => targetResourcesDirs()[0]
 
 function stopZalo () {
   // The full path, so a "taskkill" planted somewhere on PATH is never run instead
@@ -131,15 +188,29 @@ function addZenloFiles (appDir, dev, source) {
 }
 
 function install ({ dev = false, source = DIST } = {}) {
-  const resourcesDir = findResourcesDir()
+  const targets = targetResourcesDirs()
+  for (const resourcesDir of targets) log(`Zalo: ${resourcesDir}`)
+  log('Đang tắt Zalo…')
+  stopZalo()
+  installInto(targets[0], dev, source)
+  for (const resourcesDir of targets.slice(1)) {
+    try {
+      installInto(resourcesDir, dev, source)
+    } catch (error) {
+      // The version that runs now has Zenlo; a newer one that could not take it is only told
+      log(`Không cài được vào ${resourcesDir}: ${error.message}`)
+    }
+  }
+  log(dev
+    ? 'Đã cài Zenlo (chế độ phát triển). Mở lại Zalo; sau mỗi lần build bấm Ctrl+Shift+R trong Zalo.'
+    : 'Đã cài Zenlo. Mở lại Zalo.')
+}
+
+function installInto (resourcesDir, dev, source) {
   const app = path.join(resourcesDir, 'app.asar')
   const backup = path.join(resourcesDir, 'app.asar.bak')
   // A fresh folder with a random name, so nothing prepared in the temp folder can be slipped in
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'zenlo-install-'))
-
-  log(`Zalo: ${resourcesDir}`)
-  log('Đang tắt Zalo…')
-  stopZalo()
 
   restoreOriginal(resourcesDir)
   if (!isFile(app)) throw new Error('Không tìm thấy app.asar gốc của Zalo.')
@@ -188,18 +259,20 @@ function install ({ dev = false, source = DIST } = {}) {
   const marker = path.join(resourcesDir, DEV_MARKER)
   if (dev) fs.writeFileSync(marker, 'Zenlo dev mode: Ctrl+Shift+R reloads Zalo\n')
   else fs.rmSync(marker, { force: true })
-
-  log(dev
-    ? 'Đã cài Zenlo (chế độ phát triển). Mở lại Zalo; sau mỗi lần build bấm Ctrl+Shift+R trong Zalo.'
-    : 'Đã cài Zenlo. Mở lại Zalo.')
 }
 
+// Every version folder Zenlo is in goes back to its original, not only the one that runs now (an
+// older Zenlo may have gone into another folder)
 function uninstall () {
-  const resourcesDir = findResourcesDir()
+  const dirs = zaloVersionDirs().map((name) => path.join(ZALO_ROOT, name, 'resources'))
   log('Đang tắt Zalo…')
   stopZalo()
-  if (!restoreOriginal(resourcesDir)) throw new Error('Không có bản sao lưu app.asar.bak, có vẻ Zenlo chưa được cài.')
-  fs.rmSync(path.join(resourcesDir, DEV_MARKER), { force: true })
+  let restored = false
+  for (const resourcesDir of dirs) {
+    if (restoreOriginal(resourcesDir)) restored = true
+    fs.rmSync(path.join(resourcesDir, DEV_MARKER), { force: true })
+  }
+  if (!restored) throw new Error('Không có bản sao lưu app.asar.bak, có vẻ Zenlo chưa được cài.')
   log('Đã gỡ Zenlo, Zalo đã về bản gốc. Mở lại Zalo.')
 }
 
@@ -219,4 +292,4 @@ function status () {
   log(installed ? `Zenlo: đã cài${dev ? ' (chế độ phát triển)' : ''}` : 'Zenlo: chưa cài')
 }
 
-module.exports = { install, uninstall, status, getStatus }
+module.exports = { install, uninstall, status, getStatus, pickVersionDir, pickTargetDirs, isFutureVersion }

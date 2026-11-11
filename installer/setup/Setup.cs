@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Web.Script.Serialization;
@@ -185,24 +186,96 @@ namespace Zenlo
 
         // ---------- Zalo ----------
 
-        // Zalo keeps each version in its own "Zalo-x.y.z" folder; the newest one is the one that runs
+        // Zalo keeps each version in its own "Zalo-x.y.z" folder. The one to patch is the folder Zalo
+        // runs from; with Zalo closed, the newest real version. A version dated well after today is
+        // not a Zalo release (a "Zalo-27.12.31" made to stop updates once took Zenlo in, while Zalo
+        // kept running 26.11.10), so it is passed over.
         static string FindResourcesDir()
         {
-            if (!Directory.Exists(ZaloRoot)) throw new Exception("Không thấy Zalo ở " + ZaloRoot + ".");
-            string best = null;
-            int[] bestVersion = null;
-            foreach (string dir in Directory.GetDirectories(ZaloRoot, "Zalo-*"))
+            List<string> found = ZaloVersionDirs();
+            if (found.Count == 0) throw new Exception("Không tìm thấy thư mục phiên bản Zalo nào.");
+            foreach (string exe in RunningZaloPaths())
             {
-                int[] version = ParseVersion(Path.GetFileName(dir).Substring("Zalo-".Length));
-                if (version == null || !Directory.Exists(Path.Combine(dir, "resources"))) continue;
-                if (best == null || CompareVersions(version, bestVersion) > 0)
+                string running = Path.GetFullPath(Path.GetDirectoryName(exe)).TrimEnd('\\');
+                foreach (string dir in found)
                 {
-                    best = dir;
-                    bestVersion = version;
+                    if (string.Equals(Path.GetFullPath(dir).TrimEnd('\\'), running, StringComparison.OrdinalIgnoreCase)) return Path.Combine(dir, "resources");
                 }
             }
-            if (best == null) throw new Exception("Không tìm thấy thư mục phiên bản Zalo nào.");
+            List<string> real = found.FindAll((dir) => !IsFutureVersion(VersionOf(dir)));
+            string best = null;
+            foreach (string dir in real.Count > 0 ? real : found)
+            {
+                if (best == null || CompareVersions(VersionOf(dir), VersionOf(best)) > 0) best = dir;
+            }
             return Path.Combine(best, "resources");
+        }
+
+        // Every "Zalo-x.y.z" folder that can run: Zalo.exe, and the app (or its backup while Zenlo is in)
+        static List<string> ZaloVersionDirs()
+        {
+            if (!Directory.Exists(ZaloRoot)) throw new Exception("Không thấy Zalo ở " + ZaloRoot + ".");
+            List<string> found = new List<string>();
+            foreach (string dir in Directory.GetDirectories(ZaloRoot, "Zalo-*"))
+            {
+                string resources = Path.Combine(dir, "resources");
+                if (VersionOf(dir) == null || !File.Exists(Path.Combine(dir, "Zalo.exe"))) continue;
+                if (!File.Exists(Path.Combine(resources, "app.asar")) && !File.Exists(Path.Combine(resources, "app.asar.bak"))) continue;
+                found.Add(dir);
+            }
+            return found;
+        }
+
+        static int[] VersionOf(string dir)
+        {
+            return ParseVersion(Path.GetFileName(dir).Substring("Zalo-".Length));
+        }
+
+        // Zalo's versions are dates ("26.11.10" for 10/11/2026); one more than two months ahead is not a release
+        static bool IsFutureVersion(int[] version)
+        {
+            if (version.Length < 3) return false;
+            try
+            {
+                return new DateTime(2000 + version[0], version[1], version[2]) > DateTime.Now.AddDays(60);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return false;
+            }
+        }
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr OpenProcess(uint access, bool inherit, int processId);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        static extern bool QueryFullProcessImageName(IntPtr process, int flags, StringBuilder name, ref int size);
+
+        [DllImport("kernel32.dll")]
+        static extern bool CloseHandle(IntPtr handle);
+
+        // The Zalo.exe files running now. Asked by process handle, which works whatever the bitness of
+        // this program (Process.MainModule does not).
+        static List<string> RunningZaloPaths()
+        {
+            const uint QueryLimitedInformation = 0x1000;
+            List<string> paths = new List<string>();
+            foreach (Process process in Process.GetProcessesByName("Zalo"))
+            {
+                IntPtr handle = OpenProcess(QueryLimitedInformation, false, process.Id);
+                if (handle == IntPtr.Zero) continue;
+                try
+                {
+                    StringBuilder name = new StringBuilder(1024);
+                    int size = name.Capacity;
+                    if (QueryFullProcessImageName(handle, 0, name, ref size)) paths.Add(name.ToString(0, size));
+                }
+                finally
+                {
+                    CloseHandle(handle);
+                }
+            }
+            return paths;
         }
 
         static int[] ParseVersion(string text)
@@ -312,18 +385,51 @@ namespace Zenlo
             }
         }
 
+        // Into the version folder Zalo runs from (or the newest real one), and every real version newer
+        // than it: Zalo may have downloaded an update it starts next time, while it still runs the older one.
+        // The folders are picked before Zalo is closed, while it still tells which one it runs.
         static void Install()
         {
-            string resources = FindResourcesDir();
+            List<string> targets = TargetResourcesDirs();
+            foreach (string resources in targets) Console.WriteLine("Zalo: " + resources);
+            Console.WriteLine("Đang tắt Zalo…");
+            StopZalo();
+            InstallInto(targets[0]);
+            for (int i = 1; i < targets.Count; i++)
+            {
+                try
+                {
+                    InstallInto(targets[i]);
+                }
+                catch (Exception error)
+                {
+                    // The version that runs now has Zenlo; a newer one that could not take it is only told
+                    Console.WriteLine("Không cài được vào " + targets[i] + ": " + error.Message);
+                }
+            }
+            Console.WriteLine("Đã cài Zenlo.");
+        }
+
+        static List<string> TargetResourcesDirs()
+        {
+            string first = FindResourcesDir();
+            int[] firstVersion = VersionOf(Path.GetDirectoryName(first));
+            List<string> targets = new List<string> { first };
+            foreach (string dir in ZaloVersionDirs())
+            {
+                int[] version = VersionOf(dir);
+                if (!IsFutureVersion(version) && CompareVersions(version, firstVersion) > 0) targets.Add(Path.Combine(dir, "resources"));
+            }
+            return targets;
+        }
+
+        static void InstallInto(string resources)
+        {
             string app = Path.Combine(resources, "app.asar");
             string backup = Path.Combine(resources, "app.asar.bak");
             // A fresh folder with a random name, so nothing prepared in the temp folder can be slipped in
             string work = Path.Combine(Path.GetTempPath(), "zenlo-install-" + Guid.NewGuid().ToString("N"));
             string appDir = Path.Combine(work, "app");
-
-            Console.WriteLine("Zalo: " + resources);
-            Console.WriteLine("Đang tắt Zalo…");
-            StopZalo();
 
             RestoreOriginal(resources);
             if (!File.Exists(app)) throw new Exception("Không tìm thấy app.asar gốc của Zalo.");
@@ -367,17 +473,24 @@ namespace Zenlo
 
             string marker = Path.Combine(resources, DevMarker);
             if (File.Exists(marker)) File.Delete(marker);
-            Console.WriteLine("Đã cài Zenlo.");
         }
 
+        // Every version folder Zenlo is in goes back to its original, not only the one that runs now
+        // (an older Zenlo may have gone into another folder)
         static void Uninstall()
         {
-            string resources = FindResourcesDir();
+            List<string> dirs = ZaloVersionDirs();
             Console.WriteLine("Đang tắt Zalo…");
             StopZalo();
-            if (!RestoreOriginal(resources)) throw new Exception("Không có bản sao lưu app.asar.bak, có vẻ Zenlo chưa được cài.");
-            string marker = Path.Combine(resources, DevMarker);
-            if (File.Exists(marker)) File.Delete(marker);
+            bool restored = false;
+            foreach (string dir in dirs)
+            {
+                string resources = Path.Combine(dir, "resources");
+                if (RestoreOriginal(resources)) restored = true;
+                string marker = Path.Combine(resources, DevMarker);
+                if (File.Exists(marker)) File.Delete(marker);
+            }
+            if (!restored) throw new Exception("Không có bản sao lưu app.asar.bak, có vẻ Zenlo chưa được cài.");
         }
 
         static string InsertBefore(string text, string marker, string addition, string file)
