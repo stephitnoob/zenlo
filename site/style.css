@@ -799,23 +799,55 @@ form.zw__composer:focus-within {
   color: var(--accent);
 }
 
-.cite {
-  display: inline-block;
-  margin-left: 4px;
-  padding: 0 6px;
-  border: 0;
-  border-radius: 5px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-family: var(--mono);
+/* Sources: small numbered footnotes "[1]" right after the clause, as in Zenlo */
+.cites {
+  margin-left: 1px;
   font-size: 11px;
-  line-height: 18px;
+  line-height: 0;
   white-space: nowrap;
+  vertical-align: super;
+}
+
+.cite {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-family: var(--mono);
   cursor: pointer;
+}
+
+.cite::before {
+  content: "[";
+}
+
+.cite::after {
+  content: "]";
 }
 
 .cite:hover {
   text-decoration: underline;
+}
+
+/* The cited message, shown while a footnote is hovered */
+.cite-tip {
+  position: fixed;
+  z-index: 50;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+.cite-tip[hidden] {
+  display: none;
 }
 
 /* A citation of a chat that is not on the page: a label, not a button */

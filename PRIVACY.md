@@ -17,7 +17,7 @@ Khi bạn mở khung Zenlo (để đếm tin và ước lượng trước khi g�
 - nội dung các tin nhắn trong khoảng thời gian bạn chọn (hoặc các tin chưa đọc), tên hiển thị của người gửi, thời gian gửi;
 - với tin trả lời một tin khác: tên người viết tin đó và tối đa 80 ký tự đầu của nó, kể cả khi tin đó cũ hơn khoảng bạn chọn;
 - tên hội thoại, và đó là nhóm hay trò chuyện riêng;
-- số người thả cảm xúc cho từng tin, và tin nào nhắc tới bạn;
+- số người thả từng loại cảm xúc cho mỗi tin (ví dụ 3 ❤️, 2 😡; không có tên người thả), và tin nào nhắc tới bạn;
 - tên Zalo của bạn, để AI biết tin nào đang nói với bạn;
 - ghi chú bạn tự viết cho hội thoại đó (nút Ghi chú), nếu có;
 - số tin chưa đọc mà Zalo ghi nhận.
@@ -30,7 +30,7 @@ Zenlo không đọc ảnh, video, tệp đính kèm hay tin nhắn thoại; ch�
 
 Zenlo chỉ gửi đi những gì AI cần để tóm tắt, tới **một** trong ba dịch vụ AI mà bạn chọn trong Cài đặt:
 
-- các tin nhắn cần tóm tắt, với những gì ở mục trên: người gửi, giờ gửi, đoạn đầu của tin được trả lời, tin nào nhắc tới bạn, số người thả cảm xúc;
+- các tin nhắn cần tóm tắt, với những gì ở mục trên: người gửi, giờ gửi, đoạn đầu của tin được trả lời, tin nào nhắc tới bạn, số người thả từng loại cảm xúc;
 - tên hội thoại, tên Zalo của bạn và giờ hiện tại, để AI hiểu "mai", "thứ 6", ai đang nói với bạn;
 - lời yêu cầu tóm tắt của Zenlo, và ghi chú của bạn cho hội thoại đó (nếu có).
 

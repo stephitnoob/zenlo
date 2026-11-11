@@ -101,22 +101,45 @@
     return out
   }
 
+  // As pieces, with the space before each citation dropped: a footnote sits right against its clause
+  function footed (li) {
+    const out = pieces(li)
+    out.forEach((piece, i) => {
+      if (piece.text && out[i + 1] && out[i + 1].cite) piece.text = piece.text.replace(/[ \t]+$/, '')
+    })
+    return out
+  }
+
   // A citation is 'dd/mm hh:mm', or { label, t } for a message whose time another one may share.
-  // chat: the id of the chat window it scrolls to, when it is drawn outside that window.
-  function citeButton (cite, chat) {
+  // It is drawn as a small footnote "[n]", numbered through one summary like Zenlo does: the same
+  // message keeps its number (numbers: Map key -> n, one per summary).
+  // chat: the id of the chat window it scrolls to, when it is drawn outside that window; static:
+  // a chat that is not on the page, so a label instead of a button.
+  function citeButton (cite, chat, numbers = new Map(), isStatic = false) {
     const label = cite.label || cite
-    const button = document.createElement('button')
-    button.type = 'button'
-    button.className = 'cite'
-    button.dataset.t = cite.t || label.slice(-5)
-    if (chat) button.dataset.chat = chat
-    button.textContent = label
-    return button
+    const t = cite.t || label.slice(-5)
+    const key = t + '|' + label
+    if (!numbers.has(key)) numbers.set(key, numbers.size + 1)
+    const sup = document.createElement('sup')
+    sup.className = 'cites'
+    const button = document.createElement(isStatic ? 'span' : 'button')
+    if (isStatic) button.className = 'cite cite--static'
+    else {
+      button.type = 'button'
+      button.className = 'cite'
+      button.dataset.t = t
+      if (chat) button.dataset.chat = chat
+    }
+    button.dataset.label = label
+    button.textContent = numbers.get(key)
+    sup.appendChild(button)
+    return sup
   }
 
   // Draws a summary at once
   function render (box, blocks, chat) {
     box.textContent = ''
+    const numbers = new Map()
     let list = null
     for (const block of blocks) {
       if (block.h) {
@@ -127,7 +150,7 @@
         box.appendChild(list)
       } else {
         const li = document.createElement('li')
-        for (const piece of pieces(block.li)) li.append(piece.cite ? citeButton(piece.cite, chat) : piece.text)
+        for (const piece of footed(block.li)) li.append(piece.cite ? citeButton(piece.cite, chat, numbers) : piece.text)
         list.appendChild(li)
       }
     }
@@ -161,6 +184,7 @@
     box.textContent = ''
     const caret = document.createElement('span')
     caret.className = 'caret'
+    const numbers = new Map()
     let list = null
     for (const block of blocks) {
       if (isStopped()) return
@@ -175,9 +199,9 @@
         list.appendChild(target)
       }
       target.appendChild(caret)
-      for (const piece of block.h ? [{ text: block.h }] : pieces(block.li)) {
+      for (const piece of block.h ? [{ text: block.h }] : footed(block.li)) {
         if (isStopped()) return
-        if (piece.cite) target.insertBefore(citeButton(piece.cite), caret)
+        if (piece.cite) target.insertBefore(citeButton(piece.cite, null, numbers), caret)
         else if (!await typeInto(target, caret, piece.text, isStopped, 18)) return
       }
       await wait(120)
@@ -219,6 +243,41 @@
     window.scrollTo({ top: window.scrollY + box.top - Math.max(16, (window.innerHeight - box.height) / 2), behavior: still ? 'auto' : 'smooth' })
     setTimeout(() => jump(win, cite.dataset.t), still ? 0 : 450)
   })
+
+  // Hovering a footnote shows the message it cites, as Zenlo does: "20/10 18:02 · Trang: …"
+  const tip = document.createElement('div')
+  tip.className = 'cite-tip'
+  tip.hidden = true
+  document.body.appendChild(tip)
+  function citedLine (cite) {
+    const win = cite.dataset.chat ? document.getElementById(cite.dataset.chat) : cite.closest('.zw')
+    const msg = win && cite.dataset.t && win.querySelector(`.msg[data-t="${cite.dataset.t}"]`)
+    if (!msg) return cite.dataset.label
+    const name = msg.querySelector('b')
+    // The name is the text of <b> without its time; the user's own messages read "Tôi", as in Zenlo
+    const who = name ? [...name.childNodes].filter((node) => node.nodeType === 3).map((node) => node.textContent).join('').trim() || (msg.classList.contains('msg--me') ? 'Tôi' : '') : ''
+    const text = [...msg.childNodes].filter((node) => node !== name).map((node) => node.textContent).join('').trim()
+    return `${cite.dataset.label} · ${who ? who + ': ' : ''}${text}`
+  }
+  function showTip (event) {
+    const cite = event.target.closest && event.target.closest('.cite')
+    if (!cite) return
+    tip.textContent = citedLine(cite)
+    tip.hidden = false
+    const rect = cite.getBoundingClientRect()
+    const width = Math.min(300, window.innerWidth - 16)
+    tip.style.width = `${width}px`
+    tip.style.left = `${Math.max(8, Math.min(rect.left - 12, window.innerWidth - width - 8))}px`
+    tip.style.top = `${rect.bottom + 6}px`
+  }
+  function hideTip (event) {
+    if (event.target.closest && event.target.closest('.cite')) tip.hidden = true
+  }
+  document.addEventListener('mouseover', showTip)
+  document.addEventListener('focusin', showTip)
+  document.addEventListener('mouseout', hideTip)
+  document.addEventListener('focusout', hideTip)
+  window.addEventListener('scroll', () => { tip.hidden = true }, { passive: true })
 
   // ---------- The message box: what is typed stays in the page ----------
 
@@ -365,7 +424,7 @@
       out.textContent = ''
       await stream(out, teamSummary())
       log.classList.add('show')
-      hint.textContent = 'thử bấm vào một mốc giờ'
+      hint.textContent = 'thử bấm vào một số nguồn'
       run.textContent = 'Tóm tắt'
       run.disabled = false
       busy = false
@@ -408,18 +467,14 @@
       caret.className = 'caret'
       box.append(caret)
       const stopped = () => mine !== round || !card.querySelector('.dcard__check').checked
-      for (const piece of pieces(item.text)) {
+      const numbers = new Map()
+      for (const piece of footed(item.text)) {
         if (stopped()) return
         if (!piece.cite) {
           if (!await typeInto(box, caret, piece.text, stopped, 16)) return
-        } else if (item.chat) {
-          // Only the Team Marketing chat is on the page: its citations scroll to it; the others are labels
-          box.insertBefore(citeButton(piece.cite, item.chat), caret)
         } else {
-          const span = document.createElement('span')
-          span.className = 'cite cite--static'
-          span.textContent = piece.cite
-          box.insertBefore(span, caret)
+          // Only the Team Marketing chat is on the page: its citations scroll to it; the others are labels
+          box.insertBefore(citeButton(piece.cite, item.chat, numbers, !item.chat), caret)
         }
       }
       caret.remove()
