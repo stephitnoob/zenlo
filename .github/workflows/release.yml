@@ -1,6 +1,7 @@
 # Builds Zenlo-Setup.exe on GitHub's own machines when a version tag (v0.1.0, …) is pushed,
 # checks it, has it signed by SignPath (once the project is set up there), attests where it was
-# built from, and publishes it with its SHA-256.
+# built from, and publishes it with its SHA-256. Also packs the extension for Zalo web,
+# Zenlo-ZaloWeb.zip, which people load by hand into their browser.
 # Anyone can then check that a download was built from this repository:
 #   gh attestation verify Zenlo-Setup.exe --repo <owner>/<repo>
 #
@@ -106,6 +107,16 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path build/setup/Zenlo-Setup.exe -DestinationPath build/setup/Zenlo-Setup.zip -Force
 
+      # The extension for Zalo web (dist-ext/, built by "npm run build:setup" above), with its
+      # SHA-256 added to the same SHA256.txt. Nothing to sign: a browser checks no signature on a
+      # folder loaded by hand.
+      - name: Pack Zenlo-ZaloWeb.zip
+        shell: bash
+        run: |
+          node scripts/pack-ext.mjs
+          cp build/ext/Zenlo-ZaloWeb.zip build/setup/
+          cat build/ext/SHA256.txt >> build/setup/SHA256.txt
+
       - name: Hand the files to the publish job
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -113,6 +124,7 @@ jobs:
           path: |
             build/setup/Zenlo-Setup.exe
             build/setup/Zenlo-Setup.zip
+            build/setup/Zenlo-ZaloWeb.zip
             build/setup/SHA256.txt
           if-no-files-found: error
 
@@ -137,18 +149,26 @@ jobs:
           subject-path: |
             build/setup/Zenlo-Setup.exe
             build/setup/Zenlo-Setup.zip
+            build/setup/Zenlo-ZaloWeb.zip
 
       - name: Publish the release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          hash=$(cut -d' ' -f1 build/setup/SHA256.txt)
-          gh release create "$GITHUB_REF_NAME" build/setup/Zenlo-Setup.zip build/setup/Zenlo-Setup.exe build/setup/SHA256.txt \
+          hash=$(grep ' Zenlo-Setup.exe$' build/setup/SHA256.txt | cut -d' ' -f1)
+          ext_hash=$(grep ' Zenlo-ZaloWeb.zip$' build/setup/SHA256.txt | cut -d' ' -f1)
+          if [ -z "$hash" ] || [ -z "$ext_hash" ]; then
+            echo "::error::SHA256.txt does not list both Zenlo-Setup.exe and Zenlo-ZaloWeb.zip."
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" build/setup/Zenlo-Setup.zip build/setup/Zenlo-Setup.exe build/setup/Zenlo-ZaloWeb.zip build/setup/SHA256.txt \
             --repo "$GITHUB_REPOSITORY" \
             --title "Zenlo $GITHUB_REF_NAME" \
             --notes "SHA-256 của Zenlo-Setup.exe: \`$hash\`
           Zenlo-Setup.zip chứa đúng file Zenlo-Setup.exe này.
+
+          SHA-256 của Zenlo-ZaloWeb.zip (Zenlo cho Zalo web): \`$ext_hash\`
 
           Kiểm tra file tải về: \`Get-FileHash .\\Zenlo-Setup.exe -Algorithm SHA256\`
           Kiểm tra nguồn gốc build: \`gh attestation verify .\\Zenlo-Setup.exe --repo $GITHUB_REPOSITORY\`

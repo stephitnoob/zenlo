@@ -1,5 +1,6 @@
-# Checks every push to main and every pull request: lint, the unit tests, and the main process
-# against a fake Gemini and a fake Codex (npm test). No real AI is called and no secret is used.
+# Checks every push to main and every pull request: lint, the unit tests, the main process
+# against a fake Gemini and a fake Codex (npm test), and the extension's zip. No real AI is called
+# and no secret is used.
 name: CI
 
 on:
@@ -37,3 +38,7 @@ jobs:
 
       - name: Tests
         run: npm test
+
+      # The extension for Zalo web, built by npm test: a release build that packs (no dev reload)
+      - name: Pack the extension for Zalo web
+        run: node scripts/pack-ext.mjs
