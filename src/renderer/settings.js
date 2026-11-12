@@ -252,7 +252,7 @@
       const masks = saved && Array.isArray(saved.masks) ? saved.masks : ((await window.$zenlo.getSettings()) || {}).geminiKeys || []
       renderKeys(masks)
       const count = masks.length
-      status.textContent = count ? `Đã lưu ${count} key (mã hoá bằng Windows trên máy này).` : 'Đã xoá mọi key.'
+      status.textContent = count ? `Đã lưu ${count} key (${Z.IS_WEB ? 'trong trình duyệt này, trang Zalo không đọc được' : 'mã hoá bằng Windows trên máy này'}).` : 'Đã xoá mọi key.'
       status.classList.remove('zenlo__status--error')
       loadGeminiModels()
       Z.drawer.refreshNotice()
@@ -369,7 +369,7 @@
     el.innerHTML = `
       <section class="zenlo-settings__section">
         <div class="zenlo-settings__heading">AI dùng để tóm tắt${help('chon-ai')}</div>
-        <div class="zenlo-settings__choice">
+        <div class="zenlo-settings__choice"${Z.IS_WEB ? ' hidden' : ''}>
           <label><input type="radio" name="zenlo-provider" value="claude"> Claude</label>
           <label><input type="radio" name="zenlo-provider" value="codex"> Codex (ChatGPT)</label>
           <label><input type="radio" name="zenlo-provider" value="gemini"> Gemini</label>
@@ -582,7 +582,7 @@
         link.type = 'button'
         link.className = 'zenlo__inline-link'
         link.textContent = 'Xem bản mới'
-        link.addEventListener('click', () => Z.openLink(Z.LINKS.versions))
+        link.addEventListener('click', () => Z.openLink(Z.LINKS.update))
         updateStatus.append(link)
       } else {
         updateStatus.textContent = 'Bạn đang dùng bản mới nhất.'

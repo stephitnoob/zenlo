@@ -38,6 +38,12 @@
 
   // The version from package.json, put in at build time
   const VERSION = typeof ZENLO_VERSION === 'string' ? ZENLO_VERSION : 'dev'
+  // The browser extension for Zalo web (dist-ext), as opposed to Zalo PC: only Gemini, older
+  // messages loaded from Zalo's server, updated by downloading the zip again
+  const IS_WEB = typeof ZENLO_WEB !== 'undefined' && ZENLO_WEB === true
+  // Where "Xem bản mới" leads: what is new (Zalo PC's installer updates in place), or how to put
+  // the new zip over the extension's folder
+  LINKS.update = IS_WEB ? `${LINKS.guide}#cap-nhat-web` : LINKS.versions
 
   // Added under a summary when it is copied (not shown in the panel), so a summary pasted into a
   // chat says where it came from
@@ -638,8 +644,9 @@
 
   // The AI the user chose in Zenlo's settings, with its model and effort
   function getAISettings () {
-    // Gemini by default: most people have no Claude Pro/Max plan with Claude Code installed
-    const provider = getSetting(STORAGE_KEYS.provider, PROVIDERS.map((p) => p.value), 'gemini')
+    // Gemini by default: most people have no Claude Pro/Max plan with Claude Code installed. The
+    // extension has only Gemini: a browser cannot run Claude Code or Codex.
+    const provider = IS_WEB ? 'gemini' : getSetting(STORAGE_KEYS.provider, PROVIDERS.map((p) => p.value), 'gemini')
     if (provider === 'gemini') {
       return {
         provider,
@@ -733,7 +740,13 @@
   async function checkForUpdate () {
     const bridge = window.$zenlo
     if (!bridge || !bridge.latestRelease) return { error: 'Bản Zenlo này chưa hỗ trợ kiểm tra bản mới.' }
-    const result = (await bridge.latestRelease()) || {}
+    let result
+    try {
+      result = (await bridge.latestRelease()) || {}
+    } catch (error) {
+      // Zalo web: the extension did not answer
+      return { error: error.message || String(error) }
+    }
     if (result.error || !result.tag) return { error: result.error || 'GitHub không trả lời.' }
     setSetting(STORAGE_KEYS.updateCheckedAt, String(Date.now()))
     const newer = VERSION !== 'dev' && compareVersions(result.tag, VERSION) > 0
@@ -1233,6 +1246,26 @@
     return (result && result.messages) || []
   }
 
+  // Zalo web keeps only the last few days of a group on the computer; older messages come from Zalo's
+  // server, the way Zalo itself loads them when the chat is scrolled up (50 at a time, measured
+  // 60–115 ms each on 2026-11-12). They land in the same store, so the reading goes on from there.
+  // Chats with one person cannot be loaded this way: Zalo web only has what came since it was
+  // logged in, and what was synced from the phone.
+  function getServerLoader () {
+    if (!cache.serverLoader) cache.serverLoader = required(findExport('2+yl', 'c', (v) => typeof v.loadOldMessagesFromCloudForConversation === 'function'), 'bộ tải tin cũ')
+    return cache.serverLoader
+  }
+
+  // true when the server sent older messages than `oldest` (a message of the store)
+  async function loadOlderFromServer (convId, oldest) {
+    try {
+      const result = await getServerLoader().loadOldMessagesFromCloudForConversation(convId, oldest, {})
+      return !!(result && Array.isArray(result.messages) && result.messages.length)
+    } catch (error) {
+      return false
+    }
+  }
+
   async function loadMessagesInRange (convId, fromMs, toMs, onProgress = () => {}) {
     const store = getMessageStore()
     const { MAX_MSG_ID, MAX_SENDDTTM } = getMessageConstants()
@@ -1241,15 +1274,25 @@
     let sendDttm = MAX_SENDDTTM
     let hasMore = true
     let oldestSeen = null
+    let oldestMessage = null
+    // The server was just asked at this point: when the store still has nothing older, stop
+    let askedServer = false
     const picked = new Map()
 
     while (hasMore) {
       const result = await store.getLastMessageFrom(convId, msgId, sendDttm, PAGE_SIZE, false)
       const page = (result && result.messages) || []
       if (!page.length) {
+        // Zalo web: the store ran out but Zalo knows of older messages
+        if (IS_WEB && !askedServer && result && result.hasMore && oldestMessage && oldestSeen >= fromMs) {
+          askedServer = true
+          if (await loadOlderFromServer(convId, oldestMessage)) continue
+        }
         hasMore = false
         break
       }
+      askedServer = false
+      oldestMessage = page[0]
 
       // Each page is sorted old -> new and holds messages older than the anchor
       for (const message of page) {
@@ -2053,6 +2096,7 @@
     LINKS,
     openLink,
     VERSION,
+    IS_WEB,
     checkForUpdate,
     notifyUpdate,
     availableUpdate,

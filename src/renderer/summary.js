@@ -365,14 +365,17 @@
         setStatus(`Đang đọc tin nhắn… ${count} tin (đã lùi tới ${formatTime(oldest, true)})`)
       })
       if (cancelled) throw new Error('Đã dừng.')
+      // Zalo web has a chat with one person only from when it was logged in, plus what was synced
+      // from the phone (Zalo's "Đồng bộ tin nhắn"); a group's older messages come from Zalo's server
+      const syncHint = Z.IS_WEB && !String(convId).startsWith('g') ? ' Muốn có tin cũ hơn, bấm "Đồng bộ tin nhắn" trong Zalo web.' : ''
       if (!messageCount) {
-        setStatus('Không có tin nhắn nào trong khoảng thời gian này.')
+        setStatus(`Không có tin nhắn nào trong khoảng thời gian này.${localHistoryStart ? syncHint : ''}`)
         return
       }
 
       const rangeText = `${formatTime(fromMs, true)} – ${formatTime(toMs, true)}`
       const historyNote = localHistoryStart
-        ? ` Lưu ý: trên máy chỉ có tin nhắn từ ${formatTime(localHistoryStart, true)}.`
+        ? ` Lưu ý: ${Z.IS_WEB ? 'Zalo web' : 'trên máy'} chỉ có tin nhắn từ ${formatTime(localHistoryStart, true)}.${syncHint}`
         : ''
       Z.log('messages', messages.length, 'lines', lines.length)
 

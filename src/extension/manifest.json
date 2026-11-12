@@ -1,0 +1,74 @@
+{
+  "manifest_version": 3,
+  "name": "Zenlo",
+  "description": "Tóm tắt hội thoại và Bản tin cho Zalo web, bằng Gemini với API key của bạn.",
+  "version": "0.0.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvrWF9/t4lJyXzS4NxdWacP2zg6QaMs0pyqHhOAHkQ3NUgpv93bPjI4s2o4oOXEiUucTVbbqf9GAryBYulXjk4qjbLKmM+nXz6uPsHAKqj2UEqyZjyNzaHDFk/UirRZiVOFqV8Xc3SRAD10ZDyCN4At5e47iPzg9mLgnFMu2XnSm9H0a+a/ij4kAsKgWX5fdqz0sSUOEuY3mtwBxmlJVWcefRFzfkWBgF87YvDImbnj6LOp23gn4N6dCwq/h2YKqNxuIFLWBOTxYzdd9HHP6Jz1j3YNIBSMzsXMPZKGd8o0pcLfxm3szC/kBwMP7Pk9UvM3uqcH5AbuPqgEdh+89QnQIDAQAB",
+  "minimum_chrome_version": "111",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Mở Zalo web",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://chat.zalo.me/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.zalo.me/*"
+      ],
+      "js": [
+        "zenlo-bridge.js"
+      ],
+      "run_at": "document_start",
+      "world": "ISOLATED"
+    },
+    {
+      "matches": [
+        "https://chat.zalo.me/*"
+      ],
+      "js": [
+        "zenlo-shim.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://chat.zalo.me/*"
+      ],
+      "js": [
+        "zenlo.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "zenlo.css",
+        "build-id.txt"
+      ],
+      "matches": [
+        "https://chat.zalo.me/*"
+      ]
+    }
+  ]
+}

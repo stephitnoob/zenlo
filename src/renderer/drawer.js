@@ -64,7 +64,7 @@
     handle.addEventListener('pointerdown', startDrag)
     handle.addEventListener('dblclick', resetWidth)
     el.querySelector('.js-drawer-notice-action').addEventListener('click', (event) => {
-      if (event.target.closest('.zenlo-drawer__notice').dataset.update) Z.openLink(Z.LINKS.versions)
+      if (event.target.closest('.zenlo-drawer__notice').dataset.update) Z.openLink(Z.LINKS.update)
       else open('settings')
     })
     el.querySelector('.js-drawer-ask-yes').addEventListener('click', async () => {
