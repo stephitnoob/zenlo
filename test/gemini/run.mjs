@@ -235,6 +235,18 @@ await test('Key không hợp lệ: dừng, báo đúng lý do, không đổ cho 
   assert.equal(calls.length, 1)
   assert.match(last.message, /không hợp lệ/)
   assert.doesNotMatch(last.message, /hết lượt/)
+  // One period at the end, not the reason's own plus the message's ("không hợp lệ..")
+  assert.doesNotMatch(last.message, /\.\./)
+})
+
+await test('Lời báo lỗi của Google có key: chỉ hiện key đã che', async () => {
+  const leaked = 'AIzaLEAKEDLEAKEDLEAKEDLEAKED0000'
+  const body = JSON.stringify({ error: { message: `Request with key ${leaked} is malformed` } })
+  script = { 'gemini-3.6-flash': [{ status: 400, body }], 'gemini-3.5-flash': [{ status: 400, body }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'error')
+  assert.ok(!last.message.includes(leaked), last.message)
+  assert.match(last.message, /AIza…0000/)
 })
 
 await test('403 của riêng một model (một key): sang model kế tiếp, không bỏ key', async () => {
