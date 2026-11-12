@@ -45,8 +45,8 @@
 <main class="wrap">
 <article class="doc doc--page">
   <h1>Chính sách quyền riêng tư</h1>
-  <p class="lede">Cập nhật 03/11/2026</p>
-  <p>Zenlo là một tiện ích cho Zalo, chạy trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.</p>
+  <p class="lede">Cập nhật 12/11/2026</p>
+  <p>Zenlo là một tiện ích cho Zalo, chạy trên máy tính của bạn: trong Zalo trên Windows, hoặc trong Zalo web dưới dạng tiện ích trình duyệt (những điểm khác của bản này ở <a class="link" href="#zalo-web">mục riêng</a>). Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.</p>
 
   <h2>Tóm tắt</h2>
   <ul>
@@ -118,6 +118,25 @@
     <li>Gỡ Zenlo bằng <code>Zenlo-Setup.exe</code> (chọn "2. Gỡ Zenlo"), rồi xoá thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu, API key, ghi nhận hết lượt). Gỡ bằng lối tắt <b>Zenlo - Cài đặt</b> thì xoá thêm file <code>%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe</code> mà bộ cài báo còn lại.</li>
     <li>Gỡ xong, cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng <code>@Zenlo:</code>). Zalo không dùng tới và không gửi chúng đi. Trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm <b>Kiểm tra kết nối</b>, và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.</li>
   </ul>
+
+  <h2 id="zalo-web">Zenlo cho Zalo web</h2>
+  <p>Bản cho Zalo web là một tiện ích trình duyệt (tệp <code>Zenlo-ZaloWeb.zip</code>), chỉ chạy trong trang <code>chat.zalo.me</code>. Các mục trên vẫn đúng với bản này, trừ những điểm sau.</p>
+  <ul>
+    <li><b>Đọc từ đâu:</b> từ dữ liệu Zalo web lưu trong trình duyệt. Khi khoảng bạn chọn cũ hơn những tin trình duyệt đang có, Zenlo nhờ Zalo web tải thêm tin cũ của hội thoại đó từ máy chủ Zalo (máy chủ chỉ trả thêm tin cho nhóm), như khi bạn cuộn lên đọc tin cũ. Yêu cầu này đi từ Zalo web tới máy chủ Zalo bằng tài khoản Zalo của bạn.</li>
+    <li><b>Gửi tới đâu:</b> chỉ Gemini (<code>generativelanguage.googleapis.com</code>), bằng API key của bạn; bản này không dùng Claude hay ChatGPT. Kiểm tra bản mới hỏi <code>api.github.com</code> như ở bản Windows. Ngoài hai địa chỉ này và máy chủ Zalo ở trên, tiện ích không kết nối tới đâu khác.</li>
+    <li><b>Quyền xin trình duyệt:</b> chạy trên <code>chat.zalo.me</code> và có bộ nhớ riêng của tiện ích (<code>storage</code>, <code>unlimitedStorage</code>). Tiện ích không có quyền đọc các trang khác, các tab khác hay lịch sử duyệt web.</li>
+    <li><b>Máy dùng chung:</b> dữ liệu của Zenlo không tách theo tài khoản Zalo. Người khác đăng nhập Zalo web trên cùng trình duyệt có thể thấy bản tóm tắt, Bản tin và ghi chú bạn đã lưu, và dùng được API key của bạn (nhưng không đọc được key). Nếu dùng chung máy, hãy dùng một hồ sơ trình duyệt riêng.</li>
+  </ul>
+  <table>
+    <thead><tr><th>Dữ liệu</th><th>Nơi lưu (chỉ trong trình duyệt trên máy bạn)</th></tr></thead>
+    <tbody>
+      <tr><td>Cài đặt, ghi chú cho AI, bản tóm tắt, Bản tin và các mục khác như ở bản Windows</td><td>Bộ nhớ của trang <code>chat.zalo.me</code> trong trình duyệt</td></tr>
+      <tr><td>Bản sao lưu của mục trên</td><td>Bộ nhớ riêng của tiện ích</td></tr>
+      <tr><td>API key Gemini</td><td>Bộ nhớ riêng của tiện ích. Trang Zalo web không đọc được; key <b>không</b> được Windows mã hoá như ở bản Windows</td></tr>
+      <tr><td>Ghi nhận model nào hết lượt trong ngày</td><td>Bộ nhớ riêng của tiện ích</td></tr>
+    </tbody>
+  </table>
+  <p>Xoá tiện ích khỏi trình duyệt (nút <b>Loại bỏ</b> hoặc <b>Xóa</b> trên thẻ Zenlo ở trang tiện ích) thì trình duyệt xoá luôn bộ nhớ riêng của tiện ích: API key, bản sao lưu và ghi nhận hết lượt. Các mục <code>@Zenlo:</code> trong bộ nhớ của trang <code>chat.zalo.me</code> vẫn còn, như ở bản Windows; trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, và xoá ghi chú trong từng hội thoại.</p>
 
   <h2 id="trang-web">Trang web này</h2>
   <p>Trang web của Zenlo đếm lượt xem bằng <a class="link" href="https://www.goatcounter.com/" rel="noopener">GoatCounter</a>, một dịch vụ thống kê mã nguồn mở, để tác giả biết có bao nhiêu người ghé xem và bao nhiêu người bấm Tải về.</p>

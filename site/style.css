@@ -1421,6 +1421,91 @@ form.zw__composer:focus-within {
   user-select: all;
 }
 
+/* The guide's steps (Zenlo cho Zalo web): two by two, a line of text under each picture */
+.doc .steps--guide {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 20px;
+  margin: 18px 0 24px;
+  padding: 0;
+}
+
+.doc .steps--guide li {
+  margin: 0;
+}
+
+.doc .steps--guide h4 {
+  margin: 6px 0 12px;
+  color: var(--text);
+  font-size: 17px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.doc .steps--guide p {
+  margin: 12px 0 0;
+  font-size: 15px;
+}
+
+.vis__path,
+.vis__url {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.vis__url {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.vis__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* A switch turned on */
+.vis__toggle i {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--accent);
+}
+
+.vis__toggle i::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.vis__btn {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.download--guide {
+  margin: 18px 0 8px;
+}
+
 .download {
   display: flex;
   flex-wrap: wrap;
@@ -1444,7 +1529,7 @@ form.zw__composer:focus-within {
   line-height: 1.65;
 }
 
-/* Other platforms, not out yet */
+/* Other platforms: macOS (not out yet), Zalo web (a link to the guide) */
 .platforms {
   display: flex;
   flex-wrap: wrap;
@@ -2174,6 +2259,7 @@ form.zw__composer:focus-within {
 
   .yours,
   .steps,
+  .doc .steps--guide,
   .fit,
   .warn-steps,
   .treat__pay,

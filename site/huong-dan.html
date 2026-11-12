@@ -62,7 +62,7 @@
 
       <section id="cai-zenlo">
         <h3>Cài Zenlo</h3>
-        <p>Cần Windows 10 hoặc 11 và Zalo đã cài sẵn.</p>
+        <p>Cần Windows 10 hoặc 11 và Zalo đã cài sẵn. Dùng Zalo trên trình duyệt thì xem <a class="link" href="#zalo-web">Zenlo cho Zalo web</a>.</p>
         <ol>
           <li>Tải Zenlo ở <a class="link" href="./#cai-dat">trang chủ</a>. File tải về là <code>Zenlo-Setup.zip</code>: chuột phải vào file → <b>Extract All</b> (Giải nén tất cả) → <b>Extract</b>, rồi mở <code>Zenlo-Setup.exe</code> trong thư mục vừa giải nén. Nếu file tải về là <code>Zenlo-Setup.exe</code> thì mở luôn. Windows có thể hiện cảnh báo, xem <a class="link" href="#canh-bao">cách bỏ qua</a> ngay bên dưới.</li>
           <li>Cửa sổ cài đặt hiện ba lựa chọn: gõ <code>1</code> rồi Enter để cài.</li>
@@ -349,6 +349,104 @@
       <p>Dữ liệu của Zenlo vẫn để lại trên máy, phòng khi bạn cài lại: thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu, API key) và vài mục nhỏ trong bộ nhớ của Zalo (cài đặt, ghi chú, thứ tự Bản tin, cảm xúc dùng gần đây). Muốn xoá gần hết: trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, xoá ghi chú trong từng hội thoại; gỡ xong thì xoá thư mục <code>%APPDATA%\Zenlo</code>. Chỉ còn ô tick, thứ tự Bản tin, cảm xúc bạn chọn và độ rộng khung Zenlo, không có nội dung tin nhắn.</p>
     </section>
 
+    <section class="part" id="zalo-web">
+      <h2>Zenlo cho Zalo web</h2>
+      <p>Dùng Zalo trên trình duyệt (<code>chat.zalo.me</code>) thì cài Zenlo vào trình duyệt như một tiện ích. Chạy trên Edge và Chrome ở máy tính.</p>
+      <div class="download download--guide">
+        <a class="btn js-download-web" href="https://github.com/stephitnoob/zenlo/releases/latest/download/Zenlo-ZaloWeb.zip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span class="js-download-web-label">Tải Zenlo cho Zalo web</span>
+        </a>
+        <div class="download__facts">
+          <span class="js-web-version">–</span> · <span class="js-web-size">–</span> · miễn phí<br>
+          SHA-256 của Zenlo-ZaloWeb.zip <span class="js-web-sha">–</span>
+        </div>
+      </div>
+
+      <section id="cai-web">
+        <h3>Cài vào trình duyệt</h3>
+        <ol class="steps steps--guide">
+          <li>
+            <span class="steps__n">1</span>
+            <h4>Tải và giải nén</h4>
+            <div class="vis" aria-hidden="true">
+              <div class="vis__file">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M10 12h2M10 15h2M10 18h2"/></svg>
+                <div><b>Zenlo-ZaloWeb.zip</b><small>Extract All → Extract</small></div>
+              </div>
+              <span class="vis__path">Documents › Zenlo-ZaloWeb</span>
+            </div>
+            <p>Chuột phải vào file → <b>Extract All</b> (Giải nén tất cả) → <b>Extract</b>. Chuyển thư mục vừa giải nén tới chỗ cố định, ví dụ Documents: trình duyệt chạy Zenlo từ thư mục này, xoá thư mục là mất Zenlo.</p>
+          </li>
+          <li>
+            <span class="steps__n">2</span>
+            <h4>Bật chế độ nhà phát triển</h4>
+            <div class="vis" aria-hidden="true">
+              <span class="vis__url">edge://extensions</span>
+              <div class="vis__toggle"><span>Chế độ nhà phát triển</span><i class="warn__pick"></i></div>
+            </div>
+            <p>Gõ vào thanh địa chỉ <code>edge://extensions</code> (Edge) hoặc <code>chrome://extensions</code> (Chrome và trình duyệt khác), Enter. Bật <b>Chế độ nhà phát triển</b> (Chrome: <b>Chế độ dành cho nhà phát triển</b>; Developer mode).</p>
+          </li>
+          <li>
+            <span class="steps__n">3</span>
+            <h4>Chọn thư mục</h4>
+            <div class="vis" aria-hidden="true">
+              <span class="vis__btn warn__pick">Tải phần mở rộng đã giải nén</span>
+              <div class="vis__file">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <div><b>Zenlo-ZaloWeb</b><small>manifest.json · zenlo.js</small></div>
+              </div>
+            </div>
+            <p>Bấm <b>Tải phần mở rộng đã giải nén</b> (Chrome: <b>Tải tiện ích đã giải nén</b>; Load unpacked), chọn thư mục <b>Zenlo-ZaloWeb</b>. Thẻ Zenlo hiện ra trong danh sách tiện ích.</p>
+          </li>
+          <li>
+            <span class="steps__n">4</span>
+            <h4>Mở Zalo web</h4>
+            <div class="vis">
+              <div class="vis__bar">
+                <div class="vis__rail" aria-hidden="true">
+                  <i></i><i></i>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+                  <i></i>
+                </div>
+                <span class="muted">chat.zalo.me<br>Lần đầu: dán key Gemini.</span>
+              </div>
+            </div>
+            <p>Mở <code>chat.zalo.me</code>, hoặc tải lại tab Zalo web đang mở. Nút Zenlo nằm ở thanh bên trái. Lần đầu cần dán key Gemini, xem <a class="link" href="#lay-key">cách lấy</a>.</p>
+          </li>
+        </ol>
+        <p>Trình duyệt có thể nhắc tắt các tiện ích ở chế độ nhà phát triển. Đóng lời nhắc đó thì Zenlo vẫn chạy.</p>
+        <div class="tip">Chỉ tải Zenlo-ZaloWeb.zip từ trang này hoặc <a class="link" href="https://github.com/stephitnoob/zenlo/releases" rel="noopener">trang phát hành</a>. Tiện ích cài theo cách này không qua kiểm duyệt của cửa hàng nào, nên bản do người khác sửa có thể đọc được tin nhắn Zalo web của bạn. Kiểm tra file: mở PowerShell ở thư mục chứa file, chạy <code>Get-FileHash .\Zenlo-ZaloWeb.zip</code>, so với dòng SHA-256 ở trên.</div>
+      </section>
+
+      <section id="cap-nhat-web">
+        <h3>Cập nhật</h3>
+        <p>Có bản mới thì đầu khung Zenlo hiện dòng báo, nếu bạn đã chọn <a class="link" href="#phien-ban">tự kiểm tra bản mới</a>.</p>
+        <ol>
+          <li>Tải Zenlo-ZaloWeb.zip bản mới ở <a class="link" href="#zalo-web">đầu mục này</a>.</li>
+          <li>Giải nén vào đúng thư mục cũ: chuột phải → <b>Extract All</b> → <b>Browse</b>, chọn thư mục Zenlo-ZaloWeb cũ → <b>Extract</b>. Windows hỏi thì chọn <b>Replace the files in the destination</b> (Thay thế các tệp ở đích).</li>
+          <li>Trong trang tiện ích, bấm nút tải lại <b>↻</b> trên thẻ Zenlo, rồi tải lại tab Zalo web.</li>
+        </ol>
+        <p>Key Gemini và cài đặt vẫn còn nguyên. Đừng xoá Zenlo khỏi trình duyệt rồi cài lại: xoá tiện ích là xoá luôn key đã lưu.</p>
+      </section>
+
+      <section id="zalo-web-khac">
+        <h3>Khác với bản Windows</h3>
+        <ul>
+          <li><b>Chỉ dùng Gemini.</b> Claude và ChatGPT (Codex) cần chương trình cài trên máy, trình duyệt không gọi được.</li>
+          <li><b>Tin cũ có giới hạn.</b> Zalo web chỉ có tin nhắn trong một khoảng gần đây. Với nhóm, Zenlo tự tải thêm tin cũ từ máy chủ Zalo cho đủ khoảng bạn chọn. Với trò chuyện riêng, Zalo web chỉ có tin từ lúc bạn đăng nhập Zalo web và phần đã đồng bộ từ điện thoại. Khoảng bạn chọn cũ hơn những tin có được thì Zenlo báo tin cũ nhất có từ ngày nào.</li>
+          <li><b>Key Gemini</b> nằm trong bộ nhớ riêng của tiện ích, trong trình duyệt. Trang Zalo web không đọc được, nhưng key không được Windows mã hoá như ở bản Windows.</li>
+          <li><b>Mỗi trình duyệt một bộ cài đặt.</b> Cài đặt, ghi chú và bản tóm tắt lưu trong trình duyệt đang dùng, không đi theo sang trình duyệt hay máy khác.</li>
+          <li><b>Không cần cài lại khi Zalo cập nhật.</b> Có bản Zenlo mới thì chỉ có dòng báo trong khung Zenlo, không có thông báo của Windows.</li>
+        </ul>
+      </section>
+
+      <section id="go-zenlo-web">
+        <h3>Gỡ</h3>
+        <p>Trong trang tiện ích, bấm <b>Loại bỏ</b> (Chrome: <b>Xóa</b>; Remove) trên thẻ Zenlo, rồi xoá thư mục Zenlo-ZaloWeb. Key Gemini và bản sao lưu trong tiện ích bị xoá theo. Cài đặt, ghi chú và bản tóm tắt vẫn nằm trong dữ liệu của trang Zalo web; muốn xoá thì trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, và xoá ghi chú trong từng hội thoại.</p>
+      </section>
+    </section>
+
     <section class="part" id="su-co">
       <h2>Xử lý sự cố</h2>
 
@@ -407,7 +505,7 @@
         <li><b>Gửi đi khi nào:</b> tin nhắn chỉ được gửi khi bạn bấm Tóm tắt hoặc Tạo bản tin. Kiểm tra kết nối chỉ gửi một câu thử; Kiểm tra bản mới chỉ hỏi GitHub số phiên bản mới nhất.</li>
         <li><b>Gửi gì:</b> chữ của các tin trong khoảng đã chọn, tên người gửi, mô tả ngắn cho ảnh, tệp, sticker (ví dụ tên tệp), và ghi chú bạn viết cho hội thoại đó. Ảnh và tệp không được gửi.</li>
         <li><b>Gửi tới đâu:</b> chỉ tới AI bạn chọn, qua HTTPS. Zenlo không có máy chủ riêng.</li>
-        <li><b>Lưu ở đâu:</b> chỉ trên máy bạn. Cài đặt, ghi chú và bản tóm tắt nằm trong Zalo, có bản sao trong <code>%APPDATA%\Zenlo</code>. API key được Windows mã hoá.</li>
+        <li><b>Lưu ở đâu:</b> chỉ trên máy bạn. Cài đặt, ghi chú và bản tóm tắt nằm trong Zalo, có bản sao trong <code>%APPDATA%\Zenlo</code>. API key được Windows mã hoá. Bản Zalo web lưu mọi thứ trong trình duyệt, xem <a class="link" href="#zalo-web-khac">Khác với bản Windows</a>.</li>
       </ul>
       <p>Chi tiết đầy đủ ở trang <a class="link" href="privacy.html">Quyền riêng tư</a>. Mã nguồn để công khai tại <a class="link js-source" href="https://github.com/stephitnoob/zenlo">GitHub</a>.</p>
     </section>

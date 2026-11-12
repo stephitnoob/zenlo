@@ -1,8 +1,8 @@
 # Chính sách quyền riêng tư của Zenlo
 
-Cập nhật: 03/11/2026
+Cập nhật: 12/11/2026
 
-Zenlo là một tiện ích cho Zalo PC, chạy hoàn toàn trên máy tính của bạn. Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
+Zenlo là một tiện ích cho Zalo, chạy hoàn toàn trên máy tính của bạn: trong Zalo PC trên Windows, hoặc trong Zalo web dưới dạng tiện ích trình duyệt (những điểm khác của bản này ở [mục riêng](#zenlo-cho-zalo-web)). Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
 
 ## Tóm tắt
 
@@ -77,6 +77,24 @@ Mọi thứ chỉ nằm trên máy bạn:
 - Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, và xoá từng API key bằng nút ×.
 - Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` (bản sao lưu, API key, ghi nhận hết lượt). Gỡ bằng lối tắt **Zenlo - Cài đặt** thì xoá thêm file `%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe` mà bộ cài báo còn lại.
 - Gỡ xong, cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng `@Zenlo:`). Zalo không dùng tới và không gửi chúng đi. Trước khi gỡ, bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm **Kiểm tra kết nối**, và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.
+
+## Zenlo cho Zalo web
+
+Bản cho Zalo web là một tiện ích trình duyệt (tệp `Zenlo-ZaloWeb.zip`, mã ở `src/extension/`), chỉ chạy trong trang `chat.zalo.me`. Các mục trên vẫn đúng với bản này, trừ những điểm sau.
+
+- **Đọc từ đâu:** từ dữ liệu Zalo web lưu trong trình duyệt. Khi khoảng bạn chọn cũ hơn những tin trình duyệt đang có, Zenlo nhờ Zalo web tải thêm tin cũ của hội thoại đó từ máy chủ Zalo (máy chủ chỉ trả thêm tin cho nhóm), như khi bạn cuộn lên đọc tin cũ. Yêu cầu này đi từ Zalo web tới máy chủ Zalo bằng tài khoản Zalo của bạn.
+- **Gửi tới đâu:** chỉ Gemini (`generativelanguage.googleapis.com`), bằng API key của bạn; bản này không dùng Claude hay ChatGPT. Kiểm tra bản mới hỏi `api.github.com` như ở bản Windows. Ngoài hai địa chỉ này và máy chủ Zalo ở trên, tiện ích không kết nối tới đâu khác.
+- **Quyền xin trình duyệt:** chạy trên `chat.zalo.me` và có bộ nhớ riêng của tiện ích (`storage`, `unlimitedStorage`). Tiện ích không có quyền đọc các trang khác, các tab khác hay lịch sử duyệt web.
+- **Máy dùng chung:** dữ liệu của Zenlo không tách theo tài khoản Zalo. Người khác đăng nhập Zalo web trên cùng trình duyệt có thể thấy bản tóm tắt, Bản tin và ghi chú bạn đã lưu, và dùng được API key của bạn (nhưng không đọc được key). Nếu dùng chung máy, hãy dùng một hồ sơ trình duyệt riêng.
+
+| Dữ liệu | Nơi lưu (chỉ trong trình duyệt trên máy bạn) |
+|---|---|
+| Cài đặt, ghi chú cho AI, bản tóm tắt, Bản tin và các mục khác như ở bản Windows | Bộ nhớ của trang `chat.zalo.me` trong trình duyệt |
+| Bản sao lưu của mục trên | Bộ nhớ riêng của tiện ích |
+| API key Gemini | Bộ nhớ riêng của tiện ích. Trang Zalo web không đọc được; key **không** được Windows mã hoá như ở bản Windows |
+| Ghi nhận model nào hết lượt trong ngày | Bộ nhớ riêng của tiện ích |
+
+Xoá tiện ích khỏi trình duyệt (nút **Loại bỏ** hoặc **Xóa** trên thẻ Zenlo ở trang tiện ích) thì trình duyệt xoá luôn bộ nhớ riêng của tiện ích: API key, bản sao lưu và ghi nhận hết lượt. Các mục `@Zenlo:` trong bộ nhớ của trang `chat.zalo.me` vẫn còn, như ở bản Windows; trước khi gỡ, bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt, và xoá ghi chú trong từng hội thoại.
 
 ## Trang web
 

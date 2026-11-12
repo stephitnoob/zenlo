@@ -23,11 +23,12 @@
   count(window.location.pathname, document.title, false)
 
   document.addEventListener('click', (event) => {
-    const link = event.target.closest('.js-download')
+    const link = event.target.closest('.js-download, .js-download-web')
     if (!link || link.getAttribute('aria-disabled') === 'true') return
-    // Which button: the one in the install chapter of the home page or the one of the newest release
-    // (the top bar's "Tải về" only scrolls to the install chapter and is not counted)
-    const where = link.closest('.release') ? 'phien-ban' : 'muc-cai-dat'
+    // Which button: the one in the install chapter of the home page, the one of the newest release,
+    // or the extension for Zalo web in the guide (the top bar's "Tải về" only scrolls to the install
+    // chapter and is not counted)
+    const where = link.classList.contains('js-download-web') ? 'zalo-web' : link.closest('.release') ? 'phien-ban' : 'muc-cai-dat'
     count(`tai-ve/${where}`, `Bấm Tải về (${window.location.pathname})`, true)
   })
 })()

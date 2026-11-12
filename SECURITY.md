@@ -8,7 +8,7 @@ Gửi email tới **stephit.zenlo@outlook.com** với tiêu đề bắt đầu b
 
 Nên kèm:
 
-- phiên bản Zenlo và Zalo PC;
+- phiên bản Zenlo và Zalo PC (bản Zalo web: tên và phiên bản trình duyệt);
 - các bước tái hiện;
 - tác động bạn thấy được (ví dụ: lộ tin nhắn, lộ API key, chạy mã).
 
@@ -35,6 +35,7 @@ Ngoài phạm vi: lỗ hổng của chính Zalo, Claude Code, Codex, Gemini API;
 - **Hiển thị:** mọi nội dung từ tin nhắn và từ AI được escape trước khi đưa lên giao diện. Link trong bản tóm tắt chỉ bấm được khi địa chỉ có đúng trong tin nhắn gốc của hội thoại đó, để một tin nhắn không thể dụ AI tạo link mang nội dung hội thoại ra ngoài; mỗi thẻ Bản tin chỉ nhận phần trả lời đầu tiên mang số của nó.
 - **IPC:** tiến trình chính chỉ nhận yêu cầu từ trang nội bộ của Zalo (`file://`).
 - **API key:** mã hoá bằng Windows DPAPI (`safeStorage`), lưu ngoài thư mục của Zalo.
+- **Bản Zalo web (tiện ích trình duyệt):** chỉ chạy trên `chat.zalo.me`, không xin quyền đọc tab, trang khác hay lịch sử. API key nằm trong bộ nhớ riêng của tiện ích (không được mã hoá như DPAPI) và chỉ content script riêng của tiện ích (`bridge.js`) đọc được; trang Zalo web chỉ nhận key đã che. Như ở bản PC, script của trang dùng được `window.$zenlo` để chạy Gemini hay đổi key, nhưng không đọc được key. Gemini được gọi từ content script, không từ trang.
 - **Không tự cập nhật ngầm.** Bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc (build provenance) để ai cũng kiểm chứng được.
 
 ## Kiểm chứng một bản tải về
@@ -50,3 +51,5 @@ Kiểm tra file được build từ đúng kho mã này (cần GitHub CLI):
 ```powershell
 gh attestation verify .\Zenlo-Setup.exe --repo stephitnoob/zenlo
 ```
+
+Bản Zalo web: so SHA-256 của chính file `Zenlo-ZaloWeb.zip` (dòng thứ hai trong `SHA256.txt`, cũng có trong ghi chú phát hành), và kiểm tra nguồn gốc bằng `gh attestation verify .\Zenlo-ZaloWeb.zip --repo stephitnoob/zenlo`. Mã trong zip không bị rút gọn (minify), đọc được trực tiếp.

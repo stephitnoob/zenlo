@@ -1,6 +1,6 @@
 # Zenlo
 
-Trình quản lí hội thoại cho **Zalo PC** (Windows), dùng AI (Gemini, Claude hoặc ChatGPT qua Codex) để đọc giúp bạn.
+Trình quản lí hội thoại cho **Zalo PC** (Windows), dùng AI (Gemini, Claude hoặc ChatGPT qua Codex) để đọc giúp bạn. Có thêm bản cho **Zalo web** (`chat.zalo.me`), một tiện ích trình duyệt chỉ dùng Gemini.
 
 ## Tính năng
 
@@ -30,12 +30,14 @@ Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases c�
 
 Bộ cài sửa file `resources\app.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc (mọi thư mục phiên bản Zalo có Zenlo). Bộ cài sửa bản Zalo đang chạy; Zalo đang tắt thì sửa bản mới nhất, bỏ qua thư mục thiếu `Zalo.exe` hay có số phiên bản là một ngày quá xa trong tương lai (như `Zalo-27.12.31`).
 
+Zalo web: tải `Zenlo-ZaloWeb.zip` (cũng trên Releases), giải nén vào một thư mục cố định, mở `edge://extensions` hoặc `chrome://extensions`, bật Chế độ nhà phát triển (Chrome: Chế độ dành cho nhà phát triển), bấm **Tải phần mở rộng đã giải nén** (Chrome: **Tải tiện ích đã giải nén**) và chọn thư mục đó. Cập nhật: giải nén bản mới đè lên thư mục cũ rồi bấm tải lại tiện ích; manifest có `key` nên mã tiện ích không đổi, key Gemini và cài đặt còn nguyên. Hướng dẫn có hình: [zenlo.io.vn/huong-dan.html#zalo-web](https://zenlo.io.vn/huong-dan.html#zalo-web).
+
 Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://zenlo.io.vn/ky-so.html) · [Các phiên bản](https://zenlo.io.vn/phien-ban.html)
 
 ## Yêu cầu (để phát triển)
 
 - Zalo PC trên Windows
-- Node.js 22 trở lên
+- Node.js 22.2 trở lên
 - Để build bộ cài `Zenlo-Setup.exe`: .NET Framework 4.x có sẵn trong Windows 10/11 (dùng trình biên dịch C# `csc.exe` đi kèm)
 - Một trong ba: API key Gemini; Claude Code đã đăng nhập bằng gói Claude Pro/Max; hoặc Codex đã đăng nhập bằng gói ChatGPT
 
@@ -48,13 +50,15 @@ npm run zalo:install
 
 | Lệnh | Việc |
 |---|---|
-| `npm run build` | Build Zenlo vào `dist/` |
+| `npm run build` | Build Zenlo vào `dist/`, và bản Zalo web vào `dist-ext/` |
 | `npm run zalo:install` | Build rồi cài Zenlo vào Zalo (chép file) |
 | `npm run zalo:dev` | Build rồi cài ở chế độ phát triển: Zalo dùng thẳng thư mục `dist/`, sửa xong chỉ cần build rồi bấm **Ctrl+Shift+R** trong Zalo |
 | `npm run dev` | Tự build lại mỗi khi sửa code |
 | `npm run zalo:status` | Xem Zenlo đang được cài thế nào |
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
 | `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 200 KB, không cần Node.js) kèm SHA-256 |
+| `npm run build:ext` | Build rồi đóng gói bản Zalo web thành `build/ext/Zenlo-ZaloWeb.zip` kèm SHA-256 |
+| `npm run build:ext-dev` | Build bản Zalo web để phát triển: nạp `dist-ext/` vào trình duyệt một lần, sau đó mỗi lần build (hoặc khi `npm run dev` đang chạy) tiện ích và tab Zalo web tự nạp lại |
 | `npm run site` | Xem trang web trên máy ở http://127.0.0.1:4173 (không lưu cache, luôn thấy bản mới nhất) |
 | `npm run lint` | Kiểm tra cách viết code (standard) |
 | `npm test` | Build rồi chạy cả ba bộ test bên dưới (CI chạy lệnh này mỗi lần push) |
@@ -70,9 +74,12 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 |---|---|
 | `src/renderer/` | Chạy trong trang Zalo, gom thành `dist/zenlo.js`: `core.js` (dữ liệu và trạng thái chưa đọc của Zalo, bản chép hội thoại, prompt, gọi AI), `drawer.js` (khung Zenlo, nút ở thanh trái), `summary.js` (Tóm tắt), `digest.js` (Bản tin), `settings.js` (Cài đặt), `reactions.js` (nút + và thanh cảm xúc nhanh), `styles.js` (gắn lại CSS khi Zalo xoá) |
 | `src/main/` | Tiến trình chính của Zalo: `main.js` chạy `claude -p`, `codex app-server` / `codex exec` hoặc gọi Gemini, lưu key mã hoá; `preload.js` là cầu nối `window.$zenlo` |
+| `src/extension/` | Bản Zalo web (tiện ích trình duyệt MV3): `manifest.json`; `shim.js` tạo `window.$zenlo` trong trang; `bridge.js` (content script riêng) giữ key, gọi Gemini, hỏi GitHub bản mới; `background.js` mở Zalo web khi bấm nút tiện ích; `dev-reload.js` chỉ có trong bản phát triển |
+| `src/shared/` | Dùng chung cho Zalo PC và Zalo web: `gemini.js` (chuỗi model Gemini, hạn mức, đọc câu trả lời) |
 | `src/styles/` | Giao diện (SCSS) |
 | `scripts/build.mjs` | Build bằng esbuild và sass |
 | `installer/` | Cài / gỡ vào Zalo PC: `zalo.js` cho các lệnh npm khi phát triển (có chế độ dev); `setup/Setup.cs` là bộ cài `Zenlo-Setup.exe` cho người dùng |
+| `scripts/pack-ext.mjs` | Đóng gói `dist-ext/` thành `Zenlo-ZaloWeb.zip` |
 | `scripts/build-setup.mjs` | Biên dịch bộ cài C# thành một file `.exe`, nhúng sẵn các file Zenlo đã build |
 | `test/` | `unit/`: thử các hàm của `core.js` và cách bộ cài chọn thư mục Zalo; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
 | `site/` | Trang web giới thiệu và tải về (GitHub Pages) |

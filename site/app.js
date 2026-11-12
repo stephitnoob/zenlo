@@ -65,12 +65,12 @@
   const onPhone = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent) ||
     (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
 
-  function copyLinkInstead (a) {
+  function copyLinkInstead (a, { leadText = 'Zenlo chạy trên máy tính Windows.', link = 'zenlo.io.vn/#cai-dat' } = {}) {
     const box = document.createElement('div')
     box.className = 'phone-get'
     const line = document.createElement('p')
     const lead = document.createElement('b')
-    lead.textContent = 'Zenlo chạy trên máy tính Windows.'
+    lead.textContent = leadText
     line.append(lead, ' Sao chép link, dán vào Cloud của tôi trên Zalo rồi mở trên máy tính.')
     const button = document.createElement('button')
     button.className = 'btn'
@@ -78,14 +78,14 @@
     button.textContent = 'Sao chép link'
     const shown = document.createElement('span')
     shown.className = 'phone-get__link'
-    shown.textContent = 'zenlo.io.vn/#cai-dat'
+    shown.textContent = link
     box.append(line, button, shown)
     a.replaceWith(box)
 
     button.addEventListener('click', async () => {
       let copied = false
       try {
-        await navigator.clipboard.writeText('https://zenlo.io.vn/#cai-dat')
+        await navigator.clipboard.writeText(`https://${link}`)
         copied = true
       } catch (error) {
         // In-app browsers often refuse the clipboard: select the link, and try the old way
@@ -100,7 +100,11 @@
     })
   }
 
-  if (onPhone) $$('.js-download').forEach(copyLinkInstead)
+  if (onPhone) {
+    $$('.js-download').forEach((a) => copyLinkInstead(a))
+    // The web zip is no use on a phone either: a link to the guide, for the computer
+    $$('.js-download-web').forEach((a) => copyLinkInstead(a, { leadText: 'Zenlo cho Zalo web chạy trên trình duyệt máy tính.', link: 'zenlo.io.vn/huong-dan.html#zalo-web' }))
+  }
 
   function setDownload (href, label) {
     $$('.js-download').forEach((a) => {
@@ -155,6 +159,24 @@
         setText('.js-download-step', 'Tải, giải nén, mở file')
       }
 
+      // The extension for Zalo web (guide), from v0.3.0. A release without it: no button to a missing file
+      const web = (release.assets || []).find((a) => a.name === 'Zenlo-ZaloWeb.zip')
+      if (web) {
+        const webSha = ((release.body || '').match(/Zenlo-ZaloWeb\.zip[^\n]*?\b([a-f0-9]{64})\b/) || [])[1]
+        setText('.js-web-version', release.tag_name || 'bản mới nhất')
+        setText('.js-web-size', web.size < 1048576 ? `${Math.round(web.size / 1024)} KB` : `${Math.round(web.size / 1048576)} MB`)
+        setText('.js-web-sha', webSha || 'xem trong ghi chú phát hành')
+      } else {
+        $$('.js-download-web').forEach((a) => {
+          a.href = '#zalo-web'
+          a.setAttribute('aria-disabled', 'true')
+        })
+        setText('.js-download-web-label', 'Sắp phát hành')
+        setText('.js-web-version', 'chưa có bản phát hành')
+        setText('.js-web-size', 'khoảng 90 KB')
+        setText('.js-web-sha', '–')
+      }
+
       // Only the home page and the versions page show the release facts
       if (!document.querySelector('.js-version, .js-size-small, .js-sha')) return
       const asset = zip || (release.assets || []).find((a) => a.name === 'Zenlo-Setup.exe')
@@ -179,5 +201,8 @@
       setText('.js-version', 'bản mới nhất')
       setText('.js-size', 'khoảng 200 KB')
       setText('.js-sha', 'xem trong ghi chú phát hành trên GitHub')
+      setText('.js-web-version', 'bản mới nhất')
+      setText('.js-web-size', 'khoảng 90 KB')
+      setText('.js-web-sha', 'xem trong ghi chú phát hành trên GitHub')
     })
 })()
