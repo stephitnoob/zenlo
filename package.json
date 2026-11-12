@@ -1,7 +1,7 @@
 {
   "name": "zenlo",
   "description": "Zenlo – trình quản lí hội thoại Zalo PC, tóm tắt hội thoại bằng AI",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "private": true,
   "author": "stephit",
   "license": "GPL-3.0-only",
