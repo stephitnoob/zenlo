@@ -233,8 +233,10 @@ h3 {
   text-underline-offset: 3px;
 }
 
-.link:hover {
-  text-decoration-style: solid;
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-style: solid;
+  }
 }
 
 :focus-visible {
@@ -290,8 +292,10 @@ h3 {
   text-decoration: none;
 }
 
-.top__link:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .top__link:hover {
+    color: var(--text);
+  }
 }
 
 .top__link {
@@ -318,8 +322,10 @@ h3 {
   cursor: pointer;
 }
 
-.icon-btn:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .icon-btn:hover {
+    color: var(--text);
+  }
 }
 
 .theme-sun,
@@ -364,9 +370,11 @@ h3 {
   transition: transform 0.18s cubic-bezier(0.3, 1.5, 0.5, 1), filter 0.15s;
 }
 
-.btn:hover {
-  filter: brightness(1.06);
-  transform: translateY(-2px) rotate(-0.6deg);
+@media (hover: hover) {
+  .btn:hover {
+    filter: brightness(1.06);
+    transform: translateY(-2px) rotate(-0.6deg);
+  }
 }
 
 .btn.is-pressed {
@@ -414,8 +422,10 @@ h3 {
   pointer-events: none;
 }
 
-.top .btn--small:hover::before {
-  transform: perspective(60px) rotateX(180deg);
+@media (hover: hover) {
+  .top .btn--small:hover::before {
+    transform: perspective(60px) rotateX(180deg);
+  }
 }
 
 /* The wax seal: two halves of one round "Z"; hover turns it, a press breaks it apart */
@@ -455,8 +465,10 @@ h3 {
   clip-path: polygon(56% 0, 100% 0, 100% 100%, 44% 100%);
 }
 
-.btn--seal:hover .seal {
-  transform: rotate(14deg) scale(1.06);
+@media (hover: hover) {
+  .btn--seal:hover .seal {
+    transform: rotate(14deg) scale(1.06);
+  }
 }
 
 .btn--seal.is-open .seal i:first-child {
@@ -594,8 +606,10 @@ h3 {
   animation: mail-rise 1s cubic-bezier(0.25, 0.9, 0.3, 1.1) 0.3s backwards;
 }
 
-.mail:hover .mail__letter {
-  transform: translateY(-10px);
+@media (hover: hover) {
+  .mail:hover .mail__letter {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes mail-rise {
@@ -1323,8 +1337,10 @@ form.zw__composer:focus-within {
   content: "]";
 }
 
-.cite:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .cite:hover {
+    text-decoration: underline;
+  }
 }
 
 /* The cited message, shown while a footnote is hovered */
@@ -1352,8 +1368,10 @@ form.zw__composer:focus-within {
   cursor: default;
 }
 
-.cite--static:hover {
-  text-decoration: none;
+@media (hover: hover) {
+  .cite--static:hover {
+    text-decoration: none;
+  }
 }
 
 .caret {
@@ -1741,9 +1759,11 @@ form.zw__composer:focus-within {
   transition: transform 0.15s;
 }
 
-.rx-bar button:hover {
-  background: var(--z-bubble);
-  transform: translateY(-3px) scale(1.12);
+@media (hover: hover) {
+  .rx-bar button:hover {
+    background: var(--z-bubble);
+    transform: translateY(-3px) scale(1.12);
+  }
 }
 
 .rx-bar .rx-plus {
@@ -1756,9 +1776,11 @@ form.zw__composer:focus-within {
   transition: transform 0.25s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
-.rx-bar .rx-plus:hover {
-  background: var(--accent);
-  transform: scale(1.08);
+@media (hover: hover) {
+  .rx-bar .rx-plus:hover {
+    background: var(--accent);
+    transform: scale(1.08);
+  }
 }
 
 .rx-bar .rx-plus[aria-expanded="true"] {
@@ -1845,10 +1867,16 @@ form.zw__composer:focus-within {
   transition: transform 0.12s, background-color 0.12s;
 }
 
-.rx-pick__grid button:hover,
 .rx-pick__grid button:focus-visible {
   background: var(--z-bubble);
   transform: scale(1.15);
+}
+
+@media (hover: hover) {
+  .rx-pick__grid button:hover {
+    background: var(--z-bubble);
+    transform: scale(1.15);
+  }
 }
 
 /* Every reaction, in two rows that flow in opposite directions and never stop; each row holds its
@@ -1948,9 +1976,11 @@ form.zw__composer:focus-within {
   opacity: 0.85;
 }
 
-.rx-river button:hover {
-  opacity: 1;
-  transform: rotate(-8deg) translateY(-6px) scale(1.15);
+@media (hover: hover) {
+  .rx-river button:hover {
+    opacity: 1;
+    transform: rotate(-8deg) translateY(-6px) scale(1.15);
+  }
 }
 
 /* A new stamp, pushed up through the belt into the gap the claw left */
@@ -2656,8 +2686,10 @@ form.zw__composer:focus-within {
   white-space: nowrap;
 }
 
-.get__guide:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .get__guide:hover {
+    text-decoration: underline;
+  }
 }
 
 .get__item .download__facts {
@@ -2716,9 +2748,11 @@ form.zw__composer:focus-within {
   font-weight: 600;
 }
 
-.btn--ghost:hover {
-  color: var(--text);
-  filter: none;
+@media (hover: hover) {
+  .btn--ghost:hover {
+    color: var(--text);
+    filter: none;
+  }
 }
 
 /* "Sắp có" lands like a rubber stamp in the middle of the screen */
@@ -2851,13 +2885,20 @@ form.zw__composer:focus-within {
   display: none;
 }
 
-.faq summary:hover {
-  color: var(--accent);
+@media (hover: hover) {
+  .faq summary:hover {
+    color: var(--accent);
+  }
 }
 
-.faq summary:hover,
 .faq details[open] summary {
   border-color: var(--accent);
+}
+
+@media (hover: hover) {
+  .faq summary:hover {
+    border-color: var(--accent);
+  }
 }
 
 .faq summary:focus-visible {
@@ -2898,9 +2939,14 @@ form.zw__composer:focus-within {
   clip-path: polygon(0 -1.5px, 100% -1.5px, 50% calc(100% - 1.5px));
 }
 
-.faq summary:hover .faq__flap::before,
 .faq details[open] .faq__flap::before {
   background: var(--accent);
+}
+
+@media (hover: hover) {
+  .faq summary:hover .faq__flap::before {
+    background: var(--accent);
+  }
 }
 
 .faq details[open]:not(.is-closing) .faq__flap {
@@ -3036,8 +3082,10 @@ form.zw__composer:focus-within {
   text-decoration: none;
 }
 
-.guide-link a:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .guide-link a:hover {
+    text-decoration: underline;
+  }
 }
 
 /* ---------- Footer ---------- */
@@ -3077,8 +3125,10 @@ form.zw__composer:focus-within {
   text-decoration: none;
 }
 
-.foot a:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .foot a:hover {
+    color: var(--text);
+  }
 }
 
 /* ---------- Guide and privacy pages ---------- */
@@ -3129,8 +3179,10 @@ form.zw__composer:focus-within {
   text-decoration: none;
 }
 
-.toc a:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .toc a:hover {
+    color: var(--text);
+  }
 }
 
 .toc a.on {
@@ -3710,9 +3762,14 @@ form.zw__composer:focus-within {
     }
   }
 
-  /* Long words (domain names, addresses) wrap instead of widening the page */
+  /* Long words (domain names, addresses) wrap instead of widening the page. In a table cell only
+     when a word alone is wider than its column: "anywhere" would let a column shrink to a few
+     letters and split "ChatGPT" in three. */
   .doc td,
-  .doc th,
+  .doc th {
+    overflow-wrap: break-word;
+  }
+
   .doc code {
     overflow-wrap: anywhere;
   }
@@ -3727,6 +3784,11 @@ form.zw__composer:focus-within {
   .doc th,
   .doc td {
     min-width: 8.5em;
+  }
+
+  /* Up to three columns fit the screen: no sideways scroll that hides the last one */
+  .doc table:not(:has(tr > :nth-child(4))) :is(th, td) {
+    min-width: 0;
   }
 
   .doc th,
@@ -3930,8 +3992,10 @@ form.zw__composer:focus-within {
   cursor: pointer;
 }
 
-.ticket__again:hover {
-  color: var(--accent);
+@media (hover: hover) {
+  .ticket__again:hover {
+    color: var(--accent);
+  }
 }
 
 .ticket__line {
@@ -4061,10 +4125,16 @@ form.zw__composer:focus-within {
   background: #c4b5fd;
 }
 
-.play__zen:hover,
 .play__zen[aria-pressed="true"] {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
+}
+
+@media (hover: hover) {
+  .play__zen:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+  }
 }
 
 .play__list {
@@ -4167,11 +4237,18 @@ form.zw__composer:focus-within {
   transition: background 0.2s, color 0.2s;
 }
 
-.play__open:hover,
 .play__open[aria-expanded="true"] {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
+}
+
+@media (hover: hover) {
+  .play__open:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
 }
 
 /* Zenlo docked: always its full width, slid in from the edge as its column opens */
@@ -4205,9 +4282,11 @@ form.zw__composer:focus-within {
   cursor: pointer;
 }
 
-.play__x:hover {
-  background: var(--z-bubble);
-  color: var(--z-text);
+@media (hover: hover) {
+  .play__x:hover {
+    background: var(--z-bubble);
+    color: var(--z-text);
+  }
 }
 
 .play__tabs button {
@@ -4223,8 +4302,10 @@ form.zw__composer:focus-within {
   cursor: pointer;
 }
 
-.play__tabs button:hover {
-  color: var(--z-text);
+@media (hover: hover) {
+  .play__tabs button:hover {
+    color: var(--z-text);
+  }
 }
 
 .play__tabs [aria-selected="true"] {
