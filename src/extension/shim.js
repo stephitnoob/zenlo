@@ -104,6 +104,9 @@
       getSettings: () => call('getSettings'),
       setGeminiKeys: (keys) => call('setGeminiKeys', keys),
       geminiStatus: () => call('geminiStatus'),
+      // The Zalo account logged in (its id): Gemini keys and the backup below are that account's.
+      // true, or { error }
+      useAccount: (uid) => call('useAccount', uid),
       // Backup of Zenlo's localStorage in the extension's own storage
       saveStorage: (data) => {
         call('saveStorage', data).catch(() => {})

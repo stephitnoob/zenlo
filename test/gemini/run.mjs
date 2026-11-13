@@ -98,7 +98,11 @@ require(path.join(ROOT, 'dist', 'zenlo-main.js'))
 // Zalo's main page, where Zenlo is added: only its main frame may use Zenlo
 const frame = { url: 'file:///C:/Zalo/resources/app.asar/pc-dist/index.html?type=24', routingId: 1, processId: 1 }
 const trusted = { senderFrame: frame, sender: { mainFrame: frame } }
+// Before Zalo says who is logged in, there are no keys to save or use
+assert.match(handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000']).error, /chưa biết tài khoản Zalo/)
+assert.equal(handlers['zenlo:account:use'](trusted, '1000'), true)
 handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000'])
+const ZENLO_DIR = path.join(appData, 'Zenlo')
 
 // Every event the page got in the last run
 const events = []
@@ -310,6 +314,61 @@ await test('Key đã lưu: giữ theo số thứ tự, thêm key mới, bỏ key
   await summarize()
   assert.equal(calls[0].key, 'AIzaSECONDKEY1111')
   assert.deepEqual(handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaFAKEKEY0000']), { masks: ['AIza…0000'] })
+})
+
+const maskedKeys = async () => ((await handlers['zenlo:gemini:status'](trusted)).keys || []).map((k) => k.masked)
+
+await test('Tài khoản Zalo khác: không thấy, không dùng key và bản sao lưu của người trước', async () => {
+  handlers['zenlo:storage:save'](trusted, { '@Zenlo:NOTE:c1': 'ghi chú của 1000' })
+  assert.equal(handlers['zenlo:account:use'](trusted, '2000'), true)
+  assert.deepEqual(await maskedKeys(), [])
+  assert.equal(handlers['zenlo:storage:load'](trusted), null)
+  script = {}
+  const last = await summarize()
+  assert.equal(last.type, 'error')
+  assert.equal(calls.length, 0)
+  assert.deepEqual(handlers['zenlo:settings:setGeminiKeys'](trusted, ['AIzaOTHERKEY2222']), { masks: ['AIza…2222'] })
+  handlers['zenlo:storage:save'](trusted, { '@Zenlo:NOTE:c2': 'ghi chú của 2000' })
+  // Back to the first account: its own keys and mirror, nothing of the second
+  handlers['zenlo:account:use'](trusted, '1000')
+  assert.deepEqual(await maskedKeys(), ['AIza…0000'])
+  assert.deepEqual(handlers['zenlo:storage:load'](trusted), { '@Zenlo:NOTE:c1': 'ghi chú của 1000' })
+  await summarize()
+  assert.equal(calls[0].key, 'AIzaFAKEKEY0000')
+})
+
+await test('Key và bản sao lưu từ trước khi có tài khoản: thuộc về tài khoản mở Zenlo đầu tiên', async () => {
+  const secretsFile = path.join(ZENLO_DIR, 'secrets.json')
+  const saved = fs.readFileSync(secretsFile, 'utf8')
+  // As Zenlo 0.3.0 left them (the test's "encryption" is base64 of the key)
+  const secrets = JSON.parse(saved)
+  secrets.geminiKeys = [Buffer.from('AIzaLEGACYKEY3333').toString('base64')]
+  fs.writeFileSync(secretsFile, JSON.stringify(secrets))
+  fs.writeFileSync(path.join(ZENLO_DIR, 'storage-backup.json'), JSON.stringify({ at: 1, data: { '@Zenlo:NOTE:c3': 'cũ' } }))
+  handlers['zenlo:account:use'](trusted, '3000')
+  assert.deepEqual(await maskedKeys(), ['AIza…3333'])
+  assert.deepEqual(handlers['zenlo:storage:load'](trusted), { '@Zenlo:NOTE:c3': 'cũ' })
+  assert.ok(!fs.existsSync(path.join(ZENLO_DIR, 'storage-backup.json')))
+  assert.equal(JSON.parse(fs.readFileSync(secretsFile, 'utf8')).geminiKeys, undefined)
+  // The next new account gets none of it
+  handlers['zenlo:account:use'](trusted, '4000')
+  assert.deepEqual(await maskedKeys(), [])
+  assert.equal(handlers['zenlo:storage:load'](trusted), null)
+  // An account that already has its own keeps them; the old ones are dropped
+  fs.writeFileSync(secretsFile, JSON.stringify({ ...JSON.parse(fs.readFileSync(secretsFile, 'utf8')), geminiKeys: [Buffer.from('AIzaLEGACYKEY5555').toString('base64')] }))
+  handlers['zenlo:account:use'](trusted, '1000')
+  assert.deepEqual(await maskedKeys(), ['AIza…0000'])
+  assert.equal(JSON.parse(fs.readFileSync(secretsFile, 'utf8')).geminiKeys, undefined)
+})
+
+await test('Mã tài khoản lạ hoặc từ khung khác: không nhận', async () => {
+  for (const uid of ['../x', '', '__proto__', 'a'.repeat(65), 42]) {
+    assert.ok(handlers['zenlo:account:use'](trusted, uid).error, String(uid))
+  }
+  const child = { url: frame.url, routingId: 2, processId: 1 }
+  assert.equal(handlers['zenlo:account:use']({ senderFrame: child, sender: { mainFrame: frame } }, '2000'), false)
+  // Still the first account
+  assert.deepEqual(await maskedKeys(), ['AIza…0000'])
 })
 
 await test('Trang Zalo: chỉ trả key đã che', async () => {

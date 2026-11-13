@@ -47,6 +47,9 @@ function exposeBridge () {
     geminiStatus: () => ipcRenderer.invoke('zenlo:gemini:status'),
     // What Claude Code or Codex can use here: { available: [{ id, label, efforts, defaultEffort }], known } or { error }
     checkModels: (provider) => ipcRenderer.invoke('zenlo:models:check', provider),
+    // The Zalo account logged in (its id): Gemini keys and the backup below are that account's.
+    // true, or { error }
+    useAccount: (uid) => ipcRenderer.invoke('zenlo:account:use', uid),
     // Backup of Zenlo's localStorage in %APPDATA%\Zenlo
     saveStorage: (data) => ipcRenderer.send('zenlo:storage:save', data),
     loadStorage: () => ipcRenderer.invoke('zenlo:storage:load'),

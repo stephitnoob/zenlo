@@ -17,7 +17,7 @@
     "build:ext": "npm run build && node scripts/pack-ext.mjs",
     "build:ext-dev": "node scripts/build.mjs --ext-dev",
     "site": "node scripts/serve-site.mjs",
-    "test": "npm run build && node test/unit/run.mjs && node test/gemini/run.mjs && node test/codex/run.mjs",
+    "test": "npm run build && node test/unit/run.mjs && node test/gemini/run.mjs && node test/extension/run.mjs && node test/codex/run.mjs",
     "test:unit": "node test/unit/run.mjs",
     "test:codex": "npm run build && node test/codex/run.mjs",
     "test:gemini": "npm run build && node test/gemini/run.mjs"

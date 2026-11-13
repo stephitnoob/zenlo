@@ -816,13 +816,26 @@
     backupStorage()
   }
 
-  // ---------- Backup ----------
+  // ---------- Backup and accounts ----------
 
   // Zenlo's localStorage lives in Zalo's data and survives Zalo updates, but not Zalo wiping its
   // storage (e.g. a reinstall). A mirror is kept in %APPDATA%\Zenlo by the main process.
   // A marker key tells a wiped storage apart: without it, every key missing from the storage is put
   // back from the mirror (keys written since stay), and the mirror is not touched until then.
+  //
+  // The data belongs to one Zalo account: a Windows user or a browser may be shared by people who
+  // take turns in Zalo, and the storage outlives a log-out. ACCOUNT_KEY says whose data the storage
+  // holds; the bridge keeps the mirror and the Gemini keys per account. When another account logs
+  // in, the storage is emptied of the previous account's data (its mirror has it) and filled from
+  // the new account's mirror. Data from before Zenlo knew accounts goes to the first account that
+  // opens it. Until the account is known, nothing is restored or backed up.
   const STORAGE_MARKER = '@Zenlo:STORAGE_ID'
+  const ACCOUNT_KEY = '@Zenlo:ACCOUNT'
+  // What belongs to this computer, not to a person: kept when the account changes
+  const DEVICE_KEYS = [STORAGE_KEYS.updateCheck, STORAGE_KEYS.updateCheckedAt, STORAGE_KEYS.updateNotified, '@Zenlo:UPDATE_AVAILABLE', STORAGE_KEYS.drawerWidth]
+  const isDeviceKey = (key) => DEVICE_KEYS.includes(key) || key.startsWith(STORAGE_KEYS.modelCatalog)
+  // The account whose data the storage holds, once known
+  let account = ''
   let restoreDone = false
   let lastBackup = ''
 
@@ -841,6 +854,9 @@
     try {
       // No marker: the storage was wiped while Zalo ran; keep the good mirror for the next start
       if (!localStorage.getItem(STORAGE_MARKER)) return
+      // Another account logged in since: nothing is saved until its data is in (see the timer below)
+      const now = getMyUid()
+      if ((now && now !== account) || localStorage.getItem(ACCOUNT_KEY) !== account) return
       const data = zenloStorage()
       const text = JSON.stringify(data)
       if (text === lastBackup) return
@@ -849,30 +865,73 @@
     } catch (error) {}
   }
 
-  async function restoreStorage () {
+  // Removes every key of the account in the storage (settings, summaries, notes, the digest), and
+  // the marker, so what follows is a restore from the new account's mirror
+  function clearAccountData () {
+    const keys = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('@Zenlo:') && !isDeviceKey(key)) keys.push(key)
+    }
+    keys.forEach((key) => localStorage.removeItem(key))
+    return keys.length
+  }
+
+  // Makes the storage hold this account's data, then backs it up again. One at a time; after a
+  // failure (the bridge did not answer), again 10 seconds later.
+  let starting = null
+  let retryAt = 0
+  function startAccount (uid) {
+    if (starting) return starting
+    starting = switchTo(uid).finally(() => { starting = null })
+    return starting
+  }
+
+  async function switchTo (uid) {
     const bridge = window.$zenlo
-    if (!bridge || !bridge.loadStorage) return
+    if (!uid || !bridge || !bridge.loadStorage) return
+    restoreDone = false
+    account = ''
     try {
+      // The bridge first: from here on, keys and the mirror are this account's
+      if (bridge.useAccount) {
+        const used = await bridge.useAccount(uid)
+        if (used !== true) throw new Error((used && used.error) || 'không đổi được tài khoản')
+      }
+      const owner = localStorage.getItem(ACCOUNT_KEY)
+      if (owner && owner !== uid) log('another account: cleared', clearAccountData(), 'keys')
       if (!localStorage.getItem(STORAGE_MARKER)) {
         const data = (await bridge.loadStorage()) || {}
         let restored = 0
         for (const [key, value] of Object.entries(data)) {
-          if (!key.startsWith('@Zenlo:') || typeof value !== 'string' || localStorage.getItem(key) !== null) continue
+          if (!key.startsWith('@Zenlo:') || key === ACCOUNT_KEY || typeof value !== 'string' || localStorage.getItem(key) !== null) continue
           localStorage.setItem(key, value)
           restored++
         }
         if (restored) log('restored', restored, 'keys from the backup')
         if (!localStorage.getItem(STORAGE_MARKER)) localStorage.setItem(STORAGE_MARKER, String(Date.now()))
       }
+      localStorage.setItem(ACCOUNT_KEY, uid)
     } catch (error) {
       log('restore failed', error)
+      retryAt = Date.now() + 10 * 1000
       return
     }
+    account = uid
     restoreDone = true
+    lastBackup = ''
     backupStorage()
+    // A drawer opened before the account was known found no Gemini key
+    const drawer = window.ZenloCore && window.ZenloCore.drawer
+    if (drawer && drawer.isOpen()) drawer.refreshNotice()
   }
 
-  restoreStorage()
+  // Zalo knows who is logged in only once it has started; another account may log in later
+  setInterval(() => {
+    if (starting || Date.now() < retryAt) return
+    const uid = getMyUid()
+    if (uid && (uid !== account || !restoreDone)) startAccount(uid)
+  }, 500)
   setInterval(backupStorage, 20 * 1000)
   window.addEventListener('beforeunload', backupStorage)
 
@@ -2048,6 +2107,8 @@
     setNote,
     clearSavedResults,
     resetSettings,
+    // For the tests: what the timer does once Zalo says who is logged in
+    startAccount,
 
     readZaloUnread,
     getUnreadWhenOpened,

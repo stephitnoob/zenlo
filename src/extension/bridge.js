@@ -32,9 +32,32 @@ async function read (key, fallback) {
 
 const write = (key, value) => chrome.storage.local.set({ [key]: value })
 
-async function getKeys () {
-  const keys = await read('geminiKeys', [])
+// The Zalo account logged in on this tab, as the page says once Zalo has started. Gemini keys and
+// the storage mirror are kept per account ("geminiKeys:<id>", "storageBackup:<id>"), so people who
+// share a browser and take turns in Zalo web neither see nor use each other's.
+let account = ''
+const NO_ACCOUNT = 'Zenlo chưa biết tài khoản Zalo nào đang đăng nhập. Đợi Zalo web mở xong rồi thử lại.'
+// Zalo's ids are digits; never a name objects already have ("__proto__")
+const isAccountId = (uid) => typeof uid === 'string' && /^[\w-]{1,64}$/.test(uid) && !(uid in Object.prototype)
+
+async function getKeys (owner = account) {
+  if (!owner) return []
+  const keys = await read(`geminiKeys:${owner}`, [])
   return Array.isArray(keys) ? keys.filter((key) => typeof key === 'string' && key) : []
+}
+
+// The keys and the mirror saved before Zenlo knew accounts ("geminiKeys", "storageBackup") go to the
+// first account that opens it; an account that already has its own keeps them, and the old ones go
+async function useAccount (uid) {
+  if (account !== uid) gemini.resetModels()
+  account = uid
+  const legacy = await chrome.storage.local.get(['geminiKeys', 'storageBackup'])
+  const mine = await chrome.storage.local.get([`geminiKeys:${uid}`, `storageBackup:${uid}`])
+  const moves = {}
+  if (legacy.geminiKeys !== undefined && mine[`geminiKeys:${uid}`] === undefined) moves[`geminiKeys:${uid}`] = legacy.geminiKeys
+  if (legacy.storageBackup !== undefined && mine[`storageBackup:${uid}`] === undefined) moves[`storageBackup:${uid}`] = legacy.storageBackup
+  if (Object.keys(moves).length) await chrome.storage.local.set(moves)
+  if (legacy.geminiKeys !== undefined || legacy.storageBackup !== undefined) await chrome.storage.local.remove(['geminiKeys', 'storageBackup'])
 }
 
 // A short id for a key in the quota list (cyrb53): the list then never holds the key itself
@@ -76,13 +99,22 @@ const handlers = {
   async getSettings () {
     return { geminiKeys: (await getKeys()).map(maskKey), maxKeys: MAX_KEYS, web: true }
   },
+  // true, or { error }
+  async useAccount (uid) {
+    if (!isAccountId(uid)) return { error: 'Mã tài khoản Zalo không hợp lệ.' }
+    await useAccount(uid)
+    return true
+  },
   // { error } with the message as written; the new list right away, so the page numbers its rows again
   async setGeminiKeys (entries) {
     // Not a list: an error, never "remove every key"
     if (!Array.isArray(entries)) return { error: 'Danh sách key không hợp lệ.' }
+    // Taken now: the keys go to the account that was logged in when they were sent
+    const owner = account
+    if (!owner) return { error: NO_ACCOUNT }
     try {
-      const keys = pickKeys(await getKeys(), entries)
-      await write('geminiKeys', keys)
+      const keys = pickKeys(await getKeys(owner), entries)
+      await write(`geminiKeys:${owner}`, keys)
       gemini.resetModels()
       return { masks: keys.map(maskKey) }
     } catch (error) {
@@ -91,11 +123,13 @@ const handlers = {
   },
   geminiStatus: () => gemini.status(),
   async saveStorage (data) {
-    if (!data || typeof data !== 'object' || JSON.stringify(data).length > MAX_BACKUP_CHARS) return
-    await write('storageBackup', { at: Date.now(), data })
+    const owner = account
+    if (!owner || !data || typeof data !== 'object' || JSON.stringify(data).length > MAX_BACKUP_CHARS) return
+    await write(`storageBackup:${owner}`, { at: Date.now(), data })
   },
   async loadStorage () {
-    const backup = await read('storageBackup', null)
+    if (!account) return null
+    const backup = await read(`storageBackup:${account}`, null)
     return (backup && backup.data) || null
   },
   // The newest release on GitHub: { tag } or { error }. The extension is downloaded from there as a
@@ -132,6 +166,8 @@ function startRun (id, request) {
     send(payload)
   }
   if (!request || typeof request !== 'object') return finish({ type: 'error', message: 'Yêu cầu không hợp lệ.' })
+  // Gemini's keys are the account's: none until Zalo web has said who is logged in
+  if (!account) return finish({ type: 'error', message: NO_ACCOUNT })
   const chars = ['systemPrompt', 'instruction', 'note', 'input'].reduce((sum, field) => sum + String(request[field] || '').length, 0)
   if (chars > MAX_REQUEST_CHARS) return finish({ type: 'error', message: 'Đoạn cần tóm tắt quá dài.' })
   gemini.run(send, finish, request, {

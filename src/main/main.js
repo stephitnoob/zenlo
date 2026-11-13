@@ -757,7 +757,17 @@ const zenloFile = (name, oldName) => {
 
 const SECRETS_FILE = () => zenloFile('secrets.json', 'zenlo-secrets.json')
 const QUOTA_FILE = () => zenloFile('gemini-quota.json', 'zenlo-gemini-quota.json')
-const STORAGE_BACKUP_FILE = () => path.join(ZENLO_DIR(), 'storage-backup.json')
+// One mirror per Zalo account; the one without an account is from before Zenlo knew accounts
+const STORAGE_BACKUP_FILE = (uid = '') => path.join(ZENLO_DIR(), uid ? `storage-backup-${uid}.json` : 'storage-backup.json')
+
+// The Zalo account logged in, as the page says once Zalo has started. Gemini keys and the storage
+// mirror are kept per account, so people who share a Windows user and take turns in Zalo neither
+// see nor use each other's.
+let account = ''
+const NO_ACCOUNT = 'Zenlo chưa biết tài khoản Zalo nào đang đăng nhập. Đợi Zalo mở xong rồi thử lại.'
+// Zalo's ids are digits; never a name objects already have ("__proto__"), never a path
+const isAccountId = (uid) => typeof uid === 'string' && /^[\w-]{1,64}$/.test(uid) && !(uid in Object.prototype)
+const own = (object, key) => object && typeof object === 'object' && Object.prototype.hasOwnProperty.call(object, key) ? object[key] : undefined
 
 // Written to a temporary file and moved into place, so a file is never left cut in half (the
 // installer closes Zalo with taskkill, which could land in the middle of a write)
@@ -796,22 +806,45 @@ const decrypt = (stored) => {
   }
 }
 
+// secrets.json: { accounts: { <uid>: { geminiKeys: [encrypted…] } } }
 const getGeminiKeys = () => {
-  const secrets = readJSONFile(SECRETS_FILE())
-  // Older Zenlo kept a single key in "gemini"
-  const stored = Array.isArray(secrets.geminiKeys) ? secrets.geminiKeys : secrets.gemini ? [secrets.gemini] : []
-  return stored.map(decrypt).filter(Boolean)
+  if (!account) return []
+  const stored = own(own(own(readJSONFile(SECRETS_FILE()), 'accounts'), account), 'geminiKeys')
+  return (Array.isArray(stored) ? stored : []).map(decrypt).filter(Boolean)
 }
 
 // The page never sees a saved key, only its mask. It sends back the list it wants (see pickKeys).
 const setGeminiKeys = (entries) => {
+  if (!account) throw new Error(NO_ACCOUNT)
   const clean = pickKeys(getGeminiKeys(), entries)
   if (clean.length && !safeStorage.isEncryptionAvailable()) throw new Error('Windows không cho mã hoá dữ liệu, nên Zenlo không lưu key.')
   const secrets = readJSONFile(SECRETS_FILE())
-  delete secrets.gemini
-  secrets.geminiKeys = clean.map((k) => safeStorage.encryptString(k).toString('base64'))
+  if (!own(secrets, 'accounts') || typeof secrets.accounts !== 'object') secrets.accounts = {}
+  secrets.accounts[account] = { geminiKeys: clean.map((k) => safeStorage.encryptString(k).toString('base64')) }
   writeFileAtomic(SECRETS_FILE(), JSON.stringify(secrets))
   gemini.resetModels()
+}
+
+// The keys and the mirror saved before Zenlo knew accounts go to the first account that opens it;
+// an account that already has its own keeps them, and the old ones are dropped
+const useAccount = (uid) => {
+  if (account !== uid) gemini.resetModels()
+  account = uid
+  const secrets = readJSONFile(SECRETS_FILE())
+  // Older Zenlo kept one list in "geminiKeys", and before that a single key in "gemini"
+  const legacy = Array.isArray(secrets.geminiKeys) ? secrets.geminiKeys : secrets.gemini ? [secrets.gemini] : null
+  if (legacy) {
+    if (!own(secrets, 'accounts') || typeof secrets.accounts !== 'object') secrets.accounts = {}
+    if (!own(secrets.accounts, uid)) secrets.accounts[uid] = { geminiKeys: legacy }
+    delete secrets.geminiKeys
+    delete secrets.gemini
+    writeFileAtomic(SECRETS_FILE(), JSON.stringify(secrets))
+  }
+  const oldMirror = STORAGE_BACKUP_FILE()
+  if (fs.existsSync(oldMirror)) {
+    if (fs.existsSync(STORAGE_BACKUP_FILE(uid))) fs.unlinkSync(oldMirror)
+    else fs.renameSync(oldMirror, STORAGE_BACKUP_FILE(uid))
+  }
 }
 
 // A key is remembered by a short hash, never in plain text
@@ -950,6 +983,8 @@ ipcMain.on('zenlo:summary:run', (event, request) => {
   // Anything unexpected (a full disk, a locked file) ends the run with its message instead of
   // leaving the panel at "Đang tóm tắt…"
   const fail = (error) => finish({ type: 'error', message: String((error && error.message) || error) })
+  // Gemini's keys are the account's: none until Zalo has said who is logged in
+  if (request.provider === 'gemini' && !account) return finish({ type: 'error', message: NO_ACCOUNT })
   const run = request.provider === 'gemini' ? runGemini : request.provider === 'codex' ? runCodex : runClaude
   // Claude and Codex: the page counts the seconds until the first word, like Gemini (which reports
   // each model it tries itself, and can skip one)
@@ -1108,19 +1143,32 @@ ipcMain.handle('zenlo:settings:setGeminiKeys', (event, keys) => {
   return { masks: getGeminiKeys().map(maskKey) }
 })
 
+// The page says which Zalo account is logged in, before it reads or writes the mirror
+ipcMain.handle('zenlo:account:use', (event, uid) => {
+  if (!isTrustedSender(event)) return false
+  if (!isAccountId(uid)) return { error: 'Mã tài khoản Zalo không hợp lệ.' }
+  try {
+    useAccount(uid)
+  } catch (error) {
+    return { error: error.message }
+  }
+  return true
+})
+
 // A mirror of Zenlo's localStorage (settings, saved summaries, digest order and ticks) in its own
-// folder; the page writes it and reads it back when Zalo's storage was wiped
+// folder, one per account; the page writes it and reads it back when Zalo's storage was wiped or
+// held another account's data
 ipcMain.on('zenlo:storage:save', (event, data) => {
-  if (!isTrustedSender(event) || !data || typeof data !== 'object') return
+  if (!isTrustedSender(event) || !account || !data || typeof data !== 'object') return
   try {
     const text = JSON.stringify({ at: Date.now(), data })
-    if (text.length <= MAX_BACKUP_CHARS) writeFileAtomic(STORAGE_BACKUP_FILE(), text)
+    if (text.length <= MAX_BACKUP_CHARS) writeFileAtomic(STORAGE_BACKUP_FILE(account), text)
   } catch (error) {}
 })
 
 ipcMain.handle('zenlo:storage:load', (event) => {
-  if (!isTrustedSender(event)) return null
-  return readJSONFile(STORAGE_BACKUP_FILE()).data || null
+  if (!isTrustedSender(event) || !account) return null
+  return readJSONFile(STORAGE_BACKUP_FILE(account)).data || null
 })
 
 ipcMain.handle('zenlo:gemini:status', (event) => {

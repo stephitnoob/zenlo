@@ -423,5 +423,105 @@ test('Bộ cài: Zalo đã tải sẵn bản mới mà vẫn chạy bản cũ th
   assert.deepEqual(pickTargetDirs(names, { now: NOV_11 }), ['Zalo-26.11.20'])
 })
 
+// ---------- Zalo accounts ----------
+
+async function testAsync (name, fn) {
+  try {
+    await fn()
+    results.push(`  ✓ ${name}`)
+  } catch (error) {
+    results.push(`  ✗ ${name}: ${error.message}`)
+    process.exitCode = 1
+  }
+}
+
+// The bridge's side, as Zalo PC's main process and the extension keep it: one mirror per account,
+// and the mirror from before accounts ('') goes to the first account
+function fakeBridge (mirrors = {}) {
+  let current = ''
+  const saved = []
+  return {
+    mirrors,
+    saved,
+    useAccount: async (uid) => {
+      current = uid
+      if (mirrors[''] && !mirrors[uid]) mirrors[uid] = mirrors['']
+      delete mirrors['']
+      return true
+    },
+    saveStorage: (data) => {
+      saved.push(current)
+      if (current) mirrors[current] = { ...data }
+    },
+    loadStorage: async () => mirrors[current] || null
+  }
+}
+
+const A_DATA = {
+  '@Zenlo:STORAGE_ID': '1',
+  '@Zenlo:ACCOUNT': 'A',
+  '@Zenlo:NOTE:c1': 'ghi chú của A',
+  '@Zenlo:LAST:c1': 'tóm tắt của A',
+  '@Zenlo:DIGEST_ORDER': '["c1"]',
+  '@Zenlo:PROVIDER': 'claude',
+  '@Zenlo:UPDATE_CHECK': 'on',
+  '@Zenlo:DRAWER_WIDTH': '420'
+}
+
+await testAsync('Tài khoản khác đăng nhập: dữ liệu người trước rời bộ nhớ, người sau thấy dữ liệu của mình', async () => {
+  const store = new Map(Object.entries(A_DATA))
+  const bridge = fakeBridge({ A: { ...A_DATA }, B: { '@Zenlo:STORAGE_ID': '2', '@Zenlo:ACCOUNT': 'B', '@Zenlo:NOTE:c2': 'ghi chú của B' } })
+  const core = loadCore(null, { store, bridge })
+  await core.startAccount('B')
+  assert.equal(store.get('@Zenlo:ACCOUNT'), 'B')
+  assert.equal(store.get('@Zenlo:NOTE:c2'), 'ghi chú của B')
+  for (const key of ['@Zenlo:NOTE:c1', '@Zenlo:LAST:c1', '@Zenlo:DIGEST_ORDER', '@Zenlo:PROVIDER']) assert.equal(store.has(key), false, key)
+  // What belongs to the computer stays
+  assert.equal(store.get('@Zenlo:UPDATE_CHECK'), 'on')
+  assert.equal(store.get('@Zenlo:DRAWER_WIDTH'), '420')
+  // A's mirror is untouched; B's has nothing of A's
+  assert.deepEqual(bridge.mirrors.A, A_DATA)
+  assert.ok(!JSON.stringify(bridge.mirrors.B).includes('của A'))
+  // A logs in again: A's data back, nothing of B's
+  await core.startAccount('A')
+  assert.equal(store.get('@Zenlo:NOTE:c1'), 'ghi chú của A')
+  assert.equal(store.get('@Zenlo:PROVIDER'), 'claude')
+  assert.equal(store.has('@Zenlo:NOTE:c2'), false)
+  assert.equal(bridge.mirrors.B['@Zenlo:NOTE:c2'], 'ghi chú của B')
+})
+
+await testAsync('Bộ nhớ bị xoá (đăng xuất Zalo web): lấy lại từ bản sao lưu của đúng tài khoản', async () => {
+  const store = new Map()
+  const bridge = fakeBridge({ A: { ...A_DATA }, B: { '@Zenlo:NOTE:c2': 'ghi chú của B' } })
+  const core = loadCore(null, { store, bridge })
+  await core.startAccount('B')
+  assert.equal(store.get('@Zenlo:NOTE:c2'), 'ghi chú của B')
+  assert.equal(store.has('@Zenlo:NOTE:c1'), false)
+  assert.equal(store.get('@Zenlo:ACCOUNT'), 'B')
+})
+
+await testAsync('Dữ liệu từ trước khi có tài khoản: thuộc về tài khoản mở Zenlo đầu tiên', async () => {
+  const old = { '@Zenlo:STORAGE_ID': '1', '@Zenlo:NOTE:c1': 'ghi chú cũ' }
+  const store = new Map(Object.entries(old))
+  const bridge = fakeBridge({ '': { ...old } })
+  const core = loadCore(null, { store, bridge })
+  await core.startAccount('A')
+  assert.equal(store.get('@Zenlo:NOTE:c1'), 'ghi chú cũ')
+  assert.equal(store.get('@Zenlo:ACCOUNT'), 'A')
+  assert.equal(bridge.mirrors.A['@Zenlo:ACCOUNT'], 'A')
+  await core.startAccount('B')
+  assert.equal(store.has('@Zenlo:NOTE:c1'), false)
+})
+
+await testAsync('Bridge không nhận tài khoản: không khôi phục, không sao lưu', async () => {
+  const store = new Map(Object.entries(A_DATA))
+  const bridge = { ...fakeBridge({}), useAccount: async () => { throw new Error('Tiện ích Zenlo không trả lời.') } }
+  const core = loadCore(null, { store, bridge })
+  await core.startAccount('B')
+  assert.deepEqual(Object.fromEntries(store), A_DATA)
+  core.clearSavedResults()
+  assert.deepEqual(bridge.saved, [])
+})
+
 console.log(results.join('\n'))
 console.log(process.exitCode ? '\nCó test lỗi.' : '\nTất cả test đều qua.')
