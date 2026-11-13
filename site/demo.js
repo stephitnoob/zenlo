@@ -877,11 +877,12 @@
         claw.classList.remove('is-shut')
         if (!await arrive()) return
         // Down to the row of the stamp clicked; between stamps, the row nearest the click
-        const row = follow ? follow.closest('.js-row') : rows.reduce((best, r) => {
+        const nearest = () => rows.reduce((best, r) => {
           const b = r.getBoundingClientRect()
           const d = Math.abs(clientY - (b.top + b.height / 2))
           return !best || d < best.d ? { r, d } : best
         }, null).r
+        const row = follow ? follow.closest('.js-row') : nearest()
         toH = depth(row)
         if (!await arrive()) return
         const got = follow || under(row, left() + x)

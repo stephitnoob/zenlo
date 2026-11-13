@@ -2812,61 +2812,130 @@ form.zw__composer:focus-within {
 
 /* ---------- Questions ---------- */
 
-/* A ruled list, the same "+" and "–" in monospace as "Có hợp với bạn không?" */
+/* Each question is an envelope: a flap across the top, a "?" stamp in the corner, the question where
+   the address goes. Opened, the flap folds up and the answer comes out from under the envelope like
+   a letter (app.js adds the flap and the stamp, and times the slide; without it the letter is just
+   there). Still a <details>: keyboards, screen readers and the browser's find work as before. */
 .faq {
   max-width: 760px;
-  border-top: 1px solid var(--line);
 }
 
+/* Room above each envelope for its flap when it is open */
 .faq details {
-  border-bottom: 1px solid var(--line);
+  position: relative;
+  margin-top: 26px;
+}
+
+.faq details:first-child {
+  margin-top: 0;
 }
 
 .faq summary {
   position: relative;
-  padding: 14px 0 14px 26px;
+  z-index: 1;
+  display: block;
+  padding: 26px 56px 16px 20px;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
   font-weight: 600;
   list-style: none;
   cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
 }
 
 .faq summary::-webkit-details-marker {
   display: none;
 }
 
-.faq summary::before {
-  content: "+";
-  position: absolute;
-  left: 0;
-  color: var(--accent);
-  font-family: var(--mono);
-  font-weight: 400;
-}
-
-.faq details[open] summary::before {
-  content: "–";
-}
-
 .faq summary:hover {
   color: var(--accent);
 }
 
-.faq p {
-  margin: 0;
-  padding: 0 0 16px 26px;
+.faq summary:hover,
+.faq details[open] summary {
+  border-color: var(--accent);
+}
+
+.faq summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* The flap: a triangle of the border's colour (::before) under one of the envelope's colour
+   (::after) set 1.5px higher, so only the two slanted edges show, as drawn lines. Open, it turns
+   up over the top edge; closing, it waits for the letter to go back in. */
+.faq__flap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 20px;
+  transform: perspective(400px) rotateX(0deg);
+  transform-origin: 50% -1.5px;
+  transition: transform 0.35s cubic-bezier(0.3, 1.2, 0.5, 1);
+  pointer-events: none;
+}
+
+.faq__flap::before,
+.faq__flap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.faq__flap::before {
+  background: var(--line);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transition: background-color 0.2s;
+}
+
+.faq__flap::after {
+  background: var(--surface);
+  clip-path: polygon(0 -1.5px, 100% -1.5px, 50% calc(100% - 1.5px));
+}
+
+.faq summary:hover .faq__flap::before,
+.faq details[open] .faq__flap::before {
+  background: var(--accent);
+}
+
+.faq details[open]:not(.is-closing) .faq__flap {
+  transform: perspective(400px) rotateX(180deg);
+}
+
+.faq details.is-closing .faq__flap {
+  transition-delay: 0.22s;
+}
+
+.faq__stamp {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 28px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: 700 14px var(--mono);
+  font-style: normal;
+  outline: 3px dotted var(--surface);
+  outline-offset: -2px;
+  transform: rotate(4deg);
+}
+
+/* The answer: a sheet of paper a little narrower than its envelope, its top tucked under the
+   envelope's bottom edge */
+.faq details > p {
+  position: relative;
+  margin: -4px 14px 0;
+  padding: 18px 18px 16px;
+  border: 1.5px solid var(--accent-line);
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+  background: var(--paper);
   color: var(--muted);
-}
-
-/* An answer slides out like a letter from its envelope */
-.faq details[open] p {
-  animation: faq-out 0.35s cubic-bezier(0.3, 1.3, 0.5, 1);
-}
-
-@keyframes faq-out {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
 }
 
 .faq code {

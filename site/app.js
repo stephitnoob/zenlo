@@ -32,7 +32,7 @@
     const button = event.target.closest && event.target.closest('.btn')
     if (!button || still || button.getAttribute('aria-disabled') === 'true') return
     button.classList.remove('is-pressed')
-    void button.offsetWidth // restart the press
+    button.getBoundingClientRect() // restart the press
     button.classList.add('is-pressed')
     if (button.classList.contains('btn--seal')) {
       button.classList.add('is-open')
@@ -41,6 +41,42 @@
   })
   document.addEventListener('animationend', (event) => {
     if (event.animationName === 'btn-stamp') event.target.classList.remove('is-pressed')
+  })
+
+  // Questions are envelopes (style.css): each gets its flap and its "?" stamp. Opening, the flap
+  // turns up and the answer slides out from under the envelope while the page below makes room;
+  // closing, the answer slides back in, then the flap shuts. With reduced motion, a plain <details>.
+  $$('.faq details').forEach((item) => {
+    const summary = item.querySelector('summary')
+    const letter = summary && summary.nextElementSibling
+    if (!letter) return
+    summary.insertAdjacentHTML('afterbegin', '<i class="faq__flap" aria-hidden="true"></i><i class="faq__stamp" aria-hidden="true">?</i>')
+    if (still || !letter.animate) return
+    let run = null
+    summary.addEventListener('click', (event) => {
+      event.preventDefault()
+      const opening = !item.open || item.classList.contains('is-closing')
+      if (run) {
+        run.onfinish = null
+        run.cancel()
+      }
+      item.open = true
+      item.classList.toggle('is-closing', !opening)
+      // Tucked: lifted by its own height, the part above the envelope's edge cut off, and taking
+      // no room on the page
+      const h = letter.offsetHeight
+      const tucked = { transform: `translateY(${-h}px)`, clipPath: `inset(${h}px 0 0 0)`, marginBottom: `${-h}px` }
+      const out = { transform: 'none', clipPath: 'inset(0 0 0 0)', marginBottom: '0px' }
+      run = letter.animate(opening ? [tucked, out] : [out, tucked], opening
+        ? { duration: 420, delay: 80, fill: 'backwards', easing: 'cubic-bezier(0.25, 0.9, 0.3, 1)' }
+        : { duration: 300, easing: 'cubic-bezier(0.5, 0, 0.75, 0.3)' })
+      run.onfinish = () => {
+        run = null
+        if (opening) return
+        item.open = false
+        item.classList.remove('is-closing')
+      }
+    })
   })
 
   // "Sao chép" buttons: copy their data-copy text, or select it when the clipboard is not allowed
