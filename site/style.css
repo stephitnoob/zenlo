@@ -228,11 +228,13 @@ h3 {
 
 .link {
   color: var(--accent);
-  text-decoration: none;
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .link:hover {
-  text-decoration: underline;
+  text-decoration-style: solid;
 }
 
 :focus-visible {
@@ -298,6 +300,9 @@ h3 {
 
 .top__link[aria-current="page"] {
   color: var(--accent);
+  text-decoration: underline dashed;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
 }
 
 .icon-btn {
@@ -3117,21 +3122,37 @@ form.zw__composer:focus-within {
 }
 
 .toc a {
+  position: relative;
   display: block;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 4px 10px 4px 20px;
   color: var(--muted);
   text-decoration: none;
 }
 
 .toc a:hover {
-  background: var(--bg-2);
   color: var(--text);
 }
 
 .toc a.on {
-  background: var(--accent-soft);
   color: var(--accent);
+}
+
+.toc a.on::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  margin-top: -6px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+}
+
+.toc .js-toc > li + li {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
 }
 
 .toc .group > a {
@@ -3209,30 +3230,53 @@ form.zw__composer:focus-within {
 .doc code,
 .kbd {
   padding: 1px 6px;
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--bg-2);
   color: var(--text);
   font-family: var(--mono);
   font-size: 0.86em;
 }
 
+.kbd {
+  border: 1px solid var(--muted);
+  border-bottom-width: 3px;
+  background: var(--paper);
+  white-space: nowrap;
+}
+
 .doc table {
   width: 100%;
   margin: 14px 0;
+  border: 1.5px solid var(--text);
   border-collapse: collapse;
+  background: var(--paper);
   font-size: 15px;
 }
 
 .doc th,
 .doc td {
   padding: 10px 12px;
-  border: 1px solid var(--line);
+  border-bottom: 1px dashed var(--line);
   text-align: left;
   vertical-align: top;
 }
 
+.doc th + th,
+.doc td + td {
+  border-left: 1px dashed var(--line);
+}
+
 .doc th {
-  background: var(--bg-2);
+  border-bottom: 1.5px solid var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.doc tr:last-child td {
+  border-bottom: 0;
 }
 
 .doc td {
@@ -3242,9 +3286,9 @@ form.zw__composer:focus-within {
 .tip {
   margin: 16px 0;
   padding: 12px 16px;
-  border-left: 3px solid var(--accent);
-  border-radius: 0;
-  background: var(--accent-soft);
+  border: 3px double var(--accent);
+  border-radius: 4px;
+  background: transparent;
   color: var(--text);
   font-size: 15.5px;
 }
@@ -3534,6 +3578,18 @@ form.zw__composer:focus-within {
 .doc .lede {
   color: var(--muted);
   font-size: 19px;
+}
+
+.doc .updated {
+  display: inline-block;
+  margin: 0 0 20px;
+  padding-bottom: 3px;
+  border-bottom: 1.5px solid var(--accent);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .doc [hidden] {
