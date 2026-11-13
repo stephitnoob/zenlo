@@ -237,7 +237,8 @@
   tip.hidden = true
   document.body.appendChild(tip)
   function citedLine (cite) {
-    const win = cite.closest('.zw')
+    // A footnote outside the demo (the questions) names its chat with data-to
+    const win = cite.closest('.zw') || (cite.dataset.to && document.getElementById(cite.dataset.to))
     const msg = win && cite.dataset.t && win.querySelector(`.msg[data-t="${cite.dataset.t}"]`)
     if (!msg) return cite.dataset.label
     const name = msg.querySelector('b')
@@ -602,6 +603,7 @@
       ;[ALL.slice(0, half), ALL.slice(half)].forEach((list, i) => {
         if (rows[i]) rows[i].innerHTML = list.concat(list).map((e) => button(e, true)).join('')
       })
+      setupBelts(river)
     }
     if (pick) {
       pick.querySelector('.js-all').innerHTML = ALL.map((e) => button(e)).join('')
@@ -712,6 +714,46 @@
       if (pick && !pick.hidden) setOpen(false, true)
       if (machine && machine.isOn()) machine.set(false)
     })
+  }
+
+  // The two rows of stamps run by the page's clock, moved a step each frame: the front row left in
+  // 70 s, the back row right in 80 s, half a row (one list) per loop, as the CSS animation they
+  // replace. On an iPhone (Safari, and the browsers inside Zalo and Messenger) a row that long moved
+  // by a CSS animation could go blank after a while of scrolling: Safari stopped painting the part
+  // of the big moving layer that came into view. Moved from here, it is painted where it is each
+  // frame. The rows rest while off screen and go on from where they were.
+  function setupBelts (river) {
+    const rows = [...river.querySelectorAll('.js-row')]
+    if (still || !rows.length || !window.requestAnimationFrame) return
+    river.classList.add('rx-river--js')
+    const LOOP = [[70, -1], [80, 1]] // seconds per loop, direction
+    let ran = 0 // seconds the rows have run
+    let last = 0
+    let frame = 0
+    let shown = true
+    function step (time) {
+      ran += Math.min(0.1, (time - (last || time)) / 1000)
+      last = time
+      rows.forEach((row, i) => {
+        const [seconds, direction] = LOOP[i] || LOOP[0]
+        const f = (ran / seconds) % 1
+        const half = row.offsetWidth / 2
+        row.style.transform = `translateX(${(direction < 0 ? -f : f - 1) * half}px)`
+      })
+      if (shown) {
+        frame = requestAnimationFrame(step)
+      } else {
+        frame = 0
+        last = 0
+      }
+    }
+    frame = requestAnimationFrame(step)
+    if ('IntersectionObserver' in window) {
+      new window.IntersectionObserver((entries) => {
+        shown = entries.some((entry) => entry.isIntersecting)
+        if (shown && !frame) frame = requestAnimationFrame(step)
+      }).observe(river)
+    }
   }
 
   // The claw machine over the belts. The claw runs on the rail after the mouse (or goes where a finger
@@ -1313,6 +1355,35 @@
     }
     section.addEventListener('click', takeOver, true)
     section.addEventListener('keydown', takeOver, true)
+
+    // A footnote in the questions cites a message of this chat: the page goes up to it and it
+    // lights up, as a footnote in Zenlo does. The run by itself would cover it, so it stops.
+    document.addEventListener('click', (event) => {
+      const cite = event.target.closest && event.target.closest('.cite[data-to="demo-play"]')
+      if (!cite) return
+      if (mode !== 'yours') {
+        stopAuto()
+        mode = 'yours'
+        update()
+      }
+      // The message lights up once the page has arrived (a long way up can take over a second)
+      let lit = false
+      const light = () => {
+        if (lit) return
+        lit = true
+        window.removeEventListener('scrollend', light)
+        jump(win, cite.dataset.t)
+      }
+      const rect = win.getBoundingClientRect()
+      if (still || (rect.top >= 0 && rect.bottom <= window.innerHeight)) {
+        win.scrollIntoView({ block: 'center' })
+        light()
+        return
+      }
+      window.addEventListener('scrollend', light)
+      setTimeout(light, 1800)
+      win.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
 
     ticket.querySelector('.js-again').addEventListener('click', () => {
       stopAuto()

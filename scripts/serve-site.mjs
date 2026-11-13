@@ -39,7 +39,11 @@ http.createServer((request, response) => {
   }
   fs.readFile(file, (error, data) => {
     if (error) {
-      response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Không có trang này')
+      // Like GitHub Pages: an address that does not exist gets site/404.html
+      fs.readFile(path.join(ROOT, '404.html'), (missing, page) => {
+        if (missing) response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Không có trang này')
+        else response.writeHead(404, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' }).end(page)
+      })
       return
     }
     response.writeHead(200, {

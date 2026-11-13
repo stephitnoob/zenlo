@@ -129,6 +129,197 @@
     if (event.key === 'Escape' && soon) soon.classList.remove('soon--show')
   })
 
+  // A downloaded file dropped on a page with a download button: its seal is checked. The file's
+  // SHA-256 is worked out here in the browser, never sent anywhere, and compared with the ones
+  // GitHub's release notes give for every release (asked from api.github.com at the first drop).
+  // A Zenlo-Setup.zip is opened here, for the Zenlo-Setup.exe inside it, the file the notes name.
+  function setupSealCheck () {
+    let known = null // { map: hash -> { tag, file }, latest, partial }
+    let depth = 0
+    const desk = document.createElement('div')
+    desk.className = 'seal-desk'
+    desk.setAttribute('role', 'status')
+    desk.hidden = true
+    document.body.appendChild(desk)
+
+    const hasFiles = (event) => event.dataTransfer && [...event.dataTransfer.types].includes('Files')
+    const el = (tag, className, text) => {
+      const node = document.createElement(tag)
+      if (className) node.className = className
+      if (text) node.textContent = text
+      return node
+    }
+    function card (state, ...children) {
+      desk.textContent = ''
+      desk.dataset.state = state
+      const box = el('div', 'seal-card')
+      box.append(...children)
+      if (state !== 'wait') {
+        const shut = el('button', 'seal-card__close', '×')
+        shut.type = 'button'
+        shut.setAttribute('aria-label', 'Đóng')
+        box.appendChild(shut)
+      }
+      desk.appendChild(box)
+      desk.hidden = false
+    }
+    function close () {
+      desk.hidden = true
+      desk.textContent = ''
+      depth = 0
+    }
+
+    async function sha256 (bytes) {
+      const digest = await window.crypto.subtle.digest('SHA-256', bytes)
+      return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
+    }
+
+    // The Zenlo-Setup.exe inside a zip, read from the zip's own table of contents
+    async function exeInZip (bytes) {
+      if (bytes.length < 22 || bytes[0] !== 0x50 || bytes[1] !== 0x4b || !('DecompressionStream' in window)) return null
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+      let end = -1
+      for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+        if (view.getUint32(i, true) === 0x06054b50) {
+          end = i
+          break
+        }
+      }
+      if (end < 0) return null
+      const count = view.getUint16(end + 10, true)
+      let at = view.getUint32(end + 16, true)
+      for (let n = 0; n < count && at + 46 <= bytes.length; n++) {
+        if (view.getUint32(at, true) !== 0x02014b50) return null
+        const method = view.getUint16(at + 10, true)
+        const packed = view.getUint32(at + 20, true)
+        const nameLength = view.getUint16(at + 28, true)
+        const local = view.getUint32(at + 42, true)
+        const name = new TextDecoder().decode(bytes.subarray(at + 46, at + 46 + nameLength))
+        at += 46 + nameLength + view.getUint16(at + 30, true) + view.getUint16(at + 32, true)
+        if (name.split('/').pop() !== 'Zenlo-Setup.exe') continue
+        if (local + 30 > bytes.length || view.getUint32(local, true) !== 0x04034b50) return null
+        const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true)
+        const data = bytes.subarray(start, start + packed)
+        if (method === 0) return data
+        if (method !== 8) return null
+        const stream = new Blob([data]).stream().pipeThrough(new window.DecompressionStream('deflate-raw'))
+        return new Uint8Array(await new Response(stream).arrayBuffer())
+      }
+      return null
+    }
+
+    // Every hash in every release's notes, with the file named before it on its line
+    async function knownHashes () {
+      if (known) return known
+      const map = {}
+      try {
+        const response = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=100`, { headers: { Accept: 'application/vnd.github+json' } })
+        if (!response.ok) throw new Error(response.status)
+        const list = (await response.json()).filter((r) => !r.draft)
+        for (const release of list) {
+          for (const line of String(release.body || '').split('\n')) {
+            for (const match of line.matchAll(/\b[a-f0-9]{64}\b/g)) {
+              const before = line.slice(0, match.index).match(/[\w.-]+\.(?:exe|zip)/g)
+              if (!map[match[0]]) map[match[0]] = { tag: release.tag_name, file: before ? before[before.length - 1] : 'Zenlo-Setup.exe' }
+            }
+          }
+        }
+        const newest = list.find((r) => !r.prerelease)
+        known = { map, latest: newest ? newest.tag_name : '', partial: false }
+      } catch (error) {
+        // GitHub did not answer: the hashes this page already shows, of the newest release only
+        const tag = (document.querySelector('.js-version') || {}).textContent || ''
+        const add = (selector, file) => {
+          const hash = ((document.querySelector(selector) || {}).textContent || '').trim()
+          if (/^[a-f0-9]{64}$/.test(hash)) map[hash] = { tag, file }
+        }
+        add('.js-sha', 'Zenlo-Setup.exe')
+        add('.js-web-sha', 'Zenlo-ZaloWeb.zip')
+        return { map, latest: tag, partial: true }
+      }
+      return known
+    }
+
+    async function check (file) {
+      if (!file) return close()
+      card('busy', el('p', 'seal-card__file', file.name), el('p', '', 'Đang kiểm…'))
+      try {
+        const bytes = new Uint8Array(await file.arrayBuffer())
+        const whole = await sha256(bytes)
+        const exe = await exeInZip(bytes).catch(() => null)
+        const inner = exe && await sha256(exe)
+        const { map, latest, partial } = await knownHashes()
+        const hit = (inner && map[inner]) || map[whole]
+        const hash = (inner && map[inner]) ? inner : whole
+        const name = el('p', 'seal-card__file', exe ? `${file.name} › Zenlo-Setup.exe` : file.name)
+        const stamp = el('span', 'seal-stamp' + (still ? '' : ' is-new'))
+        const sum = el('p', 'seal-card__hash', `SHA-256 ${hash}`)
+        if (hit) {
+          stamp.textContent = 'Còn nguyên niêm phong'
+          const line = el('p')
+          if (latest && hit.tag !== latest) {
+            line.append(`Đây là Zenlo ${hit.tag}. Bản mới nhất là ${latest}. `)
+            const get = el('a', 'link', 'Tải bản mới')
+            get.href = './#cai-dat'
+            line.appendChild(get)
+          } else {
+            const notes = el('a', 'link', 'ghi chú phát hành')
+            notes.href = `https://github.com/${REPO}/releases/tag/${encodeURIComponent(hit.tag)}`
+            notes.target = '_blank'
+            notes.rel = 'noopener'
+            line.append(`Khớp SHA-256 của ${hit.file} ${hit.tag} trong `, notes, '.')
+          }
+          card(latest && hit.tag !== latest ? 'old' : 'ok', name, stamp, line, sum)
+        } else if (!Object.keys(map).length) {
+          card('busy', name, el('p', '', 'Chưa hỏi được GitHub để so. Thử lại sau ít phút.'))
+        } else {
+          stamp.textContent = 'Không khớp'
+          const text = /zenlo/i.test(file.name)
+            ? 'File này không khớp bản phát hành nào của Zenlo. Đừng mở nó, hãy tải lại ở nút Tải.'
+            : 'Không khớp file nào của Zenlo.'
+          card('bad', name, stamp, el('p', '', partial ? `${text} Mới so được với bản ${latest || 'mới nhất'}, vì chưa hỏi được GitHub.` : text), sum)
+        }
+      } catch (error) {
+        card('busy', el('p', 'seal-card__file', file.name), el('p', '', 'Trình duyệt này không kiểm được file.'))
+      }
+    }
+
+    document.addEventListener('dragenter', (event) => {
+      if (!hasFiles(event)) return
+      event.preventDefault()
+      depth++
+      if (desk.hidden || desk.dataset.state !== 'wait') {
+        card('wait', el('b', '', 'Kiểm niêm phong'), el('p', '', 'Thả Zenlo-Setup.zip, Zenlo-Setup.exe hoặc Zenlo-ZaloWeb.zip vào đây.'))
+      }
+    })
+    document.addEventListener('dragover', (event) => {
+      if (!hasFiles(event)) return
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'copy'
+    })
+    document.addEventListener('dragleave', (event) => {
+      if (!hasFiles(event)) return
+      depth--
+      if (depth <= 0 && desk.dataset.state === 'wait') close()
+    })
+    document.addEventListener('drop', (event) => {
+      if (!hasFiles(event)) return
+      event.preventDefault()
+      depth = 0
+      check(event.dataTransfer.files[0])
+    })
+    desk.addEventListener('click', (event) => {
+      if (event.target.closest('a')) return
+      if (event.target === desk || event.target.closest('.seal-card__close')) close()
+    })
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !desk.hidden) close()
+    })
+  }
+  if (REPO && document.querySelector('.js-download, .js-download-web') && window.crypto && window.crypto.subtle) {
+    setupSealCheck()
+  }
+
   // A phone, or Zalo's own browser on one (an iPad says it is a Mac, but has a touch screen).
   // The installer is no use there, so the button hands over a link to open on the computer.
   const onPhone = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent) ||
