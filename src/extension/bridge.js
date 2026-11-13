@@ -90,7 +90,7 @@ const post = (message) => window.postMessage({ [TAG]: 'to-page', ...message }, w
 // Once the extension is reloaded or updated, this script stays in a tab that was already open but is
 // cut off from the extension: every storage call then fails with "Extension context invalidated."
 function errorText (error) {
-  if (!chrome.runtime || !chrome.runtime.id) return 'Zenlo vừa được cập nhật hoặc tải lại. Hãy tải lại trang Zalo web (F5).'
+  if (!chrome.runtime || !chrome.runtime.id) return 'Tiện ích Zenlo vừa cập nhật hoặc tải lại. Hãy tải lại trang Zalo web (F5).'
   return hideKeys(String((error && error.message) || error))
 }
 
@@ -139,12 +139,12 @@ const handlers = {
     const timer = setTimeout(() => controller.abort(), 10000)
     try {
       const response = await fetch(LATEST_RELEASE, { headers: { Accept: 'application/vnd.github+json' }, signal: controller.signal, credentials: 'omit' })
-      if (response.status !== 200) return { error: `GitHub trả lời mã ${response.status}.` }
+      if (response.status !== 200) return { error: `GitHub báo lỗi ${response.status}.` }
       const release = await response.json()
       return { tag: String(release.tag_name || '') }
     } catch (error) {
       if (controller.signal.aborted) return { error: 'Hết thời gian chờ GitHub.' }
-      return { error: error instanceof SyntaxError ? 'Không đọc được trả lời của GitHub.' : 'Không kết nối được GitHub.' }
+      return { error: error instanceof SyntaxError ? 'Không đọc được câu trả lời của GitHub.' : 'Không kết nối được GitHub.' }
     } finally {
       clearTimeout(timer)
     }

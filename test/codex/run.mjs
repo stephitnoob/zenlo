@@ -233,7 +233,7 @@ if (login === 'chatgpt') {
     upgrade: /Cần gói Plus/i,
     badmodel: /Model đã chọn không dùng được/,
     network: /Không kết nối được tới OpenAI/,
-    crash: /Codex báo lỗi|thoát với mã 101/,
+    crash: /Codex báo lỗi|bất thường \(mã 101\)/,
     tooLong: /Input exceeds/
   }
   for (const [scenario, expected] of Object.entries(streamErrors)) {
@@ -337,7 +337,7 @@ if (login === 'chatgpt') {
     badmodel: /Model đã chọn không dùng được/,
     unauthorized: /chưa đăng nhập/,
     network: /Không kết nối được tới OpenAI/,
-    crash: /Codex báo lỗi|thoát với mã 101/,
+    crash: /Codex báo lỗi|bất thường \(mã 101\)/,
     tooLong: /Codex báo lỗi: turn\/start: Input exceeds/
   }
   for (const [scenario, expected] of Object.entries(errors)) {

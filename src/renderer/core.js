@@ -47,7 +47,7 @@
 
   // Added under a summary when it is copied (not shown in the panel), so a summary pasted into a
   // chat says where it came from
-  const COPY_CREDIT = `Bản tóm tắt được tạo bởi Zenlo by Stephit – ${LINKS.site}`
+  const COPY_CREDIT = `Tóm tắt bằng Zenlo by Stephit – ${LINKS.site}`
   // cited: the text already has its "[1]" marks and "Nguồn:" list (withSources), whose quoted
   // messages may hold brackets of their own ("Họp lúc [19:00]") that must stay
   const withCredit = (text, { cited = false } = {}) => `${(cited ? String(text) : stripCitations(text)).trim()}\n\n${COPY_CREDIT}`
@@ -1146,7 +1146,7 @@
 
   // Zalo's services live in a DI container, keyed by their class
   function resolveService (knownId, name) {
-    if (!isZaloReady()) throw new Error('Zalo chưa khởi động xong.')
+    if (!isZaloReady()) throw new Error('Zalo chưa mở xong. Đợi một chút rồi thử lại.')
     const container = required(findExportByKey('jDHv', 'ModuleContainer'), 'ModuleContainer')
     return required(container.resolve(required(findExportByKey(knownId, name), name)), name)
   }
@@ -1889,7 +1889,7 @@
     const bridge = window.$zenlo
     if (!bridge) {
       return {
-        promise: Promise.reject(new Error('Chưa có cầu nối của Zenlo. Hãy cài lại Zenlo rồi mở lại Zalo.')),
+        promise: Promise.reject(new Error('Thiếu một phần của Zenlo. Hãy cài lại Zenlo rồi mở lại Zalo.')),
         cancel: () => {}
       }
     }

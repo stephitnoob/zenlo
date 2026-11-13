@@ -91,7 +91,7 @@ export const geminiError = (status, body) => {
   } catch (error) {}
   if (status === 400 && /API key/i.test(message)) return 'API key Gemini không hợp lệ.'
   if (status === 403) return 'API key Gemini không có quyền dùng model này.'
-  if (status === 429) return isDailyQuota(body) ? 'Đã hết lượt trong ngày.' : 'Gửi quá nhanh, hết lượt trong phút.'
+  if (status === 429) return isDailyQuota(body) ? 'Đã hết lượt trong ngày.' : 'Gửi quá nhanh, tạm hết lượt trong phút này.'
   if (status === 503 || status === 500) return 'Máy chủ Gemini đang quá tải.'
   return `Gemini báo lỗi ${status}${message ? ': ' + message : ''}.`
 }
@@ -332,7 +332,7 @@ export function createGemini ({ getKeys, keyId, loadQuota, saveQuota, getJSON, s
           }
           // Still empty: treat like a busy model
           recentFailures.set(current, Date.now())
-          problems.push(`${geminiLabel(current)}: trả lời rỗng`)
+          problems.push(`${geminiLabel(current)}: không trả lời gì`)
           moveOn = true
           break
         }

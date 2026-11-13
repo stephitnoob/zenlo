@@ -86,7 +86,7 @@
       const parts = Z.splitIntoChunks(lines).length
       // A long conversation costs one request per part, plus one to merge them
       const requests = parts > 1 ? parts + 1 : 1
-      setEstimate(`${count} tin · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token đầu vào, ${requests} lần request` +
+      setEstimate(`${count} tin · ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token gửi đi · ${requests} lần gọi AI` +
         (parts > 1 ? ` · chia ${parts} phần` : '') + ` · ${Z.getAILabel()}`)
     } catch (error) {
       if (myId === estimateId) setEstimate('')
@@ -168,7 +168,7 @@
       <div class="zenlo__grid">
         <label>Từ<input type="text" class="js-summary-from" placeholder="${TIME_FORMAT_HINT}" spellcheck="false"></label>
         <label>
-          <span class="zenlo__label-row">Đến<button type="button" class="zenlo__inline-link js-summary-now" title="Đặt &quot;Đến&quot; là thời điểm hiện tại">Hiện tại</button></span>
+          <span class="zenlo__label-row">Đến<button type="button" class="zenlo__inline-link js-summary-now" title="Đặt &quot;Đến&quot; là bây giờ">Hiện tại</button></span>
           <input type="text" class="js-summary-to" placeholder="${TIME_FORMAT_HINT}" spellcheck="false">
         </label>
       </div>
@@ -214,7 +214,7 @@
           } catch (error) {
             return setStatus(`Lỗi: ${error.message || error}`, true)
           }
-          if (from === null) return setStatus('Lúc bạn mở hội thoại này, Zalo không ghi nhận tin chưa đọc nào.', true)
+          if (from === null) return setStatus('Lúc bạn mở hội thoại này, không có tin nào chưa đọc.', true)
         }
 
         fromEl.value = toInputValue(from)

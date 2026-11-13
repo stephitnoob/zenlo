@@ -254,10 +254,10 @@
     list.innerHTML = items.map((item, i) => `
       <div class="zenlo-digest__card${item.status !== 'pending' || item.selected ? '' : ' zenlo-digest__card--off'}" data-index="${i}">
         <div class="zenlo-digest__card-head">
-          <span class="zenlo-digest__handle" title="Giữ và kéo để sắp xếp ưu tiên">⋮⋮</span>
+          <span class="zenlo-digest__handle" title="Kéo để đổi thứ tự ưu tiên">⋮⋮</span>
           ${item.status === 'done'
             ? '<span class="zenlo-digest__done" title="Đã tóm tắt">✓</span>'
-            : `<input type="checkbox" class="zenlo-digest__check js-digest-check" title="Tóm tắt hội thoại này" ${item.selected ? 'checked' : ''} ${locked ? 'disabled' : ''}>`}
+            : `<input type="checkbox" class="zenlo-digest__check js-digest-check" title="Đưa vào bản tin" ${item.selected ? 'checked' : ''} ${locked ? 'disabled' : ''}>`}
           <div class="zenlo-digest__name">${escapeHTML(item.name)}</div>
           <div class="zenlo-digest__meta">
             ${item.mentions ? '<span class="zenlo-digest__badge">@ nhắc bạn</span>' : ''}
@@ -284,8 +284,8 @@
       return sum + (parts > 1 ? parts + 1 : 1)
     }, 0)
     overlay.querySelector('.zenlo-digest__summary-line').textContent = pending.length
-      ? `Đã chọn ${selected.length}/${pending.length} hội thoại · ${total} tin chưa đọc · ước tính ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token đầu vào` +
-        (requests ? `, ${requests} lần request` : '') + ` · ${Z.getAILabel()}`
+      ? `Đã chọn ${selected.length}/${pending.length} hội thoại · ${total} tin chưa đọc · ~${Z.estimateTokens(chars).toLocaleString('vi-VN')} token gửi đi` +
+        (requests ? ` · ${requests} lần gọi AI` : '') + ` · ${Z.getAILabel()}`
       : ''
     overlay.querySelector('.js-digest-run').disabled = !selected.length || locked
     overlay.querySelector('.js-digest-read-all').disabled = !items.length || locked
@@ -384,8 +384,8 @@
       // A newer scan started, or a digest started while this one was reading
       if (!result || running) return
       items = result.items.filter((item) => !readDuringScan.has(item.convId))
-      const old = result.tooOld ? `${result.tooOld} hội thoại có tin chưa đọc cũ hơn ${Z.getLookback() / Z.DAY} ngày nên không đưa vào (đổi trong Cài đặt Zenlo).` : ''
-      const unreadable = result.failed ? `${result.failed} hội thoại không đọc được nên không đưa vào.` : ''
+      const old = result.tooOld ? `Bỏ qua ${result.tooOld} hội thoại có tin chưa đọc cũ hơn ${Z.getLookback() / Z.DAY} ngày (đổi số ngày trong Cài đặt Zenlo).` : ''
+      const unreadable = result.failed ? `Bỏ qua ${result.failed} hội thoại không đọc được.` : ''
       const note = [old, unreadable].filter(Boolean).join(' ')
       setStatus(items.length ? note : note || 'Không có hội thoại nào chưa đọc.')
     } catch (error) {
@@ -611,7 +611,7 @@
     const el = document.createElement('div')
     el.className = 'zenlo zenlo-digest'
     el.innerHTML = `
-      <div class="zenlo__hint">Các hội thoại Zalo đang tính là chưa đọc</div>
+      <div class="zenlo__hint">Các hội thoại còn tin chưa đọc trong Zalo</div>
 
       <div class="zenlo__actions">
         <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
@@ -619,10 +619,10 @@
         <button class="zenlo__btn js-digest-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
         ${Z.copyButtonHTML('js-digest-copy')}
         <button class="zenlo__btn js-digest-refresh">Làm mới</button>
-        <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc trong Zalo mọi hội thoại trong danh sách">Đã đọc hết</button>
+        <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc mọi hội thoại trong danh sách">Đã đọc hết</button>
       </div>
 
-      <div class="zenlo__status zenlo-digest__summary-line"></div>
+      <div class="zenlo__status zenlo__estimate zenlo-digest__summary-line"></div>
       <div class="zenlo__status zenlo-digest__status"></div>
 
       <div class="zenlo-digest__select" hidden>
@@ -648,7 +648,7 @@
       const result = await markRead(items)
       if (!result) return
       if (!result.newer.length) return setStatus('Đã đánh dấu đã đọc trong Zalo.')
-      setStatus(`${result.marked ? `Đã đánh dấu đã đọc ${result.marked} hội thoại. ` : ''}${result.newer.length} hội thoại có tin mới sau khi danh sách được tải nên chưa đánh dấu; bấm Làm mới để xem.`)
+      setStatus(`${result.marked ? `Đã đánh dấu đã đọc ${result.marked} hội thoại. ` : ''}${result.newer.length} hội thoại vừa có tin mới nên chưa đánh dấu; bấm Làm mới để xem.`)
     })
 
     el.querySelector('.js-digest-select-all').addEventListener('click', () => setAllSelected(true))
@@ -685,7 +685,7 @@
         markRead([item], { force: !!item.readAnyway }).then((result) => {
           if (!result || !result.newer.length) return
           item.readAnyway = true
-          setStatus(`"${item.name}" có tin mới sau khi danh sách được tải nên chưa đánh dấu. Bấm Làm mới để xem, hoặc bấm Đã đọc lần nữa để vẫn đánh dấu.`)
+          setStatus(`"${item.name}" vừa có tin mới nên chưa đánh dấu. Bấm Làm mới để xem, hoặc bấm Đã đọc lần nữa để vẫn đánh dấu.`)
         })
       } else if (event.target.closest('.js-digest-open')) {
         Z.openConversation(item.convId)

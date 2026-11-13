@@ -17,7 +17,7 @@
       const value = typeof item === 'string' ? item : item.value
       const label = typeof item === 'string' ? item : item.label
       const disabled = typeof item === 'object' && item.disabled
-      return `<option value="${escapeHTML(value)}"${value === selected ? ' selected' : ''}${disabled ? ' disabled' : ''}>${escapeHTML(label)}${disabled ? ' · không có' : ''}</option>`
+      return `<option value="${escapeHTML(value)}"${value === selected ? ' selected' : ''}${disabled ? ' disabled' : ''}>${escapeHTML(label)}${disabled ? ' · không dùng được' : ''}</option>`
     })
     .join('')
 
@@ -46,7 +46,7 @@
     const status = overlay.querySelector('.js-settings-claude-status')
     const codexStatus = overlay.querySelector('.js-settings-codex-status')
     if (!window.$zenlo || !window.$zenlo.getSettings) {
-      status.textContent = 'Chưa có cầu nối của Zenlo. Hãy cài lại Zenlo rồi mở lại Zalo.'
+      status.textContent = 'Thiếu một phần của Zenlo. Hãy cài lại Zenlo rồi mở lại Zalo.'
       return
     }
     try {
@@ -128,7 +128,7 @@
     if (modelChoices(provider).find((m) => m.value === model).disabled) {
       const fallback = catalog.available.some((m) => m.id === keys.defaultModel) || keys.defaultModel === 'default' ? keys.defaultModel : catalog.available[0].id
       const label = (modelList(provider).find((m) => m.value === fallback) || {}).label || fallback
-      changes.push(`Model đổi sang ${label}`)
+      changes.push(`Model sang ${label}`)
       model = fallback
       Z.setSetting(keys.model, model)
     }
@@ -136,7 +136,7 @@
     const info = modelInfo(provider, model)
     if (info && info.efforts.length && !info.efforts.includes(effort)) {
       const fallback = info.efforts.includes(info.defaultEffort) ? info.defaultEffort : info.efforts[0]
-      changes.push(`effort đổi sang ${fallback}`)
+      changes.push(`Effort sang ${fallback}`)
       Z.setSetting(keys.effort, fallback)
     }
     return changes
@@ -172,7 +172,7 @@
     Z.setModelCatalog(provider, { available: result.available || [], known: result.known || [] })
     const changes = fixChoice(provider)
     renderAISelects(provider)
-    setModelsNote(provider, describeCatalog(provider) + (changes.length ? ` ${changes.join(', ')} vì lựa chọn cũ không có trên máy.` : ''))
+    setModelsNote(provider, describeCatalog(provider) + (changes.length ? ` Lựa chọn cũ không có trên máy nên đã đổi ${changes.join(', ')}.` : ''))
   }
 
   // ---------- Gemini keys ----------
@@ -223,7 +223,7 @@
       if (!info) {
         el.textContent = ''
       } else if (!info.exhausted.length) {
-        el.textContent = 'Chưa ghi nhận hết lượt hôm nay.'
+        el.textContent = 'Hôm nay chưa hết lượt.'
       } else {
         const names = info.exhausted.map((m) => m.label.replace(/^Gemini /, '')).join(', ')
         el.textContent = `Hết lượt trong ngày: ${names} (mở lại lúc ${clock(Math.min(...info.exhausted.map((m) => m.resetAt)))}).`
@@ -252,7 +252,9 @@
       const masks = saved && Array.isArray(saved.masks) ? saved.masks : ((await window.$zenlo.getSettings()) || {}).geminiKeys || []
       renderKeys(masks)
       const count = masks.length
-      status.textContent = count ? `Đã lưu ${count} key (${Z.IS_WEB ? 'trong trình duyệt này, trang Zalo không đọc được' : 'mã hoá bằng Windows trên máy này'}).` : 'Đã xoá mọi key.'
+      status.textContent = count
+        ? `Đã lưu ${count} key cho tài khoản Zalo này (${Z.IS_WEB ? 'trong tiện ích, trang Zalo không đọc được' : 'mã hoá bằng Windows trên máy này'}).`
+        : 'Đã xoá hết key của tài khoản Zalo này.'
       status.classList.remove('zenlo__status--error')
       loadGeminiModels()
       Z.drawer.refreshNotice()
@@ -416,7 +418,7 @@
             <label title="Gemini chưa bắt đầu trả lời sau thời gian này thì dừng và báo nghẽn. Model báo quá tải thì chuyển ngay xuống bản thấp hơn; đang chờ thì bấm Chuyển model khác để chuyển sớm.">Chờ Gemini tối đa
               <select class="js-settings-gemini-wait">${options(GEMINI_WAITS.map((v) => ({ value: v, label: `${v} giây` })), get(STORAGE_KEYS.geminiWait, GEMINI_WAITS, '45'))}</select>
             </label>
-            <label title="Model vừa quá tải bị xếp xuống cuối trong thời gian này, rồi mới được thử lại đầu tiên">Thử lại model quá tải sau
+            <label title="Model vừa quá tải bị xếp xuống cuối trong khoảng thời gian này; hết thời gian thì lại được thử trước">Thử lại model quá tải sau
               <select class="js-settings-gemini-retry">${options(GEMINI_RETRIES.map((v) => ({ value: v, label: v === '0' ? 'Luôn thử lại' : `${v} phút` })), get(STORAGE_KEYS.geminiRetry, GEMINI_RETRIES, '1'))}</select>
             </label>
           </div>
@@ -433,7 +435,7 @@
         <div class="zenlo-settings__heading">Tóm tắt và Bản tin${help('mac-dinh')}</div>
         <div class="zenlo__grid">
           <label>Độ dài Tóm tắt<select class="js-settings-length" data-feature="summary">${options(LENGTHS, Z.getLength('summary'))}</select></label>
-          <label>Tìm tin chưa đọc lùi tối đa<select class="js-settings-lookback">${LOOKBACK_DAYS.map((d) => `<option value="${d}"${String(Z.getLookback() / Z.DAY) === d ? ' selected' : ''}>${d} ngày</option>`).join('')}</select></label>
+          <label>Tìm tin chưa đọc trong vòng<select class="js-settings-lookback">${LOOKBACK_DAYS.map((d) => `<option value="${d}"${String(Z.getLookback() / Z.DAY) === d ? ' selected' : ''}>${d} ngày</option>`).join('')}</select></label>
         </div>
       </section>
 
@@ -442,7 +444,7 @@
         <div class="zenlo__actions">
           <button class="zenlo__btn js-settings-clear">Xoá bản tóm tắt đã lưu</button>
         </div>
-        <div class="zenlo-settings__note">Ô tick và thứ tự trong Bản tin được giữ lại.</div>
+        <div class="zenlo-settings__note">Vẫn giữ ô tick và thứ tự trong Bản tin.</div>
         <div class="zenlo__status js-settings-clear-status"></div>
       </section>
 
@@ -451,7 +453,7 @@
         <div class="zenlo__actions">
           <button class="zenlo__btn js-settings-reset">Đặt lại mặc định</button>
         </div>
-        <div class="zenlo-settings__note">API key, bản tóm tắt, ô tick và thứ tự được giữ lại.</div>
+        <div class="zenlo-settings__note">Vẫn giữ API key, bản tóm tắt, ô tick và thứ tự trong Bản tin.</div>
         <div class="zenlo__status js-settings-reset-status"></div>
       </section>
 
@@ -599,7 +601,7 @@
       el.querySelector('.js-settings-clear-status').textContent = `Đã xoá ${removed} mục.`
     })
     el.querySelector('.js-settings-reset').addEventListener('click', () => {
-      if (!window.confirm('Đưa mọi cài đặt của Zenlo về mặc định? API key, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin vẫn được giữ.')) return
+      if (!window.confirm('Đưa mọi cài đặt của Zenlo về mặc định? Vẫn giữ API key, bản tóm tắt đã lưu, ô tick và thứ tự trong Bản tin.')) return
       Z.resetSettings()
       // Rebuild the page so every field shows its default
       el.remove()

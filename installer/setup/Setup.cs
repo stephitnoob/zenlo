@@ -143,7 +143,7 @@ namespace Zenlo
         static bool ConfirmCloseZalo()
         {
             if (!IsZaloRunning()) return true;
-            string answer = Ask("Zalo đang mở và sẽ được tắt trong lúc cài đặt, xong sẽ tự mở lại. Tiếp tục? (c/k): ");
+            string answer = Ask("Zalo đang mở. Bộ cài sẽ tạm tắt Zalo, làm xong thì tự mở lại. Tiếp tục? (c/k): ");
             return answer != null && answer.ToLowerInvariant() == "c";
         }
 
@@ -154,10 +154,10 @@ namespace Zenlo
             Install();
             bool kept = KeepForReinstall();
             Console.WriteLine();
-            Console.WriteLine("Xong. Cài đặt, bản tóm tắt và Bản tin của bạn vẫn được giữ nguyên.");
+            Console.WriteLine("Xong. Cài đặt, bản tóm tắt và Bản tin của bạn vẫn còn nguyên.");
             if (wasRunning && StartZalo())
             {
-                Console.WriteLine("Zalo đang được mở lại. Bấm nút Zenlo ở thanh bên trái để bắt đầu.");
+                Console.WriteLine("Đang mở lại Zalo. Bấm nút Zenlo ở thanh bên trái để bắt đầu.");
             }
             else
             {
@@ -180,7 +180,7 @@ namespace Zenlo
             Console.WriteLine();
             Console.WriteLine("Đã gỡ Zenlo, Zalo đã về bản gốc.");
             Console.WriteLine("Dữ liệu của Zenlo vẫn còn trong %APPDATA%\\Zenlo; xoá thư mục đó nếu muốn xoá sạch.");
-            if (left != null) Console.WriteLine("Có thể xoá file cài đặt còn lại: " + left);
+            if (left != null) Console.WriteLine("Bạn có thể tự xoá file cài đặt còn lại: " + left);
             if (wasRunning) StartZalo();
         }
 
@@ -455,7 +455,7 @@ namespace Zenlo
                 {
                     // Never leave Zalo without its app: put the original back
                     RestoreOriginal(resources);
-                    throw new Exception("Không chép được Zenlo vào Zalo (" + error.Message + "). Zalo đã được đưa về bản gốc.");
+                    throw new Exception("Không chép được Zenlo vào Zalo (" + error.Message + "). Đã đưa Zalo về bản gốc.");
                 }
             }
             finally
@@ -490,7 +490,7 @@ namespace Zenlo
                 string marker = Path.Combine(resources, DevMarker);
                 if (File.Exists(marker)) File.Delete(marker);
             }
-            if (!restored) throw new Exception("Không có bản sao lưu app.asar.bak, có vẻ Zenlo chưa được cài.");
+            if (!restored) throw new Exception("Không thấy bản sao lưu app.asar.bak, có vẻ máy này chưa cài Zenlo.");
         }
 
         static string InsertBefore(string text, string marker, string addition, string file)

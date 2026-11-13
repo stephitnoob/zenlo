@@ -247,7 +247,7 @@ function installInto (resourcesDir, dev, source) {
   } catch (error) {
     // Never leave Zalo without its app: put the original back
     restoreOriginal(resourcesDir)
-    throw new Error(`Không chép được Zenlo vào Zalo (${error.message}). Zalo đã được đưa về bản gốc.`)
+    throw new Error(`Không chép được Zenlo vào Zalo (${error.message}). Đã đưa Zalo về bản gốc.`)
   } finally {
     // A temp folder that cannot be removed yet (a file an antivirus still holds) must not turn a
     // finished install, or the error above, into another error
@@ -272,7 +272,7 @@ function uninstall () {
     if (restoreOriginal(resourcesDir)) restored = true
     fs.rmSync(path.join(resourcesDir, DEV_MARKER), { force: true })
   }
-  if (!restored) throw new Error('Không có bản sao lưu app.asar.bak, có vẻ Zenlo chưa được cài.')
+  if (!restored) throw new Error('Không thấy bản sao lưu app.asar.bak, có vẻ máy này chưa cài Zenlo.')
   log('Đã gỡ Zenlo, Zalo đã về bản gốc. Mở lại Zalo.')
 }
 

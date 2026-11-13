@@ -3,7 +3,7 @@
 
   More reactions (renderer). Zalo knows about 80 reactions but its bar on a message shows 6.
   - a "+" at the end of that bar opens every reaction Zalo knows, with the ones used lately on top
-  - "Sửa thanh nhanh" picks which 6 the bar itself shows (Zalo then draws them natively)
+  - "Sửa thanh cảm xúc" picks which 6 the bar itself shows (Zalo then draws them natively)
   Everything comes from Zalo at runtime: the list (updated by Zalo's server, so new or seasonal
   reactions show up by themselves), the emoji pictures, and the send itself (Zalo's own handler
   for that message, so a reaction is sent exactly like one clicked in Zalo's bar).
@@ -224,7 +224,7 @@
     el.innerHTML = `
       <div class="zenlo-react__head">
         <span class="zenlo-react__title js-react-title"></span>
-        <button type="button" class="zenlo__inline-link js-react-edit">Sửa thanh nhanh</button>
+        <button type="button" class="zenlo__inline-link js-react-edit">Sửa thanh cảm xúc</button>
       </div>
       <div class="zenlo-react__edit js-react-edit-area" hidden>
         <div class="zenlo-react__hint">Bấm emoji bên dưới để thêm, bấm emoji ở đây để bỏ. Tối đa ${QUICK_MAX}.</div>
@@ -303,7 +303,7 @@
     const all = getReactions()
     const isEditing = !!editing
     panel.classList.toggle('zenlo-react--editing', isEditing)
-    panel.querySelector('.js-react-title').textContent = isEditing ? 'Sửa thanh nhanh' : 'Thả cảm xúc'
+    panel.querySelector('.js-react-title').textContent = isEditing ? 'Sửa thanh cảm xúc' : 'Thả cảm xúc'
     panel.querySelector('.js-react-edit').hidden = isEditing
     panel.querySelector('.js-react-edit-area').hidden = !isEditing
     panel.querySelector('.js-react-all-label').textContent = `Tất cả (${all.length})`

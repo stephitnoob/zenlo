@@ -152,9 +152,9 @@ const runClaude = (send, finish, { id, model, effort, systemPrompt, instruction,
 
   child.on('close', (code) => {
     if (code === 0) {
-      finish({ type: 'error', message: 'Claude Code kết thúc mà không trả kết quả.' })
+      finish({ type: 'error', message: 'Claude Code dừng mà không trả lời gì.' })
     } else {
-      finish({ type: 'error', message: stderr.trim() || `Claude Code thoát với mã ${code}.` })
+      finish({ type: 'error', message: stderr.trim() || `Claude Code dừng bất thường (mã ${code}).` })
     }
   })
 
@@ -258,7 +258,7 @@ const getCodexLogin = (exe) => {
   })
 }
 
-const CODEX_NOT_CHATGPT = 'Codex đang đăng nhập bằng API key hoặc cách khác ChatGPT, có thể bị tính tiền theo API. Hãy chạy "codex logout" rồi "codex login" và chọn đăng nhập bằng ChatGPT.'
+const CODEX_NOT_CHATGPT = 'Codex đang đăng nhập bằng API key hoặc cách khác ngoài ChatGPT, nên có thể bị tính tiền theo API. Hãy chạy "codex logout" rồi "codex login" và chọn đăng nhập bằng ChatGPT.'
 
 // Codex's error texts (English) as a short Vietnamese message
 const codexError = (message) => {
@@ -436,7 +436,7 @@ const CODEX_STREAM_CONFIG = [
 const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, config, send, finish, fallback, cleanUp }) => {
   const cannotRun = () => {
     cleanUp()
-    finish({ type: 'error', message: 'Không chạy được Codex ở chế độ an toàn (còn MCP server hay hook đang bật, hoặc không xác định được Codex đăng nhập bằng gì). Hãy chạy "codex login status" để xem, rồi thử lại.' })
+    finish({ type: 'error', message: 'Không chạy được Codex ở chế độ an toàn: Codex còn bật MCP server hay hook, hoặc Zenlo không biết Codex đăng nhập bằng gì. Hãy chạy "codex login status" để xem, rồi thử lại.' })
   }
   // Once codex exec has the empty folder, it removes it itself
   let handedOver = false
@@ -560,7 +560,7 @@ const runCodexStream = ({ exe, work, id, model, effort, systemPrompt, prompt, co
   child.stdin.on('error', () => {})
   child.on('error', () => giveUp('spawn'))
   child.on('close', (code) => {
-    if (!over) giveUp(stderr.trim().split(/\r?\n/).pop() || `Codex thoát với mã ${code} mà không trả kết quả.`)
+    if (!over) giveUp(stderr.trim().split(/\r?\n/).pop() || `dừng bất thường (mã ${code}), chưa trả lời gì.`)
     // Again once Codex has exited: removing the folder while it was still Codex's working folder may have failed
     if (!handedOver) cleanUp()
   })
@@ -722,7 +722,7 @@ const runCodex = (send, finish, { id, model, effort, systemPrompt, instruction, 
       cleanUp()
       if (code === 0 && answer) return finish({ type: 'done', isError: false, result: answer })
       const message = lastError || stderr.trim().split(/\r?\n/).filter((l) => !/^Reading prompt from stdin/i.test(l)).pop() || ''
-      finish({ type: 'error', message: message ? codexError(message.replace(/^Error:\s*/, '')) : `Codex thoát với mã ${code} mà không trả kết quả.` })
+      finish({ type: 'error', message: message ? codexError(message.replace(/^Error:\s*/, '')) : `Codex dừng bất thường (mã ${code}), chưa trả lời gì.` })
     })
 
     child.stdin.on('error', () => {})
@@ -817,7 +817,7 @@ const getGeminiKeys = () => {
 const setGeminiKeys = (entries) => {
   if (!account) throw new Error(NO_ACCOUNT)
   const clean = pickKeys(getGeminiKeys(), entries)
-  if (clean.length && !safeStorage.isEncryptionAvailable()) throw new Error('Windows không cho mã hoá dữ liệu, nên Zenlo không lưu key.')
+  if (clean.length && !safeStorage.isEncryptionAvailable()) throw new Error('Windows không mã hoá được dữ liệu nên Zenlo chưa lưu key.')
   const secrets = readJSONFile(SECRETS_FILE())
   if (!own(secrets, 'accounts') || typeof secrets.accounts !== 'object') secrets.accounts = {}
   secrets.accounts[account] = { geminiKeys: clean.map((k) => safeStorage.encryptString(k).toString('base64')) }
@@ -1090,12 +1090,12 @@ ipcMain.handle('zenlo:update:latest', (event) => {
       response.setEncoding('utf8')
       response.on('data', (chunk) => { text += chunk })
       response.on('end', () => {
-        if (response.statusCode !== 200) return resolve({ error: `GitHub trả lời mã ${response.statusCode}.` })
+        if (response.statusCode !== 200) return resolve({ error: `GitHub báo lỗi ${response.statusCode}.` })
         try {
           const release = JSON.parse(text)
           resolve({ tag: String(release.tag_name || '') })
         } catch (error) {
-          resolve({ error: 'Không đọc được trả lời của GitHub.' })
+          resolve({ error: 'Không đọc được câu trả lời của GitHub.' })
         }
       })
     })
@@ -1117,7 +1117,7 @@ ipcMain.handle('zenlo:settings:get', async (event) => {
     codex: {
       path: codexPath,
       loggedIn: login ? login.loggedIn : null,
-      account: login && login.mode === 'chatgpt' ? 'đã đăng nhập bằng ChatGPT' : login && login.loggedIn ? 'đang dùng API key hoặc cách khác ChatGPT (nên đăng nhập bằng ChatGPT)' : ''
+      account: login && login.mode === 'chatgpt' ? 'đã đăng nhập bằng ChatGPT' : login && login.loggedIn ? 'đang đăng nhập bằng API key hoặc cách khác ngoài ChatGPT (nên đổi sang ChatGPT)' : ''
     },
     encryption: safeStorage.isEncryptionAvailable()
   }
