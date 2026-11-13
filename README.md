@@ -1,26 +1,29 @@
 # Zenlo
 
-Trình quản lí hội thoại cho **Zalo PC** (Windows), dùng AI (Gemini, Claude hoặc ChatGPT qua Codex) để đọc giúp bạn. Có thêm bản cho **Zalo web** (`chat.zalo.me`), một tiện ích trình duyệt chỉ dùng Gemini.
+Zenlo là trình quản lí hội thoại mã nguồn mở cho **Zalo PC** trên Windows. Zenlo đọc tin nhắn ngay trên máy và nhờ AI tóm tắt hội thoại, hoặc gom những việc liên quan tới bạn từ nhiều nhóm thành một Bản tin. AI chạy bằng tài khoản của chính bạn: Claude Code, Codex (gói ChatGPT) hoặc Gemini (API key của bạn). Zenlo không có máy chủ riêng.
+
+Có thêm bản cho **Zalo web** (`chat.zalo.me`): một tiện ích cho Edge và Chrome, chỉ dùng Gemini.
 
 ## Tính năng
 
-Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo (khung chat tự co lại, không bị che). Mở bằng nút Zenlo ở thanh trái hoặc nút trên thanh tiêu đề hội thoại; đóng bằng ×, bấm lại nút đó, hoặc Esc. Kéo mép trái của khung để đổi độ rộng (được nhớ), bấm đúp để về mặc định.
+Mọi thứ nằm trong **khung Zenlo** ở cạnh phải cửa sổ Zalo. Khung chat tự thu hẹp lại nên không bị che. Nút Zenlo ở thanh bên trái mở Bản tin, nút trên thanh tiêu đề hội thoại mở Tóm tắt; đóng bằng ×, bấm lại nút đó hoặc phím Esc. Kéo mép trái của khung để đổi độ rộng (Zenlo nhớ độ rộng này), bấm đúp vào mép để về mặc định.
 
-- **Tóm tắt** (tab). Tóm tắt hội thoại đang mở; chưa mở hội thoại nào thì chọn ở danh sách bên trái. Chọn khoảng thời gian (30 phút … 24 giờ, "Từ tin chưa đọc", "Từ lần trước" hoặc tự nhập `dd/mm/yyyy hh:mm`) và độ dài (Ngắn / Vừa / Dài, mặc định Vừa; Ngắn vẫn giữ đủ việc của bạn, Dài kể cả diễn biến, ai nói gì); dòng ước lượng cho biết số tin, số token và số lần gọi AI trước khi gửi. Phần liên quan tới bạn được đưa lên đầu, hạn đã qua được ghi "(đã qua)"; ngay sau mỗi câu có số nguồn nhỏ `[1]` trỏ tới tin gốc: rê chuột để xem tin, bấm để nhảy tới đúng tin đó.
-- **Bản tin** (tab). Liệt kê các hội thoại Zalo đang tính là chưa đọc (hội thoại có người nhắc bạn hoặc @All có nhãn "@ nhắc bạn" và được lùi tới 30 ngày), tick chọn hội thoại cần tóm tắt, kéo ⋮⋮ để sắp xếp ưu tiên (được nhớ lâu dài). Bản tin viết ngắn, chỉ những gì bạn sẽ lỡ nếu không đọc (việc cần làm, câu cần trả lời, lịch, hạn, tiền...), mỗi ý có số nguồn trỏ tới tin gốc; hội thoại không có gì như vậy chỉ ghi "Không có gì liên quan tới bạn." kèm một câu nói nhóm đang bàn gì; nhiều hội thoại được gộp vào một lần gọi AI để đỡ tốn lượt. Tạo bản tin không gửi trạng thái "Đã xem"; chỉ nút "Đã đọc" / "Đã đọc hết" mới đánh dấu đã đọc trong Zalo.
+- **Tóm tắt** (tab): tóm tắt hội thoại đang mở; chưa mở hội thoại nào thì chọn ở danh sách bên trái. Chọn khoảng thời gian (30 phút … 24 giờ, "Từ tin chưa đọc", "Từ lần trước" hoặc tự nhập `dd/mm/yyyy hh:mm`) và độ dài (Ngắn / Vừa / Dài, mặc định Vừa; Ngắn vẫn giữ đủ việc của bạn, Dài kể cả diễn biến, ai nói gì). Trước khi gửi, dòng ước lượng cho biết số tin, số token và số lần gọi AI. Phần liên quan tới bạn nằm ở đầu, hạn đã qua có ghi "(đã qua)". Sau mỗi câu có số nguồn nhỏ `[1]` trỏ tới tin gốc: rê chuột để xem tin, bấm để nhảy tới đúng tin đó.
+- **Bản tin** (tab): liệt kê các hội thoại mà Zalo đang tính là chưa đọc. Hội thoại nào có người nhắc tới bạn (kể cả khi nhắc cả nhóm) thì có nhãn "@ nhắc bạn", và Zenlo tìm tin chưa đọc của hội thoại đó lùi tới 30 ngày. Tick chọn hội thoại cần tóm tắt, kéo ⋮⋮ để xếp thứ tự ưu tiên (Zenlo nhớ thứ tự này). Bản tin viết ngắn, chỉ ghi những gì bạn sẽ lỡ nếu không đọc (việc cần làm, câu cần trả lời, lịch, hạn, tiền...), mỗi ý có số nguồn trỏ tới tin gốc. Hội thoại không có gì như vậy chỉ ghi "Không có gì liên quan tới bạn." kèm một câu nói nhóm đang bàn gì. Zenlo gộp nhiều hội thoại vào một lần gọi AI để đỡ tốn lượt. Tạo bản tin không gửi trạng thái "Đã xem"; chỉ nút "Đã đọc" / "Đã đọc hết" mới đánh dấu đã đọc trong Zalo.
 - **Ghi chú cho AI** ("Thêm ghi chú" / "Sửa" dưới tên hội thoại trong tab Tóm tắt): mỗi hội thoại một ghi chú, tối đa 300 ký tự, ví dụ "Hoa là sếp mình" hay "chỉ cần hạn chót". AI đọc ghi chú mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên ghi chú hơn cách viết mặc định.
-- **Thả cảm xúc**: nút **+** ở cuối thanh cảm xúc mở hơn 80 cảm xúc (cái dùng gần đây lên đầu); "Sửa thanh nhanh" chọn 6 cảm xúc hiện sẵn trên thanh. Danh sách, hình và việc gửi đều do chính Zalo làm.
-- **Sao chép** bản tóm tắt hoặc bản tin (không kèm số nguồn), hoặc **Sao chép kèm nguồn** ở mũi tên ▾ cạnh nút: giữ số `[n]` và thêm danh sách "Nguồn:" (giờ, người gửi, nội dung tin, cắt khoảng 80 ký tự). Văn bản sao chép có thêm một dòng ghi nguồn Zenlo ở cuối.
-- **Cài đặt** (bánh răng trên hàng tab): chọn AI (Gemini, Claude hoặc Codex), model, effort, độ dài mặc định, số ngày tìm tin chưa đọc, xoá bản tóm tắt đã lưu, kiểm tra kết nối, xem phiên bản và kiểm tra bản mới.
+- **Thả cảm xúc**: nút **+** ở cuối thanh cảm xúc mở hơn 80 cảm xúc (cái dùng gần đây lên đầu); "Sửa thanh cảm xúc" chọn 6 cảm xúc hiện sẵn trên thanh. Cảm xúc gửi đi qua Zalo, như khi bạn bấm trên thanh cảm xúc của Zalo.
+- **Sao chép** bản tóm tắt hoặc bản tin (không kèm số nguồn), hoặc **Sao chép kèm nguồn** ở mũi tên ▾ cạnh nút: giữ số `[n]` và thêm danh sách "Nguồn:" (giờ, người gửi, nội dung tin, cắt khoảng 80 ký tự). Cuối văn bản sao chép có một dòng ghi nguồn Zenlo.
+- **Cài đặt** (bánh răng trên hàng tab): chọn AI (Gemini, Claude hoặc Codex), model, effort; thêm hoặc xoá API key Gemini; chọn độ dài mặc định và số ngày tìm tin chưa đọc; xoá bản tóm tắt đã lưu, đặt lại mặc định; kiểm tra kết nối, xem phiên bản và kiểm tra bản mới.
 
 ## Cách hoạt động
 
-- **Đọc tin nhắn** từ dữ liệu Zalo đã lưu trên máy, không cuộn khung chat, không gửi gì lên máy chủ Zalo.
+- **Đọc tin nhắn** từ dữ liệu Zalo đã lưu trên máy, không cuộn khung chat, không gửi gì lên máy chủ Zalo. Riêng bản Zalo web: khi khoảng thời gian bạn chọn cũ hơn những tin trình duyệt đang có, Zenlo nhờ Zalo web tải thêm tin cũ của nhóm, như khi bạn cuộn lên đọc.
 - **Trạng thái chưa đọc lấy từ Zalo.** Zalo xoá số tin chưa đọc ngay khi mở hội thoại, nên Zenlo ghi lại con số đó trước khi bạn mở, để "Từ tin chưa đọc" vẫn đúng.
 - **Gọi Claude** bằng [Claude Code](https://claude.com/claude-code) ở chế độ headless (`claude -p`), dùng gói Claude Pro/Max của bạn. Không dùng API key, không nạp `CLAUDE.md` hay memory cá nhân vào ngữ cảnh.
-- **Gọi ChatGPT** bằng [Codex CLI](https://github.com/openai/codex), đăng nhập bằng gói ChatGPT của bạn. Chữ hiện dần qua `codex app-server`: Zenlo tắt MCP server, plugin, bộ nhớ, `notify` và kiểm tra lại trước khi gửi tin nhắn; MCP hay hook còn chạy thì dùng `codex exec --ignore-user-config` (chữ ra một lần), chỉ khi `codex login status` đã xác nhận đăng nhập bằng ChatGPT. Cả hai đều chạy chỉ đọc trong thư mục trống, tắt công cụ, không nạp `AGENTS.md` của dự án, bỏ `CODEX_API_KEY`/`OPENAI_API_KEY` khỏi môi trường và từ chối chạy khi Codex đăng nhập bằng API key hay cách khác ChatGPT (Bedrock, access token…), để không bị tính tiền theo API.
+- **Gọi ChatGPT** bằng [Codex CLI](https://github.com/openai/codex), đăng nhập bằng gói ChatGPT của bạn. Chữ hiện dần qua `codex app-server`: Zenlo tắt MCP server, plugin, bộ nhớ, `notify` và kiểm tra lại trước khi gửi tin nhắn; MCP hay hook còn chạy thì dùng `codex exec --ignore-user-config` (chữ ra một lần), chỉ khi `codex login status` đã xác nhận đăng nhập bằng ChatGPT. Cả hai cách đều chạy chỉ đọc trong thư mục trống, tắt công cụ, không nạp `AGENTS.md` của dự án, bỏ `CODEX_API_KEY`/`OPENAI_API_KEY` khỏi môi trường và từ chối chạy khi Codex đăng nhập bằng API key hay cách nào khác ngoài ChatGPT (Bedrock, access token…), để không bị tính tiền theo API.
 - **Gọi Gemini** bằng API key của bạn (tối đa 5 key), lưu mã hoá bằng Windows (`safeStorage`) trên máy. Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện.
-- **Dữ liệu của Zenlo** (cài đặt, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm một bản sao lưu cùng key và hạn mức trong `%APPDATA%\Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
+- **Dữ liệu của Zenlo** (cài đặt, ghi chú, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm bản sao lưu, key Gemini và ghi nhận model hết lượt trong `%APPDATA%\Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
+- **Mỗi tài khoản Zalo một bộ dữ liệu.** Bản tóm tắt, Bản tin, ghi chú, cài đặt và key Gemini thuộc về tài khoản Zalo đang đăng nhập. Khi người khác đăng nhập Zalo trên cùng máy (hoặc cùng trình duyệt với bản Zalo web), Zenlo cất dữ liệu của người trước vào bản sao lưu của người đó và nạp dữ liệu của người sau. Độ rộng khung Zenlo, lựa chọn kiểm tra bản mới và danh sách model Claude, Codex là của máy nên dùng chung. Key và dữ liệu từ các bản Zenlo cũ (chưa tách theo tài khoản) thuộc về tài khoản Zalo đầu tiên mở Zenlo sau khi cập nhật. Chi tiết ở [PRIVACY.md](PRIVACY.md).
 - **Cài vào Zalo** bằng cách giải nén `app.asar`, thêm Zenlo, giữ bản gốc ở `app.asar.bak`.
 - **Báo bản mới**: lần đầu mở, Zenlo hỏi có muốn được báo khi có bản mới không. Chọn Có thì mỗi ngày Zenlo hỏi GitHub một lần và hiện thông báo của Windows khi có bản mới; không gửi gì về bạn. Đổi được trong Cài đặt.
 
@@ -28,9 +31,9 @@ Mọi thứ nằm trong **khung Zenlo** gắn ở cạnh phải cửa sổ Zalo 
 
 Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases của kho mã này, giải nén, mở `Zenlo-Setup.exe` và chọn "1. Cài Zenlo" (trình duyệt ít cảnh báo file zip hơn; trong zip chỉ có đúng file `.exe` đó, cũng có trên Releases). Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
 
-Bộ cài sửa file `resources\app.asar` của Zalo để thêm Zenlo, sau khi nói rõ trên màn hình; bản gốc được giữ thành `app.asar.bak` và chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc (mọi thư mục phiên bản Zalo có Zenlo). Bộ cài sửa bản Zalo đang chạy; Zalo đang tắt thì sửa bản mới nhất, bỏ qua thư mục thiếu `Zalo.exe` hay có số phiên bản là một ngày quá xa trong tương lai (như `Zalo-27.12.31`).
+Bộ cài nói rõ trên màn hình sẽ sửa gì, rồi mới sửa file `resources\app.asar` của Zalo để thêm Zenlo. Bản gốc được giữ thành `app.asar.bak`; chọn "2. Gỡ Zenlo" thì mọi thư mục phiên bản Zalo đang có Zenlo đều về đúng bản gốc. Bộ cài sửa thư mục phiên bản Zalo đang chạy, cùng các bản mới hơn mà Zalo đã tải sẵn để chạy lần sau; Zalo đang tắt thì sửa bản mới nhất. Bộ cài bỏ qua thư mục thiếu `Zalo.exe` và thư mục có số phiên bản là một ngày quá xa trong tương lai (như `Zalo-27.12.31`).
 
-Zalo web: tải `Zenlo-ZaloWeb.zip` (cũng trên Releases), giải nén vào một thư mục cố định, mở `edge://extensions` hoặc `chrome://extensions`, bật Chế độ nhà phát triển (Chrome: Chế độ dành cho nhà phát triển), bấm **Tải phần mở rộng đã giải nén** (Chrome: **Tải tiện ích đã giải nén**) và chọn thư mục đó. Cập nhật: giải nén bản mới đè lên thư mục cũ rồi bấm tải lại tiện ích; manifest có `key` nên mã tiện ích không đổi, key Gemini và cài đặt còn nguyên. Hướng dẫn có hình: [zenlo.io.vn/huong-dan.html#zalo-web](https://zenlo.io.vn/huong-dan.html#zalo-web).
+Zalo web: tải `Zenlo-ZaloWeb.zip` (cũng trên Releases), giải nén vào một thư mục cố định, mở `edge://extensions` hoặc `chrome://extensions`, bật Chế độ nhà phát triển (Chrome: Chế độ dành cho nhà phát triển), bấm **Tải phần mở rộng đã giải nén** (Chrome: **Tải tiện ích đã giải nén**) và chọn thư mục đó. Cập nhật: giải nén bản mới đè lên thư mục cũ rồi bấm tải lại tiện ích. Nhờ trường `key` trong manifest, mã của tiện ích giữ nguyên qua các bản, nên key Gemini và cài đặt còn nguyên. Hướng dẫn có hình: [zenlo.io.vn/huong-dan.html#zalo-web](https://zenlo.io.vn/huong-dan.html#zalo-web).
 
 Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://zenlo.io.vn/ky-so.html) · [Các phiên bản](https://zenlo.io.vn/phien-ban.html)
 
@@ -41,7 +44,7 @@ Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURI
 - Để build bộ cài `Zenlo-Setup.exe`: .NET Framework 4.x có sẵn trong Windows 10/11 (dùng trình biên dịch C# `csc.exe` đi kèm)
 - Một trong ba: API key Gemini; Claude Code đã đăng nhập bằng gói Claude Pro/Max; hoặc Codex đã đăng nhập bằng gói ChatGPT
 
-## Sử dụng
+## Chạy từ mã nguồn
 
 ```bash
 npm install
@@ -56,13 +59,13 @@ npm run zalo:install
 | `npm run dev` | Tự build lại mỗi khi sửa code |
 | `npm run zalo:status` | Xem Zenlo đang được cài thế nào |
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
-| `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 200 KB, không cần Node.js) kèm SHA-256 |
+| `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 230 KB, không cần Node.js) kèm SHA-256 |
 | `npm run build:ext` | Build rồi đóng gói bản Zalo web thành `build/ext/Zenlo-ZaloWeb.zip` kèm SHA-256 |
 | `npm run build:ext-dev` | Build bản Zalo web để phát triển: nạp `dist-ext/` vào trình duyệt một lần, sau đó mỗi lần build (hoặc khi `npm run dev` đang chạy) tiện ích và tab Zalo web tự nạp lại |
 | `npm run site` | Xem trang web trên máy ở http://127.0.0.1:4173 (không lưu cache, luôn thấy bản mới nhất) |
 | `npm run lint` | Kiểm tra cách viết code (standard) |
-| `npm test` | Build rồi chạy cả ba bộ test bên dưới (CI chạy lệnh này mỗi lần push) |
-| `npm run test:unit` | Thử các hàm xử lý bản chép, mốc giờ và câu trả lời của AI, không gọi AI |
+| `npm test` | Build rồi chạy bốn bộ test: unit, Gemini, Zalo web và Codex (CI chạy lệnh này mỗi lần push) |
+| `npm run test:unit` | Thử các hàm xử lý bản chép, số nguồn, câu trả lời của AI và việc đổi tài khoản Zalo, không gọi AI |
 | `npm run test:gemini` | Thử chuỗi model Gemini trong tiến trình chính thật, với máy chủ Google giả (không tốn lượt) |
 | `npm run test:codex` | Thử cách gọi Codex với một Codex giả (không gọi Codex thật) |
 
@@ -72,16 +75,16 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 
 | Đường dẫn | Vai trò |
 |---|---|
-| `src/renderer/` | Chạy trong trang Zalo, gom thành `dist/zenlo.js`: `core.js` (dữ liệu và trạng thái chưa đọc của Zalo, bản chép hội thoại, prompt, gọi AI), `drawer.js` (khung Zenlo, nút ở thanh trái), `summary.js` (Tóm tắt), `digest.js` (Bản tin), `settings.js` (Cài đặt), `reactions.js` (nút + và thanh cảm xúc nhanh), `styles.js` (gắn lại CSS khi Zalo xoá) |
-| `src/main/` | Tiến trình chính của Zalo: `main.js` chạy `claude -p`, `codex app-server` / `codex exec` hoặc gọi Gemini, lưu key mã hoá; `preload.js` là cầu nối `window.$zenlo` |
-| `src/extension/` | Bản Zalo web (tiện ích trình duyệt MV3): `manifest.json`; `shim.js` tạo `window.$zenlo` trong trang; `bridge.js` (content script riêng) giữ key, gọi Gemini, hỏi GitHub bản mới; `background.js` mở Zalo web khi bấm nút tiện ích; `dev-reload.js` chỉ có trong bản phát triển |
+| `src/renderer/` | Chạy trong trang Zalo, gom thành `dist/zenlo.js`: `core.js` (dữ liệu và trạng thái chưa đọc của Zalo, bản chép hội thoại, prompt, gọi AI, sao lưu theo tài khoản Zalo), `drawer.js` (khung Zenlo, nút ở thanh trái), `summary.js` (Tóm tắt), `digest.js` (Bản tin), `settings.js` (Cài đặt), `reactions.js` (nút + và thanh cảm xúc nhanh), `styles.js` (gắn lại CSS khi Zalo xoá) |
+| `src/main/` | Tiến trình chính của Zalo: `main.js` chạy `claude -p`, `codex app-server` / `codex exec` hoặc gọi Gemini, lưu key mã hoá và bản sao lưu theo tài khoản Zalo; `preload.js` là cầu nối `window.$zenlo` |
+| `src/extension/` | Bản Zalo web (tiện ích trình duyệt MV3): `manifest.json`; `shim.js` tạo `window.$zenlo` trong trang; `bridge.js` (content script riêng) giữ key và bản sao lưu theo tài khoản Zalo, gọi Gemini, hỏi GitHub bản mới; `gemini-fetch.js` gửi yêu cầu tới Gemini bằng `fetch`; `background.js` mở Zalo web khi bấm nút tiện ích; `dev-reload.js` chỉ có trong bản phát triển |
 | `src/shared/` | Dùng chung cho Zalo PC và Zalo web: `gemini.js` (chuỗi model Gemini, hạn mức, đọc câu trả lời) |
 | `src/styles/` | Giao diện (SCSS) |
 | `scripts/build.mjs` | Build bằng esbuild và sass |
 | `installer/` | Cài / gỡ vào Zalo PC: `zalo.js` cho các lệnh npm khi phát triển (có chế độ dev); `setup/Setup.cs` là bộ cài `Zenlo-Setup.exe` cho người dùng |
 | `scripts/pack-ext.mjs` | Đóng gói `dist-ext/` thành `Zenlo-ZaloWeb.zip` |
 | `scripts/build-setup.mjs` | Biên dịch bộ cài C# thành một file `.exe`, nhúng sẵn các file Zenlo đã build |
-| `test/` | `unit/`: thử các hàm của `core.js` và cách bộ cài chọn thư mục Zalo; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
+| `test/` | `unit/`: thử các hàm của `core.js` và cách bộ cài chọn thư mục Zalo; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `extension/`: thử cầu nối của bản Zalo web (key và bản sao lưu theo tài khoản); `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
 | `site/` | Trang web giới thiệu và tải về (GitHub Pages) |
 | `.github/workflows/` | Build và phát hành tự động, đưa trang web lên |
 
@@ -98,8 +101,8 @@ Zenlo đang xin chứng chỉ ký số miễn phí của SignPath Foundation; c�
 
 Copyright (C) 2026 stephit.
 
-Zenlo là phần mềm tự do, phát hành theo [Giấy phép Công cộng GNU phiên bản 3](LICENSE) (GPL-3.0-only). Bạn được dùng, nghiên cứu, sửa đổi và phát hành lại Zenlo, kể cả bản đã sửa, miễn là giữ cùng giấy phép và công khai mã nguồn của bản đó. Zenlo được cung cấp không kèm bảo hành nào; chi tiết trong file [LICENSE](LICENSE).
+Zenlo là phần mềm tự do, phát hành theo [Giấy phép Công cộng GNU phiên bản 3](LICENSE) (GPL-3.0-only). Bạn được dùng, nghiên cứu, sửa đổi và phát hành lại Zenlo, kể cả bản đã sửa, miễn là giữ cùng giấy phép và công khai mã nguồn của bản đó. Zenlo không kèm bất kỳ bảo hành nào; chi tiết trong file [LICENSE](LICENSE).
 
-Zenlo phi lợi nhuận và không có bản trả phí. Nếu phát hành bản sửa đổi, mong bạn đặt tên khác để người dùng không nhầm với bản chính thức. Góp ý, báo lỗi và pull request đều được chào đón.
+Zenlo phi lợi nhuận và không có bản trả phí. Nếu phát hành bản sửa đổi, mong bạn đặt tên khác để người dùng không nhầm với bản chính thức. Bạn cứ góp ý, báo lỗi hoặc gửi pull request trên GitHub.
 
-Zenlo được stephit phát triển cùng Claude (Anthropic). Đây là dự án cá nhân, không liên kết với Zalo hay VNG.
+Zenlo do stephit phát triển cùng Claude (Anthropic). Đây là dự án cá nhân, không liên kết với Zalo hay VNG.

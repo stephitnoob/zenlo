@@ -1,6 +1,6 @@
 # Bảo mật
 
-Zenlo đọc tin nhắn riêng tư, nên mọi lỗ hổng đều được xử lý ưu tiên.
+Zenlo đọc tin nhắn riêng tư, nên tác giả ưu tiên sửa lỗ hổng bảo mật trước mọi việc khác.
 
 ## Báo lỗ hổng
 
@@ -12,7 +12,7 @@ Nên kèm:
 - các bước tái hiện;
 - tác động bạn thấy được (ví dụ: lộ tin nhắn, lộ API key, chạy mã).
 
-Bạn sẽ nhận được phản hồi trong vòng 7 ngày. Khi có bản sửa, bạn được ghi công trong ghi chú phát hành nếu muốn.
+Tác giả sẽ trả lời trong vòng 7 ngày. Khi có bản sửa, nếu bạn muốn, ghi chú phát hành sẽ ghi tên bạn.
 
 ## Phạm vi
 
@@ -35,12 +35,13 @@ Ngoài phạm vi: lỗ hổng của chính Zalo, Claude Code, Codex, Gemini API;
 - **Hiển thị:** mọi nội dung từ tin nhắn và từ AI được escape trước khi đưa lên giao diện. Link trong bản tóm tắt chỉ bấm được khi địa chỉ có đúng trong tin nhắn gốc của hội thoại đó, để một tin nhắn không thể dụ AI tạo link mang nội dung hội thoại ra ngoài; mỗi thẻ Bản tin chỉ nhận phần trả lời đầu tiên mang số của nó.
 - **IPC:** tiến trình chính chỉ nhận yêu cầu từ trang nội bộ của Zalo (`file://`).
 - **API key:** mã hoá bằng Windows DPAPI (`safeStorage`), lưu ngoài thư mục của Zalo.
+- **Tách theo tài khoản Zalo:** key Gemini, bản sao lưu, bản tóm tắt, ghi chú và cài đặt thuộc về tài khoản Zalo đang đăng nhập. Tài khoản khác đăng nhập trên cùng máy hay cùng trình duyệt thì Zenlo xoá dữ liệu của tài khoản trước khỏi bộ nhớ của Zalo (dữ liệu đó vẫn còn trong bản sao lưu của tài khoản trước) và nạp dữ liệu của tài khoản sau. Khi chưa biết tài khoản nào đang đăng nhập, Zenlo không lưu key, không gọi Gemini, không sao lưu. Zenlo chỉ nhận mã tài khoản gồm chữ cái không dấu, chữ số, `_` hoặc `-` (tối đa 64 ký tự), nên mã này không thể thành một đường dẫn file. Việc tách này là để người dùng chung máy không thấy dữ liệu của nhau khi dùng Zalo bình thường, không phải ranh giới bảo mật: ai dùng được tài khoản Windows hay hồ sơ trình duyệt vẫn lấy được dữ liệu bằng công cụ, và script trong trang Zalo vẫn dùng được `window.$zenlo` như nói ở dưới.
 - **Bản Zalo web (tiện ích trình duyệt):** chỉ chạy trên `chat.zalo.me`, không xin quyền đọc tab, trang khác hay lịch sử. API key nằm trong bộ nhớ riêng của tiện ích (không được mã hoá như DPAPI) và chỉ content script riêng của tiện ích (`bridge.js`) đọc được; trang Zalo web chỉ nhận key đã che. Như ở bản PC, script của trang dùng được `window.$zenlo` để chạy Gemini hay đổi key, nhưng không đọc được key. Gemini được gọi từ content script, không từ trang.
-- **Không tự cập nhật ngầm.** Bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc (build provenance) để ai cũng kiểm chứng được.
+- **Không tự cập nhật ngầm.** Zenlo chỉ báo khi có bản mới; bạn tự tải và cài. Bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc (build provenance) để ai cũng kiểm chứng được.
 
 ## Kiểm chứng một bản tải về
 
-Tải `Zenlo-Setup.zip` thì giải nén trước; trong zip chỉ có đúng file `Zenlo-Setup.exe` được phát hành cùng. So SHA-256 của file `.exe` với giá trị trong ghi chú phát hành:
+Nếu tải `Zenlo-Setup.zip` thì giải nén trước; trong zip chỉ có đúng file `Zenlo-Setup.exe` của cùng bản phát hành. So SHA-256 của file `.exe` với giá trị trong ghi chú phát hành:
 
 ```powershell
 Get-FileHash .\Zenlo-Setup.exe -Algorithm SHA256
