@@ -59,7 +59,7 @@
     </a>
     <a class="top__link" href="huong-dan.html">Hướng dẫn</a>
     <a class="top__link" href="phien-ban.html">Phiên bản</a>
-    <a class="top__link" href="#cau-hoi">FAQ</a>
+    <a class="top__link" href="#cau-hoi">Hỏi đáp</a>
     <button class="icon-btn js-theme" type="button">
       <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -71,9 +71,27 @@
 <main>
 
   <section class="hero">
-    <div class="wrap">
-      <h1>Ba trăm tin chưa đọc, <br>đọc trong mười giây.</h1>
-      <p>Zenlo dùng AI tóm tắt tin nhắn Zalo ngay cạnh khung chat. <b class="free">Hoàn toàn miễn phí</b>, thử bấm ở bên dưới.</p>
+    <div class="wrap hero__grid">
+      <div>
+        <h1>Ba trăm tin chưa đọc, <br>đọc trong <mark class="hl">mười giây</mark></h1>
+        <p>Zenlo dùng AI tóm tắt tin nhắn Zalo ngay cạnh khung chat, <b class="free">miễn phí</b>.</p>
+      </div>
+      <!-- Zenlo's letter coming out of its envelope: the summary of one group (the same group as in
+           the digest demo), postmarked with its count and the time of its last message -->
+      <div class="mail" aria-hidden="true">
+        <div class="mail__back"></div>
+        <div class="mail__letter">
+          <p class="mail__to">Gửi bạn · Phụ huynh lớp 3A</p>
+          <p class="mail__head">Liên quan tới bạn</p>
+          <p><mark class="hl">Nộp quỹ lớp 200k trước thứ 6</mark></p>
+          <p>Họp phụ huynh 19h thứ 5</p>
+          <p class="mail__rest">Còn lại: cảm ơn cô, ảnh lớp</p>
+        </div>
+        <svg class="mail__front" viewBox="0 0 300 150" preserveAspectRatio="none"><path d="M2 2 L150 52 L298 2 L298 141 Q298 148 291 148 L9 148 Q2 148 2 141 Z"/></svg>
+        <span class="mail__stamp">Z</span>
+        <span class="mail__mark">37 tin<br>20:12</span>
+        <svg class="mail__wave" viewBox="0 0 90 30"><path d="M0 5q7.5-5 15 0t15 0 15 0 15 0 15 0 15 0M0 15q7.5-5 15 0t15 0 15 0 15 0 15 0 15 0M0 25q7.5-5 15 0t15 0 15 0 15 0 15 0 15 0"/></svg>
+      </div>
     </div>
   </section>
 
@@ -84,30 +102,74 @@
         <p><b>81,3 triệu</b>người dùng Zalo mỗi tháng</p>
         <p><b>2,2 tỷ</b>tin nhắn mỗi ngày</p>
       </div>
-      <p class="why__source">Số liệu Zalo công bố, tháng 6/2026, <a class="link" href="https://znews.vn/zalo-dat-81-3-trieu-nguoi-dung-voi-2-2-ty-tin-nhan-moi-ngay-post1673857.html" rel="noopener">theo Znews</a></p>
+      <p class="why__source">Số liệu do Zalo công bố tháng 6/2026, <a class="link" href="https://znews.vn/zalo-dat-81-3-trieu-nguoi-dung-voi-2-2-ty-tin-nhan-moi-ngay-post1673857.html" rel="noopener">theo Znews</a></p>
       <ol class="why__flow">
-        <li>Nhóm lớp, nhóm phụ huynh, nhóm công ty: việc cần làm và chuyện phiếm nằm chung một dòng tin.</li>
-        <li>Vắng vài tiếng là có hàng trăm tin. Đọc hết thì mất thời gian, bỏ qua thì dễ lỡ hạn nộp, lịch hẹn hay câu hỏi gửi cho bạn.</li>
-        <li><b>Zenlo đọc hộ, ngay trong Zalo:</b> điều liên quan tới bạn được đưa lên trước, mỗi ý có số nguồn dẫn về tin gốc.</li>
+        <li>Nhóm lớp, nhóm phụ huynh, nhóm công ty: việc cần làm lẫn lộn với chuyện phiếm.</li>
+        <li>Vắng vài tiếng là có hàng trăm tin. Đọc hết thì mất thời gian, bỏ qua thì dễ lỡ hạn nộp, lịch hẹn, hay câu người ta hỏi bạn.</li>
+        <li><b>Zenlo đọc hộ bạn ngay trong Zalo:</b> việc của bạn nằm trên cùng, ý nào cũng có số nguồn để bấm xem tin gốc.</li>
       </ol>
-      <p class="why__goal"><em>Đọc ít hơn</em>, không sót việc.</p>
+      <p class="why__goal"><em class="hl">Đọc ít</em> mà không sót việc.</p>
     </div>
   </section>
 
-  <!-- 1. One long group chat -->
-  <section class="chapter" id="tom-tat">
+  <!-- Try it: one Zalo window with Zenlo docked on the right. It plays once by itself with a
+       pretend cursor; the visitor's first touch stops it and a ticket of five stamps takes over,
+       a pulse on what to press next. -->
+  <section class="chapter play" id="thu" aria-labelledby="play-title">
     <div class="wrap">
       <div class="chapter__head">
-        <span class="chapter__step">01 · Tóm tắt</span>
-        <h2>Một nhóm chat dài, đọc trong vài giây.</h2>
-        <p>Phần liên quan tới bạn luôn nằm trên cùng.</p>
+        <h2 id="play-title">Thử tóm tắt một nhóm chat</h2>
       </div>
 
-      <div class="zw" id="demo-summary">
-        <div class="zw__chat">
+      <div class="ticket js-ticket" data-mode="idle">
+        <p class="ticket__name">Phiếu thử</p>
+        <ol class="ticket__stamps">
+          <li data-step="open"><span class="ticket__n">01</span>Mở Zenlo</li>
+          <li data-step="sum"><span class="ticket__n">02</span>Tóm tắt</li>
+          <li data-step="cite"><span class="ticket__n">03</span>Số nguồn</li>
+          <li data-step="note"><span class="ticket__n">04</span>Ghi chú</li>
+          <li data-step="digest"><span class="ticket__n">05</span>Bản tin</li>
+        </ol>
+        <button class="ticket__again js-again" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+          Xem lại từ đầu
+        </button>
+        <p class="ticket__line js-ticket-line" aria-live="polite"></p>
+      </div>
+
+      <div class="zw play__win" id="demo-play">
+        <!-- Zalo's left bar; the Zenlo button opens "Bản tin", as in the app -->
+        <nav class="play__rail" aria-label="Thanh bên Zalo">
+          <span class="play__me" aria-hidden="true">M</span>
+          <span class="play__ico is-on" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span>
+          <span class="play__ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 17c1-2 3-3 5-3s4 1 5 3"/></svg></span>
+          <span class="play__ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg></span>
+          <button class="play__zen js-p-digest" type="button" aria-label="Zenlo: mở Bản tin" title="Zenlo: Bản tin">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+          </button>
+        </nav>
+
+        <!-- The conversation list: only Team Marketing opens in this demo -->
+        <div class="play__list" aria-hidden="true">
+          <div class="play__search">Tìm kiếm</div>
+          <div class="play__conv has-new"><span class="zw__avatar" style="--av:#b86a2e">HA</span><b>Hội đi Hội An</b><time>22:16</time><small>Nam: 👍</small></div>
+          <div class="play__conv has-new"><span class="zw__avatar" style="--av:#3d7a4a">CB</span><b>CLB Chạy bộ</b><time>20:21</time><small>Đăng ký giải 10K trước thứ 6</small><span class="play__badge">52</span></div>
+          <div class="play__conv has-new"><span class="zw__avatar" style="--av:#6b4fa3">3A</span><b>Phụ huynh lớp 3A</b><time>20:12</time><small>Nộp quỹ lớp 200k trước thứ 6</small><span class="play__badge">37</span></div>
+          <div class="play__conv is-on"><span class="zw__avatar" style="--av:#2f6f73">TM</span><b>Team Marketing</b><time>18:02</time><small>Linh: về thôi mọi người 👋</small></div>
+          <div class="play__conv has-new"><span class="zw__avatar" style="--av:#a3485a">GĐ</span><b>Gia đình</b><time>16:40</time><small>Mẹ: 9h cả nhà về quê nha</small><span class="play__badge">4</span></div>
+          <div class="play__conv has-new"><span class="zw__avatar" style="--av:#8a6d1f">GA</span><b>Shop Giày ABC</b><time>10:12</time><small>Đơn hàng của bạn đang giao</small><span class="play__badge">6</span></div>
+          <div class="play__conv has-new"><span class="zw__avatar" style="--av:#4a6688">BB</span><b>Cư dân Block B</b><time>09:12</time><small>Cúp nước 8h–12h sáng thứ 4</small><span class="play__badge">23</span></div>
+        </div>
+
+        <div class="zw__chat play__chat">
           <div class="zw__title">
-            <span class="zw__avatar" aria-hidden="true"></span>
-            <div><b>Team Marketing</b><small>8 thành viên · 35 tin chưa đọc</small></div>
+            <span class="zw__avatar" style="--av:#2f6f73" aria-hidden="true">TM</span>
+            <div><b>Team Marketing</b><small>8 thành viên</small></div>
+            <!-- On a conversation's title bar: opens "Tóm tắt", as in the app -->
+            <button class="play__open js-p-open" type="button" aria-expanded="false" aria-controls="play-zp">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+              Zenlo
+            </button>
           </div>
           <div class="zw__msgs js-msgs">
             <div class="zw__day">Thứ Hai, 19/10</div>
@@ -150,240 +212,136 @@
           <div class="zw__composer">Nhập tin nhắn tới Team Marketing</div>
         </div>
 
-        <div class="zp">
+        <aside class="zp play__zp" id="play-zp" aria-label="Zenlo" inert>
           <div class="zp__head">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
             zenlo
+            <button class="play__x js-p-close" type="button" aria-label="Đóng Zenlo" title="Đóng (Esc)">&times;</button>
           </div>
-          <div class="zp__tabs"><span class="on">Tóm tắt</span><span>Bản tin</span></div>
-          <div class="zp__body">
+          <div class="zp__tabs play__tabs" role="tablist" aria-label="Zenlo">
+            <button type="button" role="tab" data-tab="sum" aria-selected="true">Tóm tắt</button>
+            <button type="button" role="tab" data-tab="digest" aria-selected="false">Bản tin</button>
+            <button type="button" role="tab" data-tab="set" aria-selected="false" class="play__gear" aria-label="Cài đặt Zenlo" title="Cài đặt Zenlo">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+            </button>
+          </div>
+
+          <!-- Tóm tắt: the open conversation, its note for the AI, the length, the summary -->
+          <div class="zp__body play__pane" data-pane="sum" role="tabpanel" aria-label="Tóm tắt">
+            <p class="play__who">Team Marketing</p>
+            <p class="play__note js-p-note-line"></p>
+            <div class="choice play__notes js-p-notes" role="group" aria-label="Chọn ghi chú mẫu" hidden>
+              <button type="button" data-note="none" aria-pressed="true">Không ghi chú</button>
+              <button type="button" data-note="deadline" aria-pressed="false">Chỉ cần hạn chót</button>
+              <button type="button" data-note="client" aria-pressed="false">Mình theo dõi khách ABC</button>
+            </div>
+            <div class="zp__row"><span class="zp__range">Từ tin chưa đọc · 08:05 → bây giờ</span></div>
             <div class="zp__row">
-              <span class="zp__range">Từ tin chưa đọc · 08:05 → bây giờ</span>
+              <span class="play__label">Độ dài</span>
+              <div class="seg js-p-length" role="group" aria-label="Độ dài bản tóm tắt">
+                <button type="button" data-len="short" aria-pressed="false">Ngắn</button>
+                <button type="button" data-len="medium" aria-pressed="true">Vừa</button>
+                <button type="button" data-len="long" aria-pressed="false">Dài</button>
+              </div>
             </div>
             <div class="zp__row">
-              <button class="zp__btn js-run" type="button">Tóm tắt</button>
-              <span class="zp__hint js-hint">← thử bấm</span>
+              <button class="zp__btn js-p-run" type="button">Tóm tắt</button>
+              <span class="zp__hint js-p-hint"></span>
             </div>
-            <div class="sum js-out" aria-live="polite"></div>
-            <div class="netlog js-netlog">→ gửi <span class="js-netlog-n">35</span> tin tới <b>generativelanguage.googleapis.com</b><br>&nbsp;&nbsp;bằng key Gemini của bạn · gemini-3.6-flash · 6 giây</div>
+            <div class="sum js-p-out" aria-live="polite"></div>
+            <div class="netlog js-p-netlog">→ gửi <span class="js-p-netlog-n">35</span> tin tới <b>generativelanguage.googleapis.com</b><br>&nbsp;&nbsp;bằng key Gemini của bạn · gemini-3.6-flash · 6 giây</div>
           </div>
-        </div>
+
+          <!-- Bản tin: every unread conversation at once -->
+          <div class="zp__body play__pane js-p-digest-pane" data-pane="digest" role="tabpanel" aria-label="Bản tin" hidden>
+            <div class="digest__bar">
+              <button class="zp__btn js-run" type="button">Tạo bản tin</button>
+              <span class="digest__count js-count"></span>
+            </div>
+            <div class="js-cards">
+              <div class="dcard" draggable="true" data-id="team"><span class="dcard__handle" aria-hidden="true">⋮⋮</span><input class="dcard__check" type="checkbox" checked aria-label="Chọn Team Marketing"><span class="dcard__name">Team Marketing</span><span class="dcard__meta">35 tin</span><div class="dcard__sum"></div></div>
+              <div class="dcard" draggable="true" data-id="ph"><span class="dcard__handle" aria-hidden="true">⋮⋮</span><input class="dcard__check" type="checkbox" checked aria-label="Chọn Phụ huynh lớp 3A"><span class="dcard__name">Phụ huynh lớp 3A</span><span class="dcard__meta">37 tin</span><div class="dcard__sum"></div></div>
+              <div class="dcard" draggable="true" data-id="run"><span class="dcard__handle" aria-hidden="true">⋮⋮</span><input class="dcard__check" type="checkbox" checked aria-label="Chọn CLB Chạy bộ"><span class="dcard__name">CLB Chạy bộ</span><span class="dcard__meta">52 tin</span><div class="dcard__sum"></div></div>
+              <div class="dcard" draggable="true" data-id="nha"><span class="dcard__handle" aria-hidden="true">⋮⋮</span><input class="dcard__check" type="checkbox" checked aria-label="Chọn Gia đình"><span class="dcard__name">Gia đình</span><span class="dcard__meta">4 tin</span><div class="dcard__sum"></div></div>
+              <div class="dcard" draggable="true" data-id="cc"><span class="dcard__handle" aria-hidden="true">⋮⋮</span><input class="dcard__check" type="checkbox" checked aria-label="Chọn Cư dân Block B"><span class="dcard__name">Cư dân Block B</span><span class="dcard__meta">23 tin</span><div class="dcard__sum"></div></div>
+              <div class="dcard" draggable="true" data-id="shop" data-off="true"><span class="dcard__handle" aria-hidden="true">⋮⋮</span><input class="dcard__check" type="checkbox" aria-label="Chọn Shop Giày ABC"><span class="dcard__name">Shop Giày ABC</span><span class="dcard__meta">6 tin</span><div class="dcard__sum"></div></div>
+            </div>
+          </div>
+
+          <!-- Cài đặt: which AI reads the messages -->
+          <div class="zp__body play__pane js-p-set" data-pane="set" role="tabpanel" aria-label="Cài đặt Zenlo" hidden>
+            <p class="panel__label">AI tóm tắt</p>
+            <div class="choice js-ai" role="group" aria-label="Chọn AI">
+              <button type="button" data-ai="gemini" aria-pressed="true">Gemini</button>
+              <button type="button" data-ai="claude" aria-pressed="false">Claude</button>
+              <button type="button" data-ai="codex" aria-pressed="false">ChatGPT</button>
+            </div>
+            <div class="field js-ai-field"></div>
+            <div class="netlog show js-ai-log"></div>
+            <p class="panel__label js-ai-note" style="margin-top:12px"></p>
+          </div>
+        </aside>
+
+        <!-- The pretend pointer of the first run -->
+        <span class="play__cursor" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 22 24"><path d="M2 1.5 L2 19 L6.6 14.8 L9.6 21.6 L13 20.1 L10 13.4 L16.4 13.2 Z"/></svg></span>
       </div>
     </div>
   </section>
 
-  <!-- 2. Many chats at once -->
-  <section class="chapter" id="ban-tin">
-    <div class="wrap">
-      <div class="chapter__head">
-        <span class="chapter__step">02 · Bản tin</span>
-        <h2>Nhiều cuộc trò chuyện cùng lúc.</h2>
-        <p>Mọi hội thoại chưa đọc trên một trang.</p>
+  <!-- Extra: more reactions. A band of its own: every reaction flows past, and a click throws it
+       onto the message, the way it lands under a message in Zalo -->
+  <section class="rx-show" id="cam-xuc">
+    <div class="wrap rx-show__inner">
+      <div class="rx-show__text">
+        <p class="rx-show__new">Mới</p>
+        <h2>Hơn 80 cách thể hiện cảm xúc</h2>
+        <p>Bấm <b>+</b> để chọn thêm cảm xúc.</p>
       </div>
 
-      <div class="digest" id="demo-digest">
-        <div class="digest__bar">
-          <button class="zp__btn js-run" type="button">Tạo bản tin</button>
-          <span class="digest__count js-count"></span>
+      <div class="rx-stage" id="demo-react">
+        <div class="rx-msg">
+          <span class="rx-msg__avatar" aria-hidden="true">H</span>
+          <div class="rx-msg__bubble js-react-msg">
+            <b>Huy <span>22:15</span></b>
+            đặt bàn quán chùa Cầu 12h trưa rồi nha
+            <span class="rx-chips js-chips" aria-live="polite"></span>
+          </div>
         </div>
-        <div class="js-cards">
-          <div class="dcard" draggable="true" data-id="team">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Team Marketing">
-            <span class="dcard__name">Team Marketing</span>
-            <span class="dcard__meta"><span class="tag">@ nhắc bạn</span>35 tin</span>
-            <div class="dcard__sum"></div>
+        <div class="rx-bar js-bar" role="group" aria-label="Thanh cảm xúc">
+          <span class="js-quick"></span>
+          <button class="rx-plus js-plus" type="button" aria-expanded="false" aria-controls="rx-pick" aria-haspopup="dialog" aria-label="Thêm cảm xúc">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <span class="zp__hint js-hint">← thử bấm</span>
+        </div>
+        <!-- The panel "+" opens, drawn like the one in Zenlo -->
+        <div class="rx-pick js-pick" id="rx-pick" role="dialog" aria-label="Thả cảm xúc" hidden>
+          <div class="rx-pick__head"><b>Thả cảm xúc</b><span class="js-pick-count"></span></div>
+          <div class="js-recent-part" hidden>
+            <p class="rx-pick__label">Gần đây</p>
+            <div class="rx-pick__grid js-recent"></div>
           </div>
-          <div class="dcard" draggable="true" data-id="ph">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Phụ huynh lớp 3A">
-            <span class="dcard__name">Phụ huynh lớp 3A</span>
-            <span class="dcard__meta">37 tin</span>
-            <div class="dcard__sum"></div>
-          </div>
-          <div class="dcard" draggable="true" data-id="run">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn CLB Chạy bộ">
-            <span class="dcard__name">CLB Chạy bộ</span>
-            <span class="dcard__meta">52 tin</span>
-            <div class="dcard__sum"></div>
-          </div>
-          <div class="dcard" draggable="true" data-id="nha">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Gia đình">
-            <span class="dcard__name">Gia đình</span>
-            <span class="dcard__meta">4 tin</span>
-            <div class="dcard__sum"></div>
-          </div>
-          <div class="dcard" draggable="true" data-id="cc">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" checked aria-label="Chọn Cư dân Block B">
-            <span class="dcard__name">Cư dân Block B</span>
-            <span class="dcard__meta">23 tin</span>
-            <div class="dcard__sum"></div>
-          </div>
-          <div class="dcard" draggable="true" data-id="shop" data-off="true">
-            <span class="dcard__handle" aria-hidden="true">⋮⋮</span>
-            <input class="dcard__check" type="checkbox" aria-label="Chọn Shop Giày ABC">
-            <span class="dcard__name">Shop Giày ABC</span>
-            <span class="dcard__meta">6 tin</span>
-            <div class="dcard__sum"></div>
-          </div>
+          <p class="rx-pick__label">Tất cả</p>
+          <div class="rx-pick__grid rx-pick__grid--all js-all"></div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- 3. Back to the source -->
-  <section class="chapter" id="moc-gio">
-    <div class="wrap">
-      <div class="chapter__head">
-        <span class="chapter__step">03 · Nguồn</span>
-        <h2>Cần kiểm tra lại? Bấm vào số nguồn.</h2>
-      </div>
-
-      <div class="zw zw--compact" id="demo-cite">
-        <div class="zw__chat">
-          <div class="zw__title">
-            <span class="zw__avatar zw__avatar--trip" aria-hidden="true"></span>
-            <div><b>Hội đi Hội An</b><small>6 thành viên</small></div>
-          </div>
-          <div class="zw__msgs js-msgs">
-            <div class="zw__day">Thứ Ba, 20/10</div>
-            <div class="msg" data-t="18:02"><b>Trang <span>18:02</span></b>Chốt đi Hội An thứ 7 này nha, 6h sáng tập trung ở nhà Nam</div>
-            <div class="msg" data-t="18:03"><b>Vy <span>18:03</span></b>yeahhh</div>
-            <div class="msg" data-t="18:04"><b>Huy <span>18:04</span></b>cuối cùng cũng đi được 🥳</div>
-            <div class="msg" data-t="18:05"><b>Nam <span>18:05</span></b>ok</div>
-            <div class="msg" data-t="18:06"><b>Vy <span>18:06</span></b>đi mấy xe vậy</div>
-            <div class="msg" data-t="18:10"><b>Trang <span>18:10</span></b>2 xe, Nam với Huy chở</div>
-            <div class="msg" data-t="18:11"><b>Huy <span>18:11</span></b>xe mình mới thay nhớt luôn</div>
-            <div class="msg" data-t="18:15"><b>Khánh <span>18:15</span></b>cho mình ngồi xe Nam nha, Huy chạy nhanh sợ lắm</div>
-            <div class="msg" data-t="18:16"><b>Huy <span>18:16</span></b>😤</div>
-            <div class="msg" data-t="18:20"><b>Vy <span>18:20</span></b>[Sticker]</div>
-            <div class="msg" data-t="18:31"><b>Huy <span>18:31</span></b>có ai biết quán cao lầu nào ngon không</div>
-            <div class="msg" data-t="18:35"><b>Khánh <span>18:35</span></b>hôm trước mình ăn quán đầu hẻm, cũng được</div>
-            <div class="msg" data-t="18:40"><b>Vy <span>18:40</span></b>quán gần chùa Cầu ngon lắm, mà phải đặt bàn trước</div>
-            <div class="msg" data-t="18:44"><b>Huy <span>18:44</span></b>để mình gọi</div>
-            <div class="msg" data-t="19:02"><b>Nam <span>19:02</span></b>có ai mang loa không</div>
-            <div class="msg" data-t="19:03"><b>Khánh <span>19:03</span></b>mình mang</div>
-            <div class="msg" data-t="19:20"><b>Nam <span>19:20</span></b>mỗi người góp 300k tiền xăng với ăn uống nha</div>
-            <div class="msg" data-t="19:22"><b>Vy <span>19:22</span></b>chuyển cho ai</div>
-            <div class="msg" data-t="19:30"><b>Khánh <span>19:30</span></b>tối về có thả đèn hoa đăng không</div>
-            <div class="msg" data-t="19:31"><b>Vy <span>19:31</span></b>có chứ!!</div>
-            <div class="msg" data-t="20:10"><b>Trang <span>20:10</span></b>[Ảnh] dự báo thứ 7 nắng đẹp nha</div>
-            <div class="msg" data-t="20:11"><b>Huy <span>20:11</span></b>trời ủng hộ 😎</div>
-            <div class="msg" data-t="21:47"><b>Trang <span>21:47</span></b>Chuyển cho mình trước tối thứ 6 nha, ai trễ là ở nhà 😆</div>
-            <div class="msg" data-t="21:50"><b>Vy <span>21:50</span></b>haha ok</div>
-            <div class="msg" data-t="21:52"><b>Khánh <span>21:52</span></b>chuyển rồi nha</div>
-            <div class="msg" data-t="22:15"><b>Huy <span>22:15</span></b>đặt bàn quán chùa Cầu 12h trưa rồi nha</div>
-            <div class="msg" data-t="22:16"><b>Nam <span>22:16</span></b>👍</div>
-          </div>
-          <div class="zw__composer">Nhập tin nhắn tới Hội đi Hội An</div>
-        </div>
-
-        <div class="zp">
-          <div class="zp__head">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
-            zenlo
-          </div>
-          <div class="zp__tabs"><span class="on">Tóm tắt</span><span>Bản tin</span></div>
-          <div class="zp__body">
-            <div class="sum">
-              <h4>Liên quan tới bạn</h4>
-              <ul>
-                <li>Thứ 7 (24/10) đi Hội An, 6h sáng tập trung ở nhà Nam<sup class="cites"><button class="cite" type="button" data-t="18:02" data-label="20/10 18:02">1</button></sup>.</li>
-                <li>Góp 300k<sup class="cites"><button class="cite" type="button" data-t="19:20" data-label="20/10 19:20">2</button></sup>, chuyển cho Trang trước tối thứ 6<sup class="cites"><button class="cite" type="button" data-t="21:47" data-label="20/10 21:47">3</button></sup>.</li>
-              </ul>
-              <h4>Còn lại</h4>
-              <ul>
-                <li>Đi 2 xe, Nam và Huy chở<sup class="cites"><button class="cite" type="button" data-t="18:10" data-label="20/10 18:10">4</button></sup>.</li>
-                <li>Đã đặt bàn quán cao lầu gần chùa Cầu, 12h trưa<sup class="cites"><button class="cite" type="button" data-t="22:15" data-label="20/10 22:15">5</button></sup>.</li>
-              </ul>
-            </div>
-          </div>
+    <!-- The floor of the band: every reaction on two belts. "+" turns on a claw machine over them
+         (a rail, a claw and a delivery ticket); with a keyboard, or reduced motion, it opens the panel -->
+    <div class="rx-floor js-floor">
+      <div class="rx-machine js-machine">
+        <div class="wrap rx-machine__inner"><p class="rx-ticket js-rx-ticket" aria-live="polite"></p></div>
+        <div class="rx-rail" aria-hidden="true"></div>
+        <div class="rx-claw js-claw" aria-hidden="true">
+          <span class="rx-claw__cart"></span>
+          <span class="rx-claw__rope js-rope"></span>
+          <svg class="rx-claw__jaw" width="30" height="22" viewBox="0 0 30 22"><path class="rx-claw__arm" d="M15 0V5M15 5C7 7 4 14 8 21"/><path class="rx-claw__arm rx-claw__arm--r" d="M15 5C23 7 26 14 22 21"/></svg>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- 4. Your way -->
-  <section class="chapter" id="tuy-chinh">
-    <div class="wrap">
-      <div class="chapter__head">
-        <span class="chapter__step">04 · Tuỳ chỉnh</span>
-        <h2>Theo cách của bạn.</h2>
-        <p>Đọc lướt hay đọc kỹ, dặn AI điều bạn quan tâm, tự chọn AI nào được đọc tin nhắn.</p>
-      </div>
-
-      <div class="yours" id="demo-yours">
-        <div class="panel">
-          <p class="panel__label">Độ dài · bản tóm tắt nhóm <b>Team Marketing</b> ở <a class="link" href="#tom-tat">mục 01</a></p>
-          <div class="seg js-length" role="group" aria-label="Độ dài bản tóm tắt">
-            <button type="button" data-len="short" aria-pressed="false">Ngắn</button>
-            <button type="button" data-len="medium" aria-pressed="true">Vừa</button>
-            <button type="button" data-len="long" aria-pressed="false">Dài</button>
-          </div>
-          <div class="sum js-length-out" aria-live="polite"></div>
-        </div>
-
-        <div class="panel">
-          <p class="panel__label">AI tóm tắt</p>
-          <div class="choice js-ai" role="group" aria-label="Chọn AI">
-            <button type="button" data-ai="gemini" aria-pressed="true">Gemini</button>
-            <button type="button" data-ai="claude" aria-pressed="false">Claude</button>
-            <button type="button" data-ai="codex" aria-pressed="false">ChatGPT</button>
-          </div>
-          <div class="field js-ai-field"></div>
-          <div class="netlog js-ai-log"></div>
-          <p class="panel__label js-ai-note" style="margin-top:12px"></p>
-        </div>
-      </div>
-
-      <div class="panel panel--note" id="demo-note">
-        <p class="panel__label">Ghi chú cho AI · nhóm <b>Team Marketing</b> ở <a class="link" href="#tom-tat">mục 01</a></p>
-        <div class="choice js-note" role="group" aria-label="Chọn ghi chú mẫu">
-          <button type="button" data-note="none" aria-pressed="true">Không ghi chú</button>
-          <button type="button" data-note="deadline" aria-pressed="false">"Chỉ cần hạn chót"</button>
-          <button type="button" data-note="client" aria-pressed="false">"Mình theo dõi khách ABC"</button>
-        </div>
-        <div class="sum js-note-out" aria-live="polite"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Extra: more reactions -->
-  <section class="chapter" id="cam-xuc">
-    <div class="wrap">
-      <div class="chapter__head">
-        <span class="chapter__step">Mới · Cảm xúc</span>
-        <h2>Hơn 80 cách thể hiện cảm xúc.</h2>
-        <p>Bấm <b>+</b> ở cuối thanh cảm xúc để chọn.</p>
-      </div>
-
-      <div class="zw zw--solo" id="demo-react">
-        <div class="zw__chat">
-          <div class="zw__title">
-            <span class="zw__avatar zw__avatar--trip" aria-hidden="true"></span>
-            <div><b>Hội đi Hội An</b><small>6 thành viên</small></div>
-          </div>
-          <div class="zw__msgs">
-            <div class="msg"><b>Trang <span>21:47</span></b>Chuyển cho mình trước tối thứ 6 nha, ai trễ là ở nhà 😆</div>
-            <div class="msg"><b>Khánh <span>21:52</span></b>chuyển rồi nha</div>
-            <div class="msg js-react-msg"><b>Huy <span>22:15</span></b>đặt bàn quán chùa Cầu 12h trưa rồi nha<span class="rx-chips js-chips"></span></div>
-            <div class="rx-bar js-bar" role="group" aria-label="Thanh cảm xúc">
-              <span class="js-quick"></span>
-              <button class="rx-plus js-plus" type="button" aria-expanded="false" aria-label="Thêm cảm xúc">+</button>
-              <span class="zp__hint js-hint">← thử bấm</span>
-            </div>
-            <div class="rx-pick js-pick" hidden>
-              <p class="rx-pick__label">Gần đây</p>
-              <div class="rx-grid js-recent"></div>
-              <p class="rx-pick__label">Tất cả (<span class="js-total"></span>)</p>
-              <div class="rx-grid rx-grid--all js-all"></div>
-            </div>
-          </div>
-          <div class="zw__composer">Nhập tin nhắn tới Hội đi Hội An</div>
-        </div>
+      <div class="rx-river js-river" aria-hidden="true">
+        <div class="rx-river__row js-row"></div>
+        <div class="rx-river__row rx-river__row--back js-row"></div>
       </div>
     </div>
   </section>
@@ -399,7 +357,7 @@
           <h3>Hợp với bạn nếu</h3>
           <ul>
             <li>Bạn ở nhiều nhóm Zalo đông người.</li>
-            <li>Bạn dùng Zalo trên máy tính Windows, hoặc Zalo web.</li>
+            <li>Bạn dùng Zalo trên máy tính Windows hoặc Zalo web.</li>
             <li>Bạn hay vắng vài giờ rồi mới quay lại đọc.</li>
             <li>Bạn cần nắm nhanh việc, hạn chót, lịch hẹn.</li>
             <li>Bạn muốn dùng AI mà không tốn đồng nào.</li>
@@ -409,88 +367,155 @@
           <h3>Chưa hợp nếu</h3>
           <ul>
             <li>Bạn chủ yếu dùng Zalo trên điện thoại.</li>
-            <li>Bạn không muốn tin nhắn được gửi tới dịch vụ AI (Google, Anthropic hoặc OpenAI).</li>
-            <li>Hội thoại có thông tin cần giữ kín tuyệt đối.</li>
+            <li>Bạn không muốn tin nhắn đi tới dịch vụ AI nào (Google, Anthropic hay OpenAI).</li>
+            <li>Nhóm chat có chuyện cần giữ kín tuyệt đối.</li>
           </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 5. Install -->
+  <!-- Install -->
   <section class="chapter" id="cai-dat">
     <div class="wrap">
       <div class="chapter__head">
-        <span class="chapter__step">05 · Cài đặt</span>
-        <h2>Cài trong một phút.</h2>
-        <p><b class="free">Hoàn toàn miễn phí:</b> Zenlo không thu phí, AI dùng key Gemini miễn phí của Google, không cần thẻ. Bản Windows cần Windows 10 hoặc 11 và đã có Zalo.</p>
+        <h2>Tải và cài đặt</h2>
+        <p><b class="free">Hoàn toàn miễn phí:</b> Zenlo không thu tiền, key Gemini lấy ở Google cũng miễn phí, không cần thẻ ngân hàng.</p>
       </div>
 
-      <ol class="steps">
-        <li>
-          <span class="steps__n">1</span>
-          <h3 class="js-download-step">Tải và mở file</h3>
-          <div class="vis" aria-hidden="true">
-            <div class="vis__file">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
-              <div><b class="js-file-name">Zenlo-Setup.exe</b><small class="js-size-small">Windows</small></div>
-            </div>
-          </div>
-        </li>
-        <li>
-          <span class="steps__n">2</span>
-          <h3>Gõ 1, bấm Enter</h3>
-          <div class="vis" aria-hidden="true">
-            <div class="vis__term">1. Cài Zenlo<br>2. Gỡ Zenlo<br>3. Thoát<br>Chọn: <em>1</em></div>
-          </div>
-        </li>
-        <li>
-          <span class="steps__n">3</span>
-          <h3>Mở Zalo, bấm nút Zenlo</h3>
-          <div class="vis">
-            <div class="vis__bar">
-              <div class="vis__rail" aria-hidden="true">
-                <i></i><i></i>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
-                <i></i>
+      <!-- Two ways in: Zalo on the computer, and Zalo in the browser. Each with its button, the
+           steps in pictures, and the way to the full guide -->
+      <div class="get">
+        <article class="get__item" id="tai-pc">
+          <p class="get__for">Bản cài · Windows 10, 11</p>
+          <h3>Zalo trên máy tính</h3>
+          <ol class="quick">
+            <li>
+              <div class="vis" aria-hidden="true">
+                <div class="vis__file">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+                  <div><b class="js-file-name">Zenlo-Setup.exe</b><small class="js-size-small">Windows</small></div>
+                </div>
               </div>
-              <span class="muted">Lần đầu: dán key Gemini miễn phí. <a class="link" href="huong-dan.html#lay-key">Cách lấy</a></span>
-            </div>
+              <b class="js-download-step">Tải và mở file</b>
+            </li>
+            <li>
+              <div class="vis" aria-hidden="true">
+                <div class="mini-win">
+                  <b>Windows protected your PC</b>
+                  <span class="warn__pick">More info</span>
+                  <span class="mini-win__run warn__pick">Run anyway</span>
+                </div>
+              </div>
+              <b>Windows cảnh báo thì bấm More info, rồi Run anyway</b>
+            </li>
+            <li>
+              <div class="vis" aria-hidden="true">
+                <div class="vis__term">1. Cài Zenlo<br>2. Gỡ Zenlo<br>3. Thoát<br>Chọn: <em>1</em></div>
+              </div>
+              <b>Gõ 1, bấm Enter</b>
+            </li>
+            <li>
+              <div class="vis" aria-hidden="true">
+                <div class="vis__bar">
+                  <div class="vis__rail">
+                    <i></i><i></i>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+                    <i></i>
+                  </div>
+                  <span class="muted">Zalo<br>Lần đầu: dán key Gemini.</span>
+                </div>
+              </div>
+              <b>Mở Zalo, bấm nút Zenlo</b>
+            </li>
+          </ol>
+          <div class="get__actions">
+            <a class="btn btn--seal js-download" href="#cai-dat">
+              <span class="seal" aria-hidden="true"><i>Z</i><i>Z</i></span>
+              <span class="js-download-label">Tải Zenlo miễn phí cho Windows</span>
+            </a>
+            <a class="get__guide" href="huong-dan.html#cai-zenlo">Hướng dẫn chi tiết <span aria-hidden="true">→</span></a>
           </div>
-        </li>
-      </ol>
+          <p class="download__facts">
+            <span class="js-version">–</span> · <span class="js-size">–</span> · miễn phí · <a class="link" href="phien-ban.html">Có gì mới</a> · <a class="link" href="phien-ban.html#thong-bao">Báo khi có bản mới</a><br>
+            SHA-256 của Zenlo-Setup.exe <span class="js-sha">–</span>
+          </p>
+        </article>
 
-      <div class="download">
-        <a class="btn js-download" href="#cai-dat">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
-          <span class="js-download-label">Tải Zenlo miễn phí cho Windows</span>
-        </a>
-        <div class="download__facts">
-          <span class="js-version">–</span> · <span class="js-size">–</span> · miễn phí · <a class="link" href="phien-ban.html">Có gì mới</a> · <a class="link" href="phien-ban.html#thong-bao">Báo khi có bản mới</a><br>
-          SHA-256 của Zenlo-Setup.exe <span class="js-sha">–</span>
-        </div>
+        <article class="get__item" id="tai-web">
+          <p class="get__for">Tiện ích trình duyệt · Edge, Chrome trên máy tính</p>
+          <h3>Zalo web</h3>
+          <ol class="quick">
+            <li>
+              <div class="vis" aria-hidden="true">
+                <div class="vis__file">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M10 12h2M10 15h2M10 18h2"/></svg>
+                  <div><b>Zenlo-ZaloWeb.zip</b><small>Extract All → Extract</small></div>
+                </div>
+              </div>
+              <b>Tải về, giải nén vào một thư mục cố định</b>
+            </li>
+            <li>
+              <div class="vis" aria-hidden="true">
+                <span class="vis__url">edge://extensions</span>
+                <div class="vis__toggle"><span>Chế độ nhà phát triển</span><i class="warn__pick"></i></div>
+              </div>
+              <b>Bật chế độ nhà phát triển</b>
+            </li>
+            <li>
+              <div class="vis" aria-hidden="true">
+                <span class="vis__btn warn__pick">Tải phần mở rộng đã giải nén</span>
+                <div class="vis__file vis__file--small">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                  <div><b>Zenlo-ZaloWeb</b></div>
+                </div>
+              </div>
+              <b>Chọn thư mục vừa giải nén</b>
+            </li>
+            <li>
+              <div class="vis" aria-hidden="true">
+                <div class="vis__bar">
+                  <div class="vis__rail">
+                    <i></i><i></i>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
+                    <i></i>
+                  </div>
+                  <span class="muted">chat.zalo.me<br>Lần đầu: dán key Gemini.</span>
+                </div>
+              </div>
+              <b>Mở Zalo web, bấm nút Zenlo</b>
+            </li>
+          </ol>
+          <div class="get__actions">
+            <a class="btn btn--seal js-download-web" href="https://github.com/stephitnoob/zenlo/releases/latest/download/Zenlo-ZaloWeb.zip">
+              <span class="seal" aria-hidden="true"><i>Z</i><i>Z</i></span>
+              <span class="js-download-web-label">Tải Zenlo cho Zalo web</span>
+            </a>
+            <a class="get__guide" href="huong-dan.html#zalo-web">Hướng dẫn chi tiết <span aria-hidden="true">→</span></a>
+          </div>
+          <p class="download__facts">
+            <span class="js-web-version">–</span> · <span class="js-web-size">–</span> · miễn phí<br>
+            SHA-256 của Zenlo-ZaloWeb.zip <span class="js-web-sha">–</span>
+          </p>
+        </article>
       </div>
+
       <div class="platforms">
         <button class="btn btn--ghost js-soon" type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
           <span class="js-soon-label">Zenlo cho macOS</span>
         </button>
-        <a class="btn btn--ghost" href="huong-dan.html#zalo-web">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
-          <span>Zenlo cho Zalo web</span>
-        </a>
       </div>
-      <p class="guide-link"><a href="huong-dan.html#cai-zenlo">Hướng dẫn cài đặt chi tiết, kèm cách xử lý cảnh báo của trình duyệt và Windows <span aria-hidden="true">→</span></a></p>
       <div class="aside aside--install trust">
         <div class="trust__text">
-          <p>Mỗi bản phát hành được GitHub tự build từ mã nguồn công khai và có <a class="link" href="https://github.com/stephitnoob/zenlo/attestations" rel="noopener">giấy chứng thực nguồn gốc</a>, chứng minh file bạn tải về đúng là được build từ mã nguồn đó.<span class="js-virustotal-line" hidden> Bạn cũng có thể xem <a class="link js-virustotal" href="https://www.virustotal.com/" rel="noopener">kết quả quét của VirusTotal</a> cho đúng file này.</span></p>
-          <p>Zenlo không có máy chủ riêng: tin nhắn chỉ được gửi tới dịch vụ AI được chọn, dữ liệu của Zenlo nằm trên máy tính. Mã nguồn mở theo giấy phép GPL-3.0. Xem thêm tại <a class="link" href="privacy.html">Quyền riêng tư</a> và <a class="link" href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
-          <p><b>Ký số:</b> bộ cài chưa được ký số. Zenlo đã xin chứng chỉ miễn phí của <a class="link" href="https://signpath.org" rel="noopener">SignPath Foundation</a> nhưng chưa được duyệt vì dự án còn mới, và sẽ xin lại sau. Xem <a class="link" href="ky-so.html">Code signing policy</a>.</p>
-        <p>Góp ý và báo lỗi: <a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">gửi e-mail</a>.</p>
+          <p>GitHub tự build mỗi bản phát hành từ mã nguồn công khai và cấp <a class="link" href="https://github.com/stephitnoob/zenlo/attestations" rel="noopener">giấy chứng thực nguồn gốc</a>, để bạn kiểm tra file tải về đúng là build từ mã nguồn đó.<span class="js-virustotal-line" hidden> Bạn cũng xem được <a class="link js-virustotal" href="https://www.virustotal.com/" rel="noopener">kết quả quét VirusTotal</a> của chính file này.</span></p>
+          <p>Zenlo không có máy chủ riêng. Tin nhắn chỉ đi tới dịch vụ AI bạn chọn, còn dữ liệu của Zenlo nằm trên máy bạn. Mã nguồn mở theo giấy phép GPL-3.0. Chi tiết ở trang <a class="link" href="privacy.html">Quyền riêng tư</a> và <a class="link" href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
+          <p><b>Ký số:</b> bộ cài chưa có chữ ký số. Zenlo đã xin chứng chỉ miễn phí của <a class="link" href="https://signpath.org" rel="noopener">SignPath Foundation</a> nhưng chưa được duyệt vì dự án còn mới, sau này sẽ xin lại. Xem <a class="link" href="ky-so.html">Code signing policy</a>.</p>
+        <p>Góp ý, báo lỗi: <a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">gửi email</a>.</p>
         </div>
         <figure class="trust__fig">
           <svg viewBox="0 0 340 286" role="img" aria-labelledby="trust-title">
-            <title id="trust-title">Dữ liệu ở lại trên máy tính; tin nhắn chỉ đi qua HTTPS tới AI đã chọn; không có máy chủ Zenlo</title>
+            <title id="trust-title">Dữ liệu nằm trên máy tính; tin nhắn chỉ đi qua HTTPS tới AI bạn chọn; Zenlo không có máy chủ</title>
             <defs>
               <marker id="trust-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="t-accent-fill"/></marker>
             </defs>
@@ -515,7 +540,7 @@
             </g>
             <text x="206" y="118" class="t-mono">HTTPS</text>
             <rect x="230" y="8" width="102" height="160" rx="8" class="t-box"/>
-            <text x="281" y="32" class="t-title">AI đã chọn</text>
+            <text x="281" y="32" class="t-title">AI bạn chọn</text>
             <rect x="242" y="48" width="78" height="26" rx="4" class="t-pill"/>
             <text x="281" y="65" class="t-pill-text">Gemini</text>
             <rect x="242" y="82" width="78" height="26" rx="4" class="t-pill"/>
@@ -546,7 +571,7 @@
         <p>Cuộn được một lúc thì mấy tin quan trọng trôi mất tiêu. Sáng hôm sau mới biết có bài tập, kèm thêm một câu quen thuộc: “Sao không bao giờ chịu đọc Zalo vậy, tao đã nhắn lên nhóm rồi mà.”</p>
         <p>Zenlo ra đời từ mấy buổi tối như vậy. Giờ mở Zalo, bấm một cái, đọc vài dòng: việc của mình nằm trên cùng, drama nằm ngay bên dưới.</p>
         </blockquote>
-        <figcaption class="note__sign">— stephit, founder of Zenlo</figcaption>
+        <figcaption class="note__sign">— stephit, người làm Zenlo</figcaption>
       </figure>
 
     </div>
@@ -556,24 +581,24 @@
   <section class="chapter" id="cau-hoi">
     <div class="wrap">
       <div class="chapter__head">
-        <h2>FAQ</h2>
+        <h2>Câu hỏi thường gặp</h2>
       </div>
       <div class="faq">
         <details>
           <summary>Người làm Zenlo có đọc được tin nhắn của tôi không?</summary>
-          <p>Không. Zenlo không có máy chủ. Tin nhắn chỉ được gửi tới AI bạn chọn, khi bạn bấm Tóm tắt hoặc Tạo bản tin.</p>
+          <p>Không. Zenlo không có máy chủ. Tin nhắn chỉ đi tới AI bạn chọn, lúc bạn bấm Tóm tắt hoặc Tạo bản tin.</p>
         </details>
         <details>
           <summary>Miễn phí thì Zenlo lấy gì?</summary>
-          <p>Không lấy gì: Zenlo không có quảng cáo hay gói trả phí. Phần AI miễn phí là gói của Google, và với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm. Hội thoại nhạy cảm thì nên cân nhắc.</p>
+          <p>Không lấy gì. Zenlo không có quảng cáo hay gói trả phí. Phần AI miễn phí là của Google, và với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm của họ. Chuyện nhạy cảm thì nên cân nhắc trước khi tóm tắt.</p>
         </details>
         <details>
           <summary>Zenlo có virus không?</summary>
-          <p>Không. Mã nguồn công khai, mỗi bản do GitHub tự build, và ở <a class="link" href="#cai-dat">phần tải về</a> có link kết quả quét VirusTotal của đúng file đó.</p>
+          <p>Không. Mã nguồn công khai, mỗi bản do GitHub tự build, và ở <a class="link" href="#cai-dat">phần tải về</a> có link xem kết quả quét VirusTotal của chính file đó.</p>
         </details>
         <details>
           <summary>Tóm tắt có đúng không?</summary>
-          <p>AI có lúc hiểu sai. Với tiền, hạn nộp hay lịch hẹn, hãy bấm số nguồn sau câu đó để đọc tin gốc.</p>
+          <p>AI có lúc hiểu sai. Chuyện tiền bạc, hạn nộp hay lịch hẹn thì nên bấm số nguồn cuối câu để đọc tin gốc.</p>
         </details>
         <details>
           <summary>Windows hoặc trình duyệt cảnh báo khi tải, khi mở file?</summary>
@@ -584,8 +609,8 @@
           <p>Vào <a class="link" href="https://aistudio.google.com/apikey" rel="noopener" target="_blank">aistudio.google.com/apikey</a>, bấm Create API key rồi sao chép. Trong Zalo: nút Zenlo → bánh răng → dán key → Kiểm tra kết nối. Nếu báo key không hợp lệ thì sao chép và dán lại.</p>
         </details>
         <details>
-          <summary>Nút Zenlo biến mất?</summary>
-          <p>Thường do Zalo vừa cập nhật. Mở Start, gõ Zenlo, chọn Zenlo - Cài đặt, gõ <code>1</code> rồi Enter. Zalo đang mở thì gõ thêm <code>c</code> rồi Enter. Cài đặt và key vẫn còn.</p>
+          <summary>Không thấy nút Zenlo?</summary>
+          <p>Thường do Zalo vừa cập nhật. Mở Start, gõ Zenlo, chọn Zenlo - Cài đặt, gõ <code>1</code> rồi Enter. Zalo đang mở thì gõ thêm <code>c</code> rồi Enter. Cài đặt và key vẫn giữ nguyên.</p>
         </details>
         <details>
           <summary>Báo hết lượt, hoặc Gemini chờ quá lâu?</summary>
@@ -596,8 +621,8 @@
           <p>Mở Start, gõ Zenlo, chọn Zenlo - Cài đặt, gõ <code>2</code> rồi Enter. Zalo đang mở thì gõ thêm <code>c</code> rồi Enter. Zalo trở về đúng bản gốc.</p>
         </details>
         <details>
-          <summary>Vẫn lỗi?</summary>
-          <p><a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">Gửi e-mail</a> kèm phiên bản Zalo, phiên bản Zenlo và dòng báo lỗi. Đừng gửi key hay ảnh chụp tin nhắn riêng tư.</p>
+          <summary>Vẫn còn lỗi?</summary>
+          <p><a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">Gửi email</a>, ghi kèm phiên bản Zalo, phiên bản Zenlo và dòng báo lỗi. Đừng gửi key hay ảnh chụp tin nhắn riêng tư.</p>
         </details>
       </div>
     </div>
@@ -607,7 +632,7 @@
 
 <footer class="foot">
   <div class="wrap foot__inner">
-    <span>© 2026 stephit · không liên kết với Zalo hay VNG</span>
+    <span>© 2026 stephit · không thuộc Zalo hay VNG</span>
     <nav aria-label="Liên kết">
       <a href="huong-dan.html">Hướng dẫn</a>
       <a href="phien-ban.html">Phiên bản</a>

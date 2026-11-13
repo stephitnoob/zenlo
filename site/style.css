@@ -1,20 +1,103 @@
 /*
   Zenlo – website. Light and dark (follows the computer, or the sun/moon button). Built from the app's
   own look: Zalo's neutral colors, one electric violet accent, monospace for data, small corners
-  and lines instead of shadows. System fonts only: the site loads no fonts or scripts from anyone else
-  (stats.js only sends GoatCounter a count).
+  and lines instead of shadows. The theme is the post: Zenlo reads the chat for you and writes you
+  a letter. Hence the envelope in the hero, the stamps for tabs, the wax seal on the download
+  buttons, the postmarks in violet ink, the parcel labels for installing and the airmail edge at
+  the foot. The demos stay as Zenlo really looks; the post is only the page around them. The type is Be Vietnam Pro, made by Vietnamese designers, served from
+  fonts/ here (SIL Open Font License, fonts/OFL.txt): the site loads no fonts or scripts from anyone
+  else (stats.js only sends GoatCounter a count). The pretend Zalo windows keep the system font, as
+  Zalo does.
 */
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-vietnamese-400-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-vietnamese-500-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-vietnamese-600-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-latin-600-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-vietnamese-700-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/be-vietnam-pro-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 /* Light: a faintly grey page so the white Zalo windows and panels stand off it, Zalo's own border
    color, and grey text dark enough to read in long lines */
 :root {
-  --bg: #f6f7f9;
-  --bg-2: #eceef1;
+  --bg: #faf9f6;
+  --bg-2: #f1eee8;
   --surface: #ffffff;
-  --line: #d6dbe1;
-  --text: #081c36;
-  --muted: #44516a;
-  --faint: #5c6879;
+  --line: #dcd8cf;
+  --text: #17132b;
+  --muted: #4a4658;
+  --faint: #5f5b6b;
+  /* The highlighter: a violet marker stroke behind a few words */
+  --hl: #cbbafe;
+  /* The post: letter paper, the stripes of an airmail envelope */
+  --paper: #fffdf8;
+  --air-a: #7c3aed;
+  --air-b: #f59e0b;
   --accent: #7c3aed;
   --accent-ink: #ffffff;
   --accent-soft: rgba(124, 58, 237, 0.12);
@@ -30,17 +113,23 @@
   --z-text: #1f2329;
   --z-muted: #4f5866;
 
-  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  --display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sans: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --display: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Zalo's own: for the pretend Zalo windows and the Zenlo panel inside them */
+  --zalo-font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: "Cascadia Mono", "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace;
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #141619;
-  --bg-2: #1b1e22;
-  --surface: #1f2328;
-  --line: #2c3138;
+  --bg: #141318;
+  --bg-2: #1b1a20;
+  --surface: #211f27;
+  --line: #2e2c36;
+  --hl: rgba(139, 92, 246, 0.5);
+  --paper: #1f1d26;
+  --air-a: #a78bfa;
+  --air-b: #fbbf24;
   --text: #e4e6eb;
   --muted: #a3abb6;
   --faint: #8a94a0;
@@ -61,10 +150,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141619;
-    --bg-2: #1b1e22;
-    --surface: #1f2328;
-    --line: #2c3138;
+    --bg: #141318;
+    --bg-2: #1b1a20;
+    --surface: #211f27;
+    --line: #2e2c36;
+    --hl: rgba(139, 92, 246, 0.5);
+    --paper: #1f1d26;
+    --air-a: #a78bfa;
+    --air-b: #fbbf24;
     --text: #e4e6eb;
     --muted: #a3abb6;
     --faint: #8a94a0;
@@ -109,6 +202,13 @@ a {
 
 button {
   font: inherit;
+}
+
+/* No heading ends on one lonely word */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 .wrap {
@@ -238,7 +338,13 @@ button {
 
 /* ---------- Buttons ---------- */
 
+/* The post, in three kinds of button:
+   - the main download buttons carry a wax seal that breaks open when pressed (.btn--seal);
+   - every other button presses down like a rubber stamp, and app.js may leave a violet ink
+     mark where it landed ("đã chép");
+   - "Tải về" in the top bar is an envelope: its flap opens under the pointer. */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -250,10 +356,22 @@ button {
   font-weight: 650;
   text-decoration: none;
   cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.3, 1.5, 0.5, 1), filter 0.15s;
 }
 
 .btn:hover {
   filter: brightness(1.06);
+  transform: translateY(-2px) rotate(-0.6deg);
+}
+
+.btn.is-pressed {
+  animation: btn-stamp 0.28s;
+}
+
+@keyframes btn-stamp {
+  40% {
+    transform: translateY(2px) scale(0.94) rotate(0.6deg);
+  }
 }
 
 .btn--small {
@@ -267,6 +385,139 @@ button {
   color: var(--faint);
   cursor: default;
   filter: none;
+  transform: none;
+}
+
+/* The envelope in the top bar: a darker flap that folds up and open */
+.top .btn--small {
+  overflow: visible;
+}
+
+.top .btn--small::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 12px;
+  border-radius: 10px 10px 0 0;
+  background: rgba(0, 0, 0, 0.2);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: perspective(60px) rotateX(0deg);
+  transform-origin: top;
+  transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+  pointer-events: none;
+}
+
+.top .btn--small:hover::before {
+  transform: perspective(60px) rotateX(180deg);
+}
+
+/* The wax seal: two halves of one round "Z"; hover turns it, a press breaks it apart */
+.btn--seal {
+  gap: 12px;
+  padding-left: 10px;
+}
+
+.seal {
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.seal i {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #4c1d95;
+  box-shadow: inset 0 0 0 3px #4c1d95, inset 0 0 0 4px rgba(237, 233, 254, 0.5);
+  color: #ede9fe;
+  font: 700 15px/1 var(--mono);
+  font-style: normal;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.45s;
+}
+
+.seal i:first-child {
+  clip-path: polygon(0 0, 56% 0, 44% 100%, 0 100%);
+}
+
+.seal i:last-child {
+  clip-path: polygon(56% 0, 100% 0, 100% 100%, 44% 100%);
+}
+
+.btn--seal:hover .seal {
+  transform: rotate(14deg) scale(1.06);
+}
+
+.btn--seal.is-open .seal i:first-child {
+  opacity: 0;
+  transform: translateX(-9px) rotate(-20deg);
+}
+
+.btn--seal.is-open .seal i:last-child {
+  opacity: 0;
+  transform: translateX(9px) rotate(20deg);
+}
+
+.btn[aria-disabled="true"] .seal i {
+  background: var(--line);
+  box-shadow: none;
+  color: var(--faint);
+}
+
+/* The ink a stamp leaves: a violet postmark that fades (app.js puts it where the button was hit) */
+.ink {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  margin: -31px 0 0 -31px;
+  border: 2.5px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font: 700 11px/1.15 var(--mono);
+  text-align: center;
+  pointer-events: none;
+  animation: ink 1.3s ease-out forwards;
+}
+
+.ink::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0.55;
+}
+
+@keyframes ink {
+  0% {
+    opacity: 0;
+    transform: scale(1.7) rotate(-22deg);
+  }
+
+  18% {
+    opacity: 0.9;
+    transform: scale(1) rotate(-14deg);
+  }
+
+  70% {
+    opacity: 0.75;
+    transform: scale(1) rotate(-14deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1) rotate(-14deg);
+  }
 }
 
 /* ---------- Home: chapters ---------- */
@@ -292,6 +543,195 @@ button {
   font-size: 19px;
 }
 
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: end;
+  gap: 40px;
+}
+
+/* The envelope: its back, the letter, the front pocket over the letter's foot, a stamp and a
+   postmark. The letter rises out once, then the postmark lands; hover lifts the letter a little. */
+.mail {
+  position: relative;
+  width: 300px;
+  height: 320px;
+  margin-bottom: 4px;
+  /* While it rises, the letter's foot stays inside the envelope */
+  clip-path: inset(-120px -80px 0 -80px);
+}
+
+.mail__back {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 150px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background: var(--bg-2);
+}
+
+.mail__letter {
+  position: absolute;
+  right: 22px;
+  bottom: 12px;
+  left: 22px;
+  height: 250px;
+  padding: 16px 18px;
+  border: 1.5px solid var(--accent-line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.5;
+  transition: transform 0.4s cubic-bezier(0.3, 1.4, 0.5, 1);
+  animation: mail-rise 1s cubic-bezier(0.25, 0.9, 0.3, 1.1) 0.3s backwards;
+}
+
+.mail:hover .mail__letter {
+  transform: translateY(-10px);
+}
+
+@keyframes mail-rise {
+  from {
+    transform: translateY(130px);
+  }
+}
+
+.mail__letter p {
+  margin: 0 0 6px;
+  max-width: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+.mail__letter .mail__to {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+
+.mail__letter .mail__head {
+  margin-bottom: 4px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* The rest stays tucked in the envelope, under the pocket */
+.mail__letter .mail__rest {
+  margin-top: 40px;
+  color: var(--faint);
+  font-size: 12.5px;
+}
+
+.mail__letter .hl {
+  white-space: normal;
+}
+
+.mail__front {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  overflow: visible;
+}
+
+.mail__front path {
+  fill: var(--bg-2);
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mail__stamp {
+  position: absolute;
+  right: 18px;
+  bottom: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 48px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: 700 18px var(--mono);
+  outline: 4px dotted var(--bg-2);
+  outline-offset: -2px;
+  transform: rotate(4deg);
+}
+
+.mail__mark {
+  position: absolute;
+  right: 46px;
+  bottom: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font: 700 11px/1.2 var(--mono);
+  text-align: center;
+  animation: mail-mark 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) 1.3s backwards;
+  transform: rotate(-14deg);
+}
+
+@keyframes mail-mark {
+  from {
+    opacity: 0;
+    transform: rotate(-22deg) scale(1.8);
+  }
+}
+
+.mail__wave {
+  position: absolute;
+  right: 104px;
+  bottom: 44px;
+  width: 70px;
+  height: 24px;
+  opacity: 0.8;
+  animation: mail-wave 0.3s ease-out 1.45s backwards;
+}
+
+.mail__wave path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+}
+
+@keyframes mail-wave {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Narrow screens: the envelope under the words, a little smaller */
+@media (max-width: 900px) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .mail {
+    justify-self: center;
+    margin: 0 0 -24px;
+    transform: scale(0.88);
+    transform-origin: top center;
+  }
+}
+
 .hero__cta {
   display: flex;
   flex-wrap: wrap;
@@ -311,8 +751,9 @@ button {
   padding: 96px 0;
 }
 
+/* Between chapters: the fold of a letter, a dashed line */
 .chapter + .chapter {
-  border-top: 1px solid var(--line);
+  border-top: 1.5px dashed var(--line);
 }
 
 .chapter__head {
@@ -320,26 +761,36 @@ button {
   margin-bottom: 36px;
 }
 
-/* Set like the status line in Zenlo's own panel: a violet dot, then data in monospace */
-.chapter__step {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-  padding: 5px 10px;
-  border-radius: 8px;
-  background: var(--bg-2);
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 12.5px;
+/* ---------- The highlighter ---------- */
+
+/* A violet marker stroke behind a few words: uneven ends, a little higher on the left, like a
+   real pen. demo.js draws it in (hl--wait) the first time it comes into view. */
+.hl {
+  position: relative;
+  z-index: 0;
+  padding: 0 0.06em;
+  background: none;
+  color: inherit;
+  white-space: nowrap;
 }
 
-.chapter__step::before {
+.hl::before {
   content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
+  position: absolute;
+  z-index: -1;
+  top: 0.3em;
+  right: -0.14em;
+  bottom: 0;
+  left: -0.14em;
+  background: var(--hl);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M4 10C45 4 120 3 197 7L195 31C150 37 75 39 6 35C2 27 2 18 4 10Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M4 10C45 4 120 3 197 7L195 31C150 37 75 39 6 35C2 27 2 18 4 10Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  transform-origin: left;
+  transition: transform 0.75s cubic-bezier(0.6, 0.1, 0.2, 1) 0.25s;
+}
+
+.hl--wait::before {
+  transform: scaleX(0);
 }
 
 .chapter h2 {
@@ -438,7 +889,7 @@ button {
 .why__goal {
   margin: 22px 0 0;
   padding-top: 22px;
-  border-top: 1px solid var(--line);
+  border-top: 1.5px dashed var(--line);
   font-family: var(--display);
   font-size: clamp(22px, 3vw, 28px);
   font-weight: 650;
@@ -446,32 +897,67 @@ button {
 }
 
 .why__goal em {
-  color: var(--accent);
   font-style: normal;
 }
 
 /* ---------- Who it suits ---------- */
 
-/* Two plain columns split by a rule, "+" and "–" in monospace instead of check marks */
+/* Two postcards, laid down a little crooked. The one for "yes" has its stamp on; the one for
+   "not yet" still has only the dashed box where a stamp would go. Lines like the address lines. */
 .fit {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 900px;
-  border-top: 1px solid var(--line);
+  gap: 28px;
+  max-width: 940px;
 }
 
 .fit > div {
-  padding: 20px 28px 0 0;
+  position: relative;
+  padding: 26px 30px 24px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  transform: rotate(-0.8deg);
 }
 
 .fit > div + div {
-  padding-left: 28px;
-  border-left: 1px solid var(--line);
+  transform: rotate(0.9deg);
+}
+
+.fit > div::after {
+  content: "Z";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 46px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: 700 17px var(--mono);
+  outline: 3px dotted var(--paper);
+  outline-offset: -2px;
+  transform: rotate(4deg);
+}
+
+.fit > .fit--no::after {
+  content: "";
+  border: 1.5px dashed var(--line);
+  background: none;
+  outline: 0;
+  transform: none;
 }
 
 .fit h3 {
-  margin: 0 0 10px;
+  margin: 0 56px 14px 0;
   font-size: 18px;
+}
+
+.fit li {
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
 }
 
 .fit ul {
@@ -504,6 +990,12 @@ button {
 }
 
 /* ---------- The pretend Zalo window ---------- */
+
+/* Everything drawn as Zalo draws it keeps Zalo's font, not the site's */
+.zw,
+.rx-stage {
+  font-family: var(--zalo-font);
+}
 
 .zw {
   display: grid;
@@ -901,18 +1393,7 @@ form.zw__composer:focus-within {
   font-weight: 500;
 }
 
-/* ---------- Chapter 2: the digest ---------- */
-
-.digest {
-  max-width: 780px;
-  padding: 18px;
-  border: 1px solid var(--z-line);
-  border-radius: 10px;
-  background: var(--z-side);
-  box-shadow: var(--shadow);
-  color: var(--z-text);
-  font-size: 14px;
-}
+/* The digest: one card per unread conversation */
 
 .digest__bar {
   display: flex;
@@ -1099,44 +1580,125 @@ form.zw__composer:focus-within {
   font-weight: 600;
 }
 
-/* ---------- Chapter 3: back to the source ---------- */
+/* ---------- Extra: more reactions, a band of its own ---------- */
 
-.zw--compact .zw__chat,
-.zw--compact .zp {
-  height: 420px;
+/* Not a chapter like 01–04: a darker band, big type beside one big message, and every reaction
+   flowing past underneath */
+.rx-show {
+  padding: 96px 0 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  /* The river runs past both edges; the panel may hang below the band */
+  overflow: hidden;
+  overflow: clip visible;
 }
 
-/* ---------- Extra: more reactions ---------- */
-
-.zw--solo {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 640px;
+.rx-show__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 40px 64px;
 }
 
-.zw--solo .zw__chat {
-  height: auto;
+.rx-show__new {
+  margin: 0 0 10px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 13px;
 }
 
-.zw--solo .zw__msgs {
-  overflow: visible;
+.rx-show h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(36px, 5.4vw, 60px);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -1.4px;
+}
+
+.rx-show__text > p:last-child {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+/* One message, drawn big, as Zalo draws it: avatar, bubble, the reactions at its corner */
+.rx-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.rx-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.rx-msg__avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #b86a2e;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.rx-msg__bubble {
+  position: relative;
+  max-width: 420px;
+  padding: 14px 18px 22px;
+  border: 1px solid var(--z-line);
+  border-radius: 10px;
+  background: var(--z-bg);
+  color: var(--z-text);
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.rx-msg__bubble > b {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+  color: var(--z-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.rx-chips {
+  position: absolute;
+  right: 12px;
+  bottom: -14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border: 1px solid var(--z-line);
+  border-radius: 999px;
+  background: var(--z-bg);
+  color: var(--z-muted);
+  font-size: 15px;
+  line-height: 1.2;
 }
 
 .rx-chips:empty {
   display: none;
 }
 
-.rx-chips {
-  display: block;
-  margin-top: 6px;
+.rx-pop {
+  animation: rx-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
-.rx-chip {
-  display: inline-block;
-  padding: 1px 8px;
-  border: 1px solid var(--z-line);
-  border-radius: 999px;
-  background: var(--z-bg);
-  font-size: 12.5px;
+@keyframes rx-pop {
+  from {
+    transform: scale(0.7);
+  }
 }
 
 .rx-bar {
@@ -1146,7 +1708,8 @@ form.zw__composer:focus-within {
   gap: 2px;
   width: fit-content;
   max-width: 100%;
-  padding: 4px 6px;
+  margin-left: 56px;
+  padding: 5px 8px;
   border: 1px solid var(--z-line);
   border-radius: 999px;
   background: var(--z-bg);
@@ -1157,88 +1720,520 @@ form.zw__composer:focus-within {
 }
 
 .rx-bar button,
-.rx-grid button {
-  width: 34px;
-  height: 34px;
+.rx-river button {
   padding: 0;
   border: 0;
-  border-radius: 8px;
   background: none;
-  font-size: 20px;
   line-height: 1;
   cursor: pointer;
 }
 
-.rx-bar button:hover,
-.rx-grid button:hover {
+.rx-bar button {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  font-size: 23px;
+  transition: transform 0.15s;
+}
+
+.rx-bar button:hover {
   background: var(--z-bubble);
+  transform: translateY(-3px) scale(1.12);
 }
 
 .rx-bar .rx-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   background: var(--accent);
   color: var(--accent-ink);
-  font-size: 20px;
-  font-weight: 600;
+  transition: transform 0.25s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
 .rx-bar .rx-plus:hover {
   background: var(--accent);
+  transform: scale(1.08);
+}
+
+.rx-bar .rx-plus[aria-expanded="true"] {
+  transform: rotate(45deg);
+}
+
+/* The panel "+" opens: Zenlo's own, under the bar. Eight to a row, the rest a scroll away. */
+.rx-stage {
+  position: relative;
 }
 
 .rx-pick {
-  margin-top: 8px;
-  padding: 10px 12px;
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 56px;
+  width: 340px;
+  max-width: 100%;
+  margin-top: 10px;
+  padding: 12px 12px 10px;
   border: 1px solid var(--z-line);
   border-radius: 10px;
   background: var(--z-bg);
+  color: var(--z-text);
+  box-shadow: 0 18px 40px rgba(20, 16, 40, 0.18);
+  transform-origin: 30px 0;
+  animation: rx-open 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+
+.rx-pick[hidden] {
+  display: none;
+}
+
+@keyframes rx-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+
+.rx-pick__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 14.5px;
+}
+
+.rx-pick__head span {
+  color: var(--z-muted);
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
 .rx-pick__label {
-  margin: 4px 0;
+  margin: 8px 0 2px;
   color: var(--z-muted);
   font-size: 12px;
 }
 
-.rx-grid {
+.rx-pick__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 34px);
-  gap: 2px;
-  margin-bottom: 6px;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
-.rx-grid--all {
-  max-height: 190px;
+.rx-pick__grid--all {
+  max-height: 200px;
+  margin-right: -6px;
+  padding-right: 6px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
-/* ---------- Chapter 4: your way ---------- */
+.rx-pick__grid button {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s, background-color 0.12s;
+}
 
-.yours {
+.rx-pick__grid button:hover,
+.rx-pick__grid button:focus-visible {
+  background: var(--z-bubble);
+  transform: scale(1.15);
+}
+
+/* Every reaction, in two rows that flow in opposite directions and never stop; each row holds its
+   list twice, so the loop has no seam. Only the claw takes stamps off them, so with the machine off
+   they let clicks through. The panel, when open, sends them back. */
+.rx-floor {
+  position: relative;
+  margin-top: 72px;
+}
+
+.rx-river {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-  gap: 20px;
+  gap: 12px;
+  padding: 0 0 72px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  transition: opacity 0.3s;
 }
 
-.panel {
-  padding: 18px;
-  border: 1px solid var(--z-line);
-  border-radius: 10px;
-  background: var(--z-side);
-  box-shadow: var(--shadow);
-  color: var(--z-text);
-  font-size: 14px;
+.rx-show--picking .rx-river {
+  opacity: 0.15;
 }
+
+.rx-show:not(.rx-show--machine) .rx-river {
+  pointer-events: none;
+}
+
+/* --pitch: a stamp and the gap after it. The gap after the last one too, so that half the row is
+   exactly one list and the loop lands where it started */
+.rx-river__row {
+  --pitch: 70px;
+  position: relative;
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  padding-right: 12px;
+  animation: rx-flow 70s linear infinite;
+}
+
+.rx-river__row--back {
+  --pitch: 62px;
+  animation-direction: reverse;
+  animation-duration: 80s;
+}
+
+/* The belt under each row, shown while the claw machine is on; its rollers repeat a whole number
+   of times per stamp, so they loop with the row */
+.rx-river__row::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -9px;
+  left: 0;
+  height: 5px;
+  border-top: 1.5px solid var(--faint);
+  background: repeating-linear-gradient(90deg, var(--line) 0 2px, transparent 2px calc(var(--pitch) / 5));
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.rx-show--machine .rx-river__row::after {
+  opacity: 1;
+}
+
+@keyframes rx-flow {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* A stamp album: every face on its own perforated stamp, stuck on a little crooked; the second
+   row smaller, as if further back. Hover lifts a stamp off the page. */
+.rx-river button {
+  --tilt: -2deg;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 68px;
+  border-radius: 0;
+  background: var(--paper);
+  font-size: 32px;
+  outline: 4px dotted var(--bg-2);
+  outline-offset: -2px;
+  transform: rotate(var(--tilt));
+  transition: transform 0.2s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.rx-river button:nth-child(3n + 1) { --tilt: 2.5deg; }
+.rx-river button:nth-child(3n + 2) { --tilt: -0.5deg; }
+
+.rx-river__row--back button {
+  width: 50px;
+  height: 58px;
+  font-size: 26px;
+  opacity: 0.85;
+}
+
+.rx-river button:hover {
+  opacity: 1;
+  transform: rotate(-8deg) translateY(-6px) scale(1.15);
+}
+
+/* A new stamp, pushed up through the belt into the gap the claw left */
+.rx-river button.is-new {
+  animation: rx-refill 0.5s ease-out;
+}
+
+@keyframes rx-refill {
+  from {
+    opacity: 0;
+    transform: translateY(20px) rotate(var(--tilt)) scale(0.3);
+  }
+
+  60% {
+    transform: translateY(-5px) rotate(calc(var(--tilt) - 6deg)) scale(1.08);
+  }
+}
+
+/* The claw machine: a rail striped like an airmail envelope across the gap above the belts, a claw
+   that runs on it, and the delivery ticket. Hidden until "+" turns it on. */
+.rx-machine {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  z-index: 4;
+  height: 72px;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.35s, visibility 0s 0.35s;
+}
+
+.rx-show--machine .rx-machine {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.35s;
+}
+
+.rx-machine__inner {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rx-rail {
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+  left: 0;
+  height: 6px;
+  border-block: 1px solid var(--line);
+  background: repeating-linear-gradient(-45deg, var(--air-a) 0 6px, transparent 6px 10px, var(--air-b) 10px 16px, transparent 16px 20px);
+}
+
+.rx-claw {
+  position: absolute;
+  top: calc(100% - 20px);
+  left: 0;
+  width: 30px;
+  will-change: transform;
+}
+
+.rx-claw__cart {
+  display: block;
+  width: 26px;
+  height: 10px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: var(--text);
+}
+
+.rx-claw__rope {
+  display: block;
+  width: 2px;
+  height: 4px;
+  margin: 0 auto;
+  background: var(--muted);
+}
+
+.rx-claw__jaw {
+  display: block;
+  overflow: visible;
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-width: 2.5;
+}
+
+/* The arms turn on the top of the claw: open going down, shut on a stamp */
+.rx-claw__arm {
+  transform-box: view-box;
+  transform-origin: 15px 5px;
+  transition: transform 0.18s;
+}
+
+.rx-claw.is-shut .rx-claw__arm {
+  transform: rotate(-14deg);
+}
+
+.rx-claw.is-shut .rx-claw__arm--r {
+  transform: rotate(14deg);
+}
+
+/* The stamp in the claw */
+.rx-claw__load {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 60px;
+  margin: -14px 0 0 -26px;
+  background: var(--paper);
+  outline: 4px dotted var(--bg-2);
+  outline-offset: -2px;
+  font-size: 28px;
+  line-height: 1;
+  transform: rotate(-3deg);
+}
+
+/* The ticket: the order number, which of its three tickets, and the stamp Huy wants */
+.rx-ticket {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 3px 10px;
+  border: 1.5px solid var(--text);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--text);
+  font-size: 14.5px;
+  white-space: nowrap;
+}
+
+.rx-ticket:empty {
+  display: none;
+}
+
+.rx-ticket__no {
+  padding-right: 8px;
+  border-right: 1.5px dashed var(--line);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.rx-ticket__stamp {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 30px;
+  background: var(--surface);
+  outline: 3px dotted var(--paper);
+  outline-offset: -2px;
+  border: 1px solid var(--line);
+  font-size: 17px;
+  line-height: 1;
+}
+
+/* A postmark, pressed on the message and left to fade: "đã nhận". 36px across, with room for the
+   longer word only, so the two words sit one above the other inside the inner ring */
+.rx-mark {
+  position: absolute;
+  top: -20px;
+  right: -18px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--accent);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: rx-mark 1.6s ease-out forwards;
+}
+
+@keyframes rx-mark {
+  0% {
+    opacity: 0;
+    transform: rotate(-30deg) scale(1.7);
+  }
+
+  20%,
+  75% {
+    opacity: 1;
+    transform: rotate(-14deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(-14deg);
+  }
+}
+
+/* The reaction on its way from where it was clicked to the message */
+.rx-ghost {
+  position: fixed;
+  z-index: 60;
+  font-size: 32px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .rx-show {
+    padding-top: 64px;
+  }
+
+  .rx-show__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rx-msg__bubble {
+    font-size: 17px;
+  }
+
+  .rx-bar {
+    margin-left: 0;
+  }
+
+  .rx-pick {
+    left: 0;
+  }
+
+  .rx-floor {
+    margin-top: 76px;
+  }
+
+  .rx-river {
+    padding-bottom: 56px;
+  }
+
+  .rx-river__row {
+    --pitch: 60px;
+  }
+
+  .rx-river__row--back {
+    --pitch: 54px;
+  }
+
+  .rx-river button {
+    width: 48px;
+    height: 56px;
+    font-size: 27px;
+  }
+
+  .rx-river__row--back button {
+    width: 42px;
+    height: 50px;
+    font-size: 22px;
+  }
+
+  .rx-machine {
+    height: 76px;
+    padding-top: 10px;
+  }
+
+  .rx-machine__inner {
+    justify-content: flex-start;
+  }
+}
+
+/* Reduced motion: the rows stand still and scroll sideways by hand */
+@media (prefers-reduced-motion: reduce) {
+  .rx-river {
+    overflow-x: auto;
+  }
+}
+
+/* ---------- Zenlo's settings in the demo: the AI to use, the note for the AI ---------- */
 
 .panel__label {
   margin: 0 0 8px;
   color: var(--z-muted);
   font-size: 12.5px;
-}
-
-.panel .sum {
-  min-height: 210px;
-  margin-top: 14px;
 }
 
 .choice {
@@ -1273,27 +2268,6 @@ form.zw__composer:focus-within {
   background: var(--z-bg);
   font-family: var(--mono);
   font-size: 12.5px;
-}
-
-.panel--note {
-  margin-top: 20px;
-}
-
-.panel--note .choice {
-  flex-wrap: wrap;
-}
-
-.panel--note .choice button {
-  flex: 1 1 160px;
-}
-
-.panel--note .sum {
-  min-height: 0;
-}
-
-.panel .netlog {
-  opacity: 1;
-  transform: none;
 }
 
 /* ---------- Install ---------- */
@@ -1529,7 +2503,202 @@ form.zw__composer:focus-within {
   line-height: 1.65;
 }
 
-/* Other platforms: macOS (not out yet), Zalo web (a link to the guide) */
+/* Two ways in: Zalo on the computer, Zalo web. Each is a parcel label: an ink border, a header
+   line with a barcode, "Gửi tới" and where it goes, the steps as numbered boxes, then the wax
+   seal button and the way to the full guide. */
+.get {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+
+/* Both labels share the grid's rows (subgrid), so the pictures, buttons and links line up.
+   No ::before/::after on .get__item: in a grid they would take a row. */
+.get__item {
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
+  row-gap: 0;
+  align-content: start;
+  min-width: 0;
+  padding: 18px 26px 18px;
+  border: 1.5px solid var(--text);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.get__for {
+  margin: 0 0 16px;
+  padding: 0 84px 12px 0;
+  border-bottom: 1.5px solid var(--text);
+  background: repeating-linear-gradient(90deg, var(--text) 0 2px, transparent 2px 4px, var(--text) 4px 5px, transparent 5px 7px, var(--text) 7px 10px, transparent 10px 12px) right 2px / 70px 20px no-repeat;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+
+.get__item h3 {
+  margin: 0 0 22px;
+  font-family: var(--display);
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+}
+
+.get__item h3::before {
+  content: "Gửi tới";
+  display: block;
+  margin-bottom: 2px;
+  color: var(--accent);
+  font: 400 12.5px var(--mono);
+  letter-spacing: 0;
+}
+
+.quick {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 14px;
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+  counter-reset: quick;
+}
+
+.quick li {
+  min-width: 0;
+  counter-increment: quick;
+}
+
+.quick .vis {
+  height: 116px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.quick li > b {
+  display: block;
+  margin-top: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* The step's number in a box, as on a form */
+.quick li > b::before {
+  content: counter(quick);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border: 1.5px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: 1px;
+}
+
+.vis__file--small {
+  padding: 7px 10px;
+}
+
+/* Windows' SmartScreen warning, small: what to click is ringed */
+.mini-win {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #0d5fa8;
+  color: #ffffff;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.mini-win b {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mini-win .warn__pick {
+  outline-color: #fbbf24;
+  text-decoration: underline;
+}
+
+.mini-win__run {
+  align-self: flex-end;
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 3px;
+  text-decoration: none !important;
+}
+
+.get__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.get__guide {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.get__guide:hover {
+  text-decoration: underline;
+}
+
+.get__item .download__facts {
+  margin: 16px 0 0;
+}
+
+@media (max-width: 900px) {
+  .get {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .get {
+    gap: 20px;
+  }
+
+  .get__item {
+    grid-row: auto;
+    grid-template-rows: none;
+  }
+}
+
+/* Phones: the four pictures slide sideways instead of piling up */
+@media (max-width: 560px) {
+  .get__item {
+    padding: 16px 16px 14px;
+  }
+
+  .quick {
+    grid-template-columns: none;
+    grid-auto-columns: 78%;
+    grid-auto-flow: column;
+    margin-right: -16px;
+    padding-right: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .quick li {
+    scroll-snap-align: start;
+  }
+}
+
+/* Other platforms: macOS (not out yet) */
 .platforms {
   display: flex;
   flex-wrap: wrap;
@@ -1549,6 +2718,7 @@ form.zw__composer:focus-within {
   filter: none;
 }
 
+/* "Coming soon…" lands like a rubber stamp in the middle of the screen */
 .soon {
   position: fixed;
   top: 50%;
@@ -1558,30 +2728,30 @@ form.zw__composer:focus-within {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 22px 34px;
-  border: 1px solid var(--accent-line);
-  border-radius: 10px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  color: var(--muted);
-  font-size: 15px;
+  padding: 18px 30px;
+  border: 4px double var(--accent);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 14px;
   text-align: center;
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, -50%) scale(0.96);
-  transition: opacity 0.2s, transform 0.2s;
+  transform: translate(-50%, -50%) rotate(-6deg) scale(1.6);
+  transition: opacity 0.15s, transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
 .soon b {
-  color: var(--accent);
   font-family: var(--display);
-  font-size: 24px;
+  font-size: 26px;
+  letter-spacing: 0.5px;
 }
 
 .soon--show {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) rotate(-6deg) scale(1);
 }
 
 /* ---------- From the author ---------- */
@@ -1591,15 +2761,37 @@ form.zw__composer:focus-within {
   margin: 0;
 }
 
+/* A letter from the one who made it: a sheet of paper, set down a little crooked, a stamp in
+   its corner */
 .note__quote {
   position: relative;
   margin: 0;
-  padding: 4px 0 4px 28px;
-  border-left: 3px solid var(--accent);
+  padding: 34px 36px 30px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
   color: var(--muted);
   font-size: 17px;
-  font-style: italic;
-  line-height: 1.7;
+  line-height: 1.75;
+  transform: rotate(-0.6deg);
+}
+
+.note__quote::after {
+  content: "Z";
+  position: absolute;
+  top: -14px;
+  right: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 54px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: 700 20px var(--mono);
+  outline: 4px dotted var(--bg);
+  outline-offset: -2px;
+  transform: rotate(5deg);
 }
 
 .note__quote p {
@@ -1612,7 +2804,7 @@ form.zw__composer:focus-within {
 
 .note__sign {
   margin-top: 16px;
-  padding-left: 31px;
+  padding-left: 36px;
   color: var(--muted);
   font-family: var(--mono);
   font-size: 14px;
@@ -1663,6 +2855,18 @@ form.zw__composer:focus-within {
   margin: 0;
   padding: 0 0 16px 26px;
   color: var(--muted);
+}
+
+/* An answer slides out like a letter from its envelope */
+.faq details[open] p {
+  animation: faq-out 0.35s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+@keyframes faq-out {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
 .faq code {
@@ -1766,11 +2970,22 @@ form.zw__composer:focus-within {
 
 /* ---------- Footer ---------- */
 
+/* The back of an airmail envelope: its striped edge along the top */
 .foot {
-  padding: 36px 0 48px;
-  border-top: 1px solid var(--line);
+  position: relative;
+  padding: 42px 0 48px;
   color: var(--muted);
   font-size: 14px;
+}
+
+.foot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 7px;
+  background: repeating-linear-gradient(-45deg, var(--air-a) 0 12px, transparent 12px 20px, var(--air-b) 20px 32px, transparent 32px 40px);
 }
 
 .foot__inner {
@@ -1882,9 +3097,11 @@ form.zw__composer:focus-within {
   letter-spacing: -0.8px;
 }
 
+/* Each part of a page starts at the fold of the letter */
 .doc h2 {
-  margin: 56px 0 12px;
-  padding-top: 8px;
+  margin: 48px 0 12px;
+  padding-top: 28px;
+  border-top: 1.5px dashed var(--line);
   font-family: var(--display);
   font-size: 28px;
   letter-spacing: -0.4px;
@@ -2056,8 +3273,8 @@ form.zw__composer:focus-within {
 .notify > div {
   padding: 18px 20px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  border-radius: 4px;
+  background: var(--paper);
 }
 
 .doc .notify h3 {
@@ -2072,16 +3289,30 @@ form.zw__composer:focus-within {
 
 /* Versions page: one block per release, newest first */
 
+/* Each release is a letter: paper, its date as a postmark; the newest one came by airmail */
 .release {
+  position: relative;
   margin: 28px 0;
-  padding: 22px 24px;
+  padding: 24px 24px 22px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  border-radius: 4px;
+  background: var(--paper);
+  overflow: hidden;
 }
 
 .release--latest {
+  padding-top: 30px;
   border-color: var(--accent-line);
+}
+
+.release--latest::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 6px;
+  background: repeating-linear-gradient(-45deg, var(--air-a) 0 12px, transparent 12px 20px, var(--air-b) 20px 32px, transparent 32px 40px);
 }
 
 .release__head {
@@ -2110,9 +3341,14 @@ form.zw__composer:focus-within {
 
 .release__date {
   margin-left: auto;
-  color: var(--faint);
+  padding: 3px 12px;
+  border: 1.5px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: 12.5px;
+  font-weight: 700;
+  transform: rotate(-4deg);
 }
 
 .release__get {
@@ -2240,24 +3476,6 @@ form.zw__composer:focus-within {
 /* ---------- Small screens ---------- */
 
 @media (max-width: 900px) {
-  .zw {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .zw__chat,
-  .zw--compact .zw__chat {
-    height: 340px;
-  }
-
-  .zp,
-  .zw--compact .zp {
-    height: auto;
-    min-height: 360px;
-    border-left: 0;
-    border-top: 1px solid var(--z-line);
-  }
-
-  .yours,
   .steps,
   .doc .steps--guide,
   .fit,
@@ -2295,12 +3513,9 @@ form.zw__composer:focus-within {
     display: none;
   }
 
-  /* Stacked: the second column hangs under a rule instead of beside one */
-  .fit > div + div {
-    margin-top: 20px;
-    padding-left: 0;
-    border-left: 0;
-    border-top: 1px solid var(--line);
+  /* Stacked: one postcard under the other */
+  .fit {
+    gap: 20px;
   }
 
   .steps {
@@ -2333,8 +3548,9 @@ form.zw__composer:focus-within {
     display: none;
   }
 
-  /* Phones: "Phiên bản" gives way to "FAQ"; it is in the footer of every page */
-  @media (max-width: 430px) {
+  /* Phones: "Phiên bản" gives way to "Hỏi đáp"; it is in the footer of every page. All three
+     links need about 465px */
+  @media (max-width: 479px) {
     .top__link[href="phien-ban.html"] {
       display: none;
     }
@@ -2356,6 +3572,18 @@ form.zw__composer:focus-within {
     .top__inner .btn {
       padding-left: 10px;
       padding-right: 10px;
+    }
+  }
+
+  /* 360–380px: "Hỏi đáp" is longer than the "FAQ" it replaced; a size smaller keeps the button
+     off the right edge */
+  @media (max-width: 380px) {
+    .top__inner {
+      gap: 5px;
+    }
+
+    .top__link {
+      font-size: 13px;
     }
   }
 
@@ -2414,4 +3642,710 @@ form.zw__composer:focus-within {
 .free {
   color: var(--accent);
   font-weight: 650;
+}
+
+/* ---------- Try it: one Zalo window with Zenlo docked on the right ---------- */
+
+/* Zalo's left bar: its blue in light, near black in dark */
+.play {
+  --z-rail: #1462e0;
+}
+
+:root[data-theme="dark"] .play {
+  --z-rail: #1d2229;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .play {
+    --z-rail: #1d2229;
+  }
+}
+
+/* The ticket: a strip of six stamps above the window. Each one gets a violet postmark once tried;
+   the next one stands up a little, and the line under it says what to press */
+.ticket {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name stamps again"
+    "line line line";
+  align-items: center;
+  gap: 14px 20px;
+  margin-bottom: 22px;
+  padding: 16px 20px 14px;
+  border: 1.5px solid var(--text);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.ticket__name {
+  grid-area: name;
+  margin: 0;
+  padding-left: 16px;
+  border-left: 1.5px dashed var(--line);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.ticket__stamps {
+  grid-area: stamps;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  transition: opacity 0.4s;
+}
+
+.ticket__stamps li {
+  --tilt: -1.5deg;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 92px;
+  height: 64px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  transform: rotate(var(--tilt));
+  transition: transform 0.25s, border-color 0.25s, color 0.25s;
+}
+
+/* The perforated edge, on a layer of its own: an outline on the stamp itself would be painted
+   last, over the postmark */
+.ticket__stamps li::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  outline: 4px dotted var(--paper);
+  outline-offset: -2px;
+  pointer-events: none;
+}
+
+.ticket__stamps li:nth-child(3n + 2) { --tilt: 1.2deg; }
+.ticket__stamps li:nth-child(3n) { --tilt: -0.4deg; }
+
+.ticket__n {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.ticket__stamps li.is-next {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  transform: rotate(0deg) translateY(-3px);
+}
+
+.ticket__stamps li.is-done {
+  z-index: 2;
+  color: var(--faint);
+}
+
+/* The postmark, pressed on the top corner with a small bounce, over everything on the ticket */
+.ticket__stamps li.is-done::after {
+  content: "hoàn thành";
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  /* Pseudo-elements keep the content box: 28px of text inside, so the two words go on two lines */
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  line-height: 1.1;
+  text-align: center;
+  background: var(--paper);
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--accent);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 7.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  transform: rotate(-16deg);
+  animation: ticket-stamp 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+}
+
+@keyframes ticket-stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-30deg) scale(1.6);
+  }
+}
+
+.ticket__again {
+  grid-area: again;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ticket__again:hover {
+  color: var(--accent);
+}
+
+.ticket__line {
+  grid-area: line;
+  min-height: 1.6em;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1.5px dashed var(--line);
+  color: var(--text);
+  font-size: 15px;
+}
+
+.ticket__line b {
+  color: var(--accent);
+}
+
+/* While the demo plays by itself: the stamps wait, the line says how to take over */
+.ticket[data-mode="auto"] .ticket__stamps,
+.ticket[data-mode="idle"] .ticket__stamps {
+  opacity: 0.45;
+}
+
+.ticket[data-mode="auto"] .ticket__line::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: 1px;
+  animation: play-dot 1.2s ease-in-out infinite;
+}
+
+@keyframes play-dot {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* The window: Zalo's bar, the conversation list, the chat, and Zenlo's room, empty until opened */
+.play__win {
+  position: relative;
+  grid-template-columns: 64px 236px minmax(0, 1fr) 0;
+  height: 580px;
+  transition: grid-template-columns 0.45s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+
+.play__win.is-open {
+  grid-template-columns: 64px 236px minmax(0, 1fr) 344px;
+}
+
+.play .zw__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  background: var(--av, #2f6f73);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.play__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0;
+  background: var(--z-rail);
+  color: #fff;
+}
+
+.play__me {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: #f0a35e;
+  font-weight: 700;
+}
+
+.play__ico,
+.play__zen {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 9px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.play__ico.is-on {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+/* Zenlo's button in the bar, under a thin line, with a violet dot */
+.play__zen {
+  position: relative;
+  margin-top: 10px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.play__zen::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 10px;
+  right: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.play__zen::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--z-rail);
+  border-radius: 50%;
+  background: #c4b5fd;
+}
+
+.play__zen:hover,
+.play__zen[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.play__list {
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--z-line);
+}
+
+.play__search {
+  margin: 14px 12px 8px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--z-bubble);
+  color: var(--z-muted);
+  font-size: 13px;
+}
+
+.play__conv {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 10px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+}
+
+.play__conv .zw__avatar {
+  grid-row: span 2;
+  width: 42px;
+  height: 42px;
+}
+
+.play__conv b,
+.play__conv small {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.play__conv b {
+  font-weight: 500;
+}
+
+.play__conv small {
+  color: var(--z-muted);
+  font-size: 12.5px;
+}
+
+.play__conv time {
+  color: var(--z-muted);
+  font-size: 11.5px;
+  justify-self: end;
+}
+
+.play__conv.has-new b,
+.play__conv.has-new small {
+  color: var(--z-text);
+  font-weight: 600;
+}
+
+.play__conv.is-on {
+  background: var(--z-me);
+}
+
+.play__badge {
+  min-width: 19px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 19px;
+  text-align: center;
+  justify-self: end;
+}
+
+.play__chat {
+  height: auto;
+  min-height: 0;
+}
+
+/* Zenlo's button on the title bar */
+.play__open {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 6px 13px 6px 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.play__open:hover,
+.play__open[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Zenlo docked: always its full width, slid in from the edge as its column opens */
+.play__zp {
+  width: 344px;
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 901px) {
+  .play__win:not(.is-open) .play__zp {
+    visibility: hidden;
+    transition: visibility 0s 0.45s;
+  }
+}
+
+.play__zp .zp__head {
+  padding-right: 10px;
+}
+
+.play__x {
+  margin-left: auto;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--z-muted);
+  font-size: 22px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.play__x:hover {
+  background: var(--z-bubble);
+  color: var(--z-text);
+}
+
+.play__tabs button {
+  display: flex;
+  align-items: center;
+  margin-bottom: -1px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.play__tabs button:hover {
+  color: var(--z-text);
+}
+
+.play__tabs [aria-selected="true"] {
+  border-bottom-color: var(--accent);
+  color: var(--z-text);
+}
+
+.play__tabs .play__gear {
+  margin-left: auto;
+}
+
+.play__who {
+  margin: 0 0 2px;
+  font-weight: 700;
+}
+
+.play__note {
+  margin: 0 0 12px;
+  color: var(--z-muted);
+  font-size: 12.5px;
+}
+
+.play__inline {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.play__notes {
+  flex-wrap: wrap;
+  margin-top: -4px;
+}
+
+.play__notes[hidden] {
+  display: none;
+}
+
+.play__notes button {
+  flex: 1 1 auto;
+  padding: 7px 10px;
+  font-size: 12.5px;
+}
+
+.play__label {
+  color: var(--z-muted);
+  font-size: 12.5px;
+}
+
+.play__pane .sum {
+  font-size: 13.5px;
+}
+
+.play__pane .dcard {
+  gap: 4px 8px;
+  padding: 9px 10px;
+  font-size: 13.5px;
+}
+
+.play__pane .dcard__sum {
+  font-size: 13px;
+}
+
+.play__pane .choice button {
+  padding: 8px 6px;
+  font-size: 13px;
+}
+
+/* The pretend pointer of the first run, and the ring where it presses */
+.play__cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.25, 1), opacity 0.3s;
+  filter: drop-shadow(0 2px 3px rgba(20, 16, 40, 0.3));
+}
+
+.play__cursor.is-on {
+  opacity: 1;
+}
+
+.play__cursor svg {
+  display: block;
+  fill: var(--accent);
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  transform-origin: 2px 2px;
+  transition: transform 0.12s;
+}
+
+.play__cursor.is-down svg {
+  transform: scale(0.8);
+}
+
+.play__tap {
+  position: absolute;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: play-tap 0.6s ease-out forwards;
+}
+
+@keyframes play-tap {
+  from {
+    opacity: 1;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* What to press next */
+.play-beacon {
+  animation: play-beacon 1.8s ease-out infinite;
+}
+
+@keyframes play-beacon {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.5);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px rgba(124, 58, 237, 0);
+  }
+}
+
+/* No room for the list: the bar, the chat and Zenlo */
+@media (max-width: 1100px) {
+  .play__list {
+    display: none;
+  }
+
+  .play__win {
+    grid-template-columns: 64px minmax(0, 1fr) 0;
+  }
+
+  .play__win.is-open {
+    grid-template-columns: 64px minmax(0, 1fr) 344px;
+  }
+}
+
+/* Phones: the chat fills the window, Zenlo slides up from the bottom over it */
+@media (max-width: 900px) {
+  .ticket {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name again"
+      "stamps stamps"
+      "line line";
+    gap: 10px 12px;
+    padding: 12px 14px;
+  }
+
+  .ticket__name {
+    padding: 0;
+    border: 0;
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+
+  .ticket__stamps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .ticket__stamps li {
+    width: auto;
+    height: 58px;
+    font-size: 12.5px;
+  }
+
+  .ticket__line {
+    padding-top: 10px;
+    font-size: 14.5px;
+  }
+
+  .play__win,
+  .play__win.is-open {
+    grid-template-columns: minmax(0, 1fr);
+    height: 560px;
+  }
+
+  .play__rail,
+  .play__list {
+    display: none;
+  }
+
+  .play__zp {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 3;
+    width: auto;
+    height: 86%;
+    border-top: 1px solid var(--z-line);
+    border-left: 0;
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -14px 34px rgba(20, 16, 40, 0.2);
+    visibility: hidden;
+    transform: translateY(102%);
+    transition: transform 0.4s cubic-bezier(0.3, 0.7, 0.3, 1), visibility 0s 0.4s;
+  }
+
+  .play__win.is-open .play__zp {
+    visibility: visible;
+    transform: none;
+    transition: transform 0.4s cubic-bezier(0.3, 0.7, 0.3, 1);
+  }
+
+  /* The grip of a sheet */
+  .play__zp::before {
+    content: "";
+    flex: none;
+    align-self: center;
+    width: 40px;
+    height: 4px;
+    margin-top: 8px;
+    border-radius: 2px;
+    background: var(--z-line);
+  }
+
+  .play__zp .zp__head {
+    padding-top: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-beacon {
+    box-shadow: 0 0 0 3px var(--accent-line);
+  }
 }

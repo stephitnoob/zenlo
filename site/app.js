@@ -11,13 +11,46 @@
 
   const $$ = (selector) => document.querySelectorAll(selector)
 
+  // The post (style.css): every button presses down like a rubber stamp, a main download button's
+  // wax seal breaks open, and a copy leaves a violet ink mark where the button was hit
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  function ink (button, text, event) {
+    if (still) return
+    const rect = button.getBoundingClientRect()
+    const x = event && event.clientX ? event.clientX : rect.left + rect.width * 0.85
+    const y = event && event.clientY ? event.clientY : rect.top + rect.height / 2
+    const mark = document.createElement('span')
+    mark.className = 'ink'
+    mark.textContent = text
+    mark.setAttribute('aria-hidden', 'true')
+    mark.style.left = `${x + window.scrollX}px`
+    mark.style.top = `${y + window.scrollY}px`
+    document.body.appendChild(mark)
+    setTimeout(() => mark.remove(), 1400)
+  }
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest && event.target.closest('.btn')
+    if (!button || still || button.getAttribute('aria-disabled') === 'true') return
+    button.classList.remove('is-pressed')
+    void button.offsetWidth // restart the press
+    button.classList.add('is-pressed')
+    if (button.classList.contains('btn--seal')) {
+      button.classList.add('is-open')
+      setTimeout(() => button.classList.remove('is-open'), 1800)
+    }
+  })
+  document.addEventListener('animationend', (event) => {
+    if (event.animationName === 'btn-stamp') event.target.classList.remove('is-pressed')
+  })
+
   // "Sao chép" buttons: copy their data-copy text, or select it when the clipboard is not allowed
   $$('.js-copy').forEach((button) => {
     const label = button.textContent
-    button.addEventListener('click', async () => {
+    button.addEventListener('click', async (event) => {
       try {
         await navigator.clipboard.writeText(button.dataset.copy)
         button.textContent = 'Đã sao chép ✓'
+        ink(button, 'đã chép', event)
       } catch (error) {
         const target = document.querySelector(button.dataset.select || '.js-account')
         if (target) {
@@ -82,7 +115,7 @@
     box.append(line, button, shown)
     a.replaceWith(box)
 
-    button.addEventListener('click', async () => {
+    button.addEventListener('click', async (event) => {
       let copied = false
       try {
         await navigator.clipboard.writeText(`https://${link}`)
@@ -95,7 +128,8 @@
         window.getSelection().addRange(range)
         try { copied = document.execCommand('copy') } catch (ignored) {}
       }
-      button.textContent = copied ? 'Đã sao chép ✓' : 'Giữ vào link để sao chép'
+      button.textContent = copied ? 'Đã sao chép ✓' : 'Nhấn giữ vào link để sao chép'
+      if (copied) ink(button, 'đã chép', event)
       setTimeout(() => { button.textContent = 'Sao chép link' }, 2500)
     })
   }
