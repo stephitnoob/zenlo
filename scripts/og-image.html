@@ -2,8 +2,8 @@
 <!--
   Zenlo – the picture shown when a link to the website is shared (site/og.png, 1200×630), dark.
   Drawn with the website's own font; node scripts/og-image.mjs takes the screenshot.
-  Read left to right: scroll through 300 messages, or one click on Zenlo's "Tóm tắt" and read one
-  letter, its hottest news circled in red with the end hidden.
+  Read left to right: scroll through 367 messages, or one click on Zenlo's "Tóm tắt" and read one
+  letter, the end of its hottest news hidden.
 -->
 <html lang="vi">
 <head>
@@ -38,7 +38,7 @@
   .label--right { right: 60px; color: #fff; }
   .label--right em { color: #fde68a; font-style: normal; }
 
-  /* Left: the group in Zalo's dark theme, 300 messages to scroll through */
+  /* Left: the group in Zalo's dark theme, 367 messages to scroll through */
   .chat { left: 60px; top: 136px; width: 380px; height: 404px; overflow: hidden; border: 2px solid #2a2f36; border-radius: 8px; background: #1b1f24; }
   .chat__head { display: flex; align-items: center; gap: 12px; height: 64px; padding: 0 18px; border-bottom: 2px solid #2a2f36; background: #15181c; font-size: 21px; font-weight: 700; }
   .chat__head i { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; color: #fff; font-size: 15px; font-style: normal; }
@@ -52,8 +52,8 @@
   .act { left: 600px; top: 250px; display: flex; flex-direction: column; align-items: center; gap: 18px; transform: translateX(-50%); text-align: center; }
   .button { position: relative; display: flex; align-items: center; gap: 12px; padding: 18px 28px; border-radius: 8px; background: #a78bfa; color: #1a1033; font-size: 31px; font-weight: 700; white-space: nowrap; box-shadow: 0 0 0 6px rgba(167, 139, 250, 0.22), 0 10px 30px rgba(0, 0, 0, 0.45); }
   .cursor { position: absolute; right: -24px; bottom: -32px; width: 48px; }
-  .act p { font-size: 23px; font-weight: 500; line-height: 1.35; color: #c4b5fd; white-space: nowrap; }
-  .act p b { color: #fff; }
+  .act p { font-size: 27px; font-weight: 500; line-height: 1.3; color: #c4b5fd; white-space: nowrap; }
+  .act p b { display: block; margin-bottom: 4px; font-size: 32px; color: #fff; }
 
   /* Right: the letter Zenlo writes, as in its dark theme */
   .letter { left: 770px; top: 136px; width: 374px; padding: 22px 24px 26px; border: 3px solid rgba(167, 139, 250, 0.5); border-radius: 6px; background: #1d1a26; transform: rotate(2deg); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4); }
@@ -67,7 +67,8 @@
   .letter .item { margin-top: 8px; font-size: 22px; font-weight: 500; color: #c5cad3; }
   /* Hidden for good: other words under a heavy blur, so nothing can be read or guessed */
   .blur { filter: blur(10px); }
-  .ring { border: 7px solid #f87171; border-radius: 50%; transform: rotate(-2deg); }
+  /* From the grey side to Zenlo's: grey turning amber, a gentle arc, a solid head */
+  .flow { left: 404px; top: 50px; width: 420px; height: 64px; overflow: visible; }
 
   .brand { left: 60px; bottom: 42px; display: flex; align-items: center; gap: 10px; font-size: 28px; font-weight: 700; color: #fff; }
   .brand .mono { font-size: 19px; color: #8a94a0; }
@@ -78,11 +79,18 @@
   <div class="air air--top"></div>
   <div class="air air--bottom"></div>
 
-  <p class="label label--left">Lướt 300 tin</p>
-  <p class="label label--right">hay đọc <em>1 lá thư</em></p>
+  <p class="label label--left">Lướt 367 tin</p>
+  <svg class="flow" viewBox="0 0 420 64">
+    <defs>
+      <linearGradient id="flow" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#5b6370"/><stop offset="0.45" stop-color="#a78bfa"/><stop offset="1" stop-color="#fbbf24"/></linearGradient>
+      <marker id="head" viewBox="0 0 12 12" refX="5" refY="6" markerWidth="4.2" markerHeight="4.2" orient="auto"><path d="M1 1.5 L11 6 L1 10.5 Q3 6 1 1.5 Z" fill="#fbbf24" stroke="#fbbf24" stroke-width="1" stroke-linejoin="round"/></marker>
+    </defs>
+    <path d="M14 46 Q 200 8 386 38" fill="none" stroke="url(#flow)" stroke-width="6.5" stroke-linecap="round" marker-end="url(#head)"/>
+  </svg>
+  <p class="label label--right">đọc <em>1 lá thư</em></p>
 
   <div class="chat">
-    <div class="chat__head"><i>HB</i>Hội bạn thân<u>300</u></div>
+    <div class="chat__head"><i>HB</i>Hội bạn thân<u>367</u></div>
     <div class="chat__body">
       <p><b>Huy</b>ủa thật hả trời</p>
       <p><b>Mai</b>kkkkkkkk</p>
@@ -100,11 +108,11 @@
       Tóm tắt
       <svg class="cursor" viewBox="0 0 24 24"><path d="M4 2 L4 19 L8.5 14.8 L11.5 21.5 L14.2 20.3 L11.3 13.7 L17.5 13.5 Z" fill="#fff" stroke="#121418" stroke-width="1.4" stroke-linejoin="round"/></svg>
     </div>
-    <p><b>Một cú bấm</b>, Zenlo dùng AI<br>tóm tắt cả 300 tin</p>
+    <p><b>Một cú bấm</b>Zenlo dùng AI tóm tắt<br>cả 367 tin</p>
   </div>
 
   <div class="letter">
-    <p class="from mono"><b>zenlo</b> Hội bạn thân · 300 tin</p>
+    <p class="from mono"><b>zenlo</b> Hội bạn thân · 367 tin</p>
     <div class="news">
       <p class="head">CHUYỆN NÓNG</p>
       <p class="hot">Nam với Linh<br>chia tay vì <span class="blur">chuyện gì</span></p>
@@ -113,18 +121,6 @@
     <p class="item">Lẩu tối T7, cả nhóm chờ bạn</p>
     <p class="item">Góp 100k quà sinh nhật Mai</p>
   </div>
-  <div class="ring"></div>
-  <script>
-    // The smallest ellipse around a w×h box has half-axes w/√2 and h/√2; a little room on top
-    document.fonts.ready.then(() => {
-      const box = document.querySelector('.news').getBoundingClientRect()
-      const a = box.width / Math.SQRT2 + 14
-      const b = box.height / Math.SQRT2 + 10
-      const cx = box.left + box.width / 2
-      const cy = box.top + box.height / 2
-      Object.assign(document.querySelector('.ring').style, { left: `${cx - a}px`, top: `${cy - b}px`, width: `${2 * a}px`, height: `${2 * b}px` })
-    })
-  </script>
 
   <p class="brand">
     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
