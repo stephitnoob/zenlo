@@ -173,7 +173,7 @@
   if (onPhone) {
     $$('.js-download').forEach((a) => copyLinkInstead(a))
     // The web zip is no use on a phone either: a link to the guide, for the computer
-    $$('.js-download-web').forEach((a) => copyLinkInstead(a, { leadText: 'Zenlo cho Zalo web chạy trên trình duyệt máy tính.', link: 'zenlo.io.vn/huong-dan.html#zalo-web' }))
+    $$('.js-download-web').forEach((a) => copyLinkInstead(a, { leadText: 'Zenlo cho Zalo web chạy trên trình duyệt máy tính.', link: 'zenlo.io.vn/#tai-web' }))
   }
 
   function setDownload (href, label) {
