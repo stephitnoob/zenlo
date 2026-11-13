@@ -117,7 +117,9 @@
   --display: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   /* Zalo's own: for the pretend Zalo windows and the Zenlo panel inside them */
   --zalo-font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: "Cascadia Mono", "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace;
+  /* ui-monospace before Menlo: on iPhones and Macs it is SF Mono, which has every Vietnamese capital;
+     Menlo lacks "Ế" and "Ử", which then came from another font */
+  --mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, "SFMono-Regular", Menlo, monospace;
   color-scheme: light;
 }
 
@@ -3944,6 +3946,14 @@ form.zw__composer:focus-within {
   color: var(--faint);
 }
 
+/* A postmark leans over the stamp on its right: each done stamp sits above the ones after it, or
+   the next one, done too, would cover the right half of its ring */
+.ticket__stamps li.is-done:nth-child(1) { z-index: 7; }
+.ticket__stamps li.is-done:nth-child(2) { z-index: 6; }
+.ticket__stamps li.is-done:nth-child(3) { z-index: 5; }
+.ticket__stamps li.is-done:nth-child(4) { z-index: 4; }
+.ticket__stamps li.is-done:nth-child(5) { z-index: 3; }
+
 /* The postmark, pressed on the top corner with a small bounce, over everything on the ticket */
 .ticket__stamps li.is-done::after {
   content: "hoàn thành";
@@ -4490,6 +4500,16 @@ form.zw__composer:focus-within {
     width: auto;
     height: 58px;
     font-size: 12.5px;
+  }
+
+  /* Postmarks stay inside the ticket and clear of the row above */
+  .ticket__stamps li.is-done::after {
+    top: -8px;
+    right: -10px;
+  }
+
+  .ticket__stamps li.is-done:nth-child(3n)::after {
+    right: -2px;
   }
 
   .ticket__line {
