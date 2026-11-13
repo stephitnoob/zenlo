@@ -2287,12 +2287,6 @@ form.zw__composer:focus-within {
   border-top: 2px solid var(--text);
 }
 
-.steps__n {
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 13px;
-}
-
 .steps h3 {
   margin: 6px 0 14px;
   font-size: 18px;
@@ -2584,9 +2578,13 @@ form.zw__composer:focus-within {
   line-height: 1.4;
 }
 
-/* The step's number in a box, as on a form */
+/* The step's number in a box, as on a form; the guide's steps too */
 .quick li > b::before {
   content: counter(quick);
+}
+
+.quick li > b::before,
+.steps__n {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2718,7 +2716,7 @@ form.zw__composer:focus-within {
   filter: none;
 }
 
-/* "Coming soon…" lands like a rubber stamp in the middle of the screen */
+/* "Sắp có" lands like a rubber stamp in the middle of the screen */
 .soon {
   position: fixed;
   top: 50%;

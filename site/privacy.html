@@ -33,7 +33,7 @@
     </a>
     <a class="top__link" href="huong-dan.html">Hướng dẫn</a>
     <a class="top__link" href="phien-ban.html">Phiên bản</a>
-    <a class="top__link" href="./#cau-hoi">FAQ</a>
+    <a class="top__link" href="./#cau-hoi">Hỏi đáp</a>
     <button class="icon-btn js-theme" type="button">
       <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -45,13 +45,13 @@
 <main class="wrap">
 <article class="doc doc--page">
   <h1>Chính sách quyền riêng tư</h1>
-  <p class="lede">Cập nhật 12/11/2026</p>
+  <p class="lede">Cập nhật 13/11/2026</p>
   <p>Zenlo là một tiện ích cho Zalo, chạy trên máy tính của bạn: trong Zalo trên Windows, hoặc trong Zalo web dưới dạng tiện ích trình duyệt (những điểm khác của bản này ở <a class="link" href="#zalo-web">mục riêng</a>). Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.</p>
 
-  <h2>Tóm tắt</h2>
+  <h2>Những điểm chính</h2>
   <ul>
     <li><b>Zenlo không có máy chủ.</b> Tác giả Zenlo không nhận, không lưu và không thấy được tin nhắn, tài khoản hay bất kỳ dữ liệu nào của bạn.</li>
-    <li><b>Không tài khoản, không quảng cáo, không theo dõi.</b> Ứng dụng Zenlo không gửi số liệu sử dụng đi đâu cả. Trang web này chỉ đếm lượt xem ẩn danh, không dùng cookie (xem <a class="link" href="#trang-web">bên dưới</a>).</li>
+    <li><b>Zenlo không bắt đăng ký tài khoản, không có quảng cáo và không theo dõi người dùng.</b> Ứng dụng Zenlo không gửi số liệu sử dụng đi đâu cả. Trang web này chỉ đếm lượt xem ẩn danh, không dùng cookie (xem <a class="link" href="#trang-web">bên dưới</a>).</li>
     <li><b>Tin nhắn chỉ được gửi tới dịch vụ AI do chính bạn chọn</b>, và chỉ khi bạn bấm Tóm tắt hoặc Tạo bản tin.</li>
   </ul>
 
@@ -63,6 +63,7 @@
     <li>tên hội thoại, và đó là nhóm hay trò chuyện riêng;</li>
     <li>số người thả từng loại cảm xúc cho mỗi tin (ví dụ 3 ❤️, 2 😡; không có tên người thả), và tin nào nhắc tới bạn;</li>
     <li>tên Zalo của bạn, để AI biết tin nào đang nói với bạn;</li>
+    <li>mã tài khoản Zalo đang đăng nhập, để biết tin nào do bạn gửi và để giữ dữ liệu của Zenlo riêng cho từng tài khoản (xem <a class="link" href="#dung-chung">Máy dùng chung</a>); mã này chỉ dùng trên máy, không gửi đi;</li>
     <li>ghi chú bạn tự viết cho hội thoại đó (Thêm ghi chú trong tab Tóm tắt), nếu có;</li>
     <li>số tin chưa đọc mà Zalo ghi nhận.</li>
   </ul>
@@ -105,18 +106,23 @@
   <table>
     <thead><tr><th>Dữ liệu</th><th>Nơi lưu (chỉ trên máy bạn)</th></tr></thead>
     <tbody>
-      <tr><td>Cài đặt, ghi chú cho AI, bản tóm tắt gần nhất của từng hội thoại (300 hội thoại gần nhất), kết quả Bản tin, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây và thanh cảm xúc nhanh</td><td>Bộ nhớ của Zalo trên máy (<code>%APPDATA%\ZaloData</code>)</td></tr>
-      <tr><td>Bản sao lưu của mục trên</td><td><code>%APPDATA%\Zenlo\storage-backup.json</code></td></tr>
-      <tr><td>API key Gemini</td><td><code>%APPDATA%\Zenlo\secrets.json</code>, <b>được Windows mã hoá</b> (chỉ tài khoản Windows của bạn giải mã được)</td></tr>
+      <tr><td>Cài đặt, ghi chú cho AI, bản tóm tắt gần nhất của từng hội thoại (300 hội thoại gần nhất), kết quả Bản tin, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây và thanh cảm xúc nhanh, của tài khoản Zalo đang đăng nhập</td><td>Bộ nhớ của Zalo trên máy (<code>%APPDATA%\ZaloData</code>)</td></tr>
+      <tr><td>Bản sao lưu của mục trên, mỗi tài khoản Zalo một file</td><td><code>%APPDATA%\Zenlo\storage-backup-&lt;mã tài khoản Zalo&gt;.json</code></td></tr>
+      <tr><td>API key Gemini, riêng cho từng tài khoản Zalo</td><td><code>%APPDATA%\Zenlo\secrets.json</code>, <b>được Windows mã hoá</b> (chỉ tài khoản Windows của bạn giải mã được)</td></tr>
       <tr><td>Ghi nhận model nào hết lượt trong ngày</td><td><code>%APPDATA%\Zenlo\gemini-quota.json</code></td></tr>
     </tbody>
   </table>
 
+  <h2 id="dung-chung">Máy dùng chung</h2>
+  <p>Dữ liệu của Zenlo thuộc về tài khoản Zalo đang đăng nhập: cài đặt, bản tóm tắt, Bản tin, ghi chú, ô tick và thứ tự trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh và API key Gemini. Khi một tài khoản Zalo khác đăng nhập trên cùng máy (hoặc cùng trình duyệt, với bản Zalo web), Zenlo cất dữ liệu của tài khoản trước vào bản sao lưu của tài khoản đó, rồi nạp dữ liệu của tài khoản sau. Mỗi tài khoản Zalo dùng API key riêng.</p>
+  <p>Một số mục là của máy, dùng chung cho mọi tài khoản: độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model Claude và Codex tìm được trên máy. Dữ liệu và API key có từ trước bản 0.3.1 thuộc về tài khoản Zalo đầu tiên mở Zenlo sau khi cập nhật.</p>
+  <p>Việc tách theo tài khoản giúp những người dùng chung máy không thấy dữ liệu của nhau khi dùng Zalo và Zenlo như bình thường. Việc này không thay cho việc bảo vệ máy: ai mở được tài khoản Windows hoặc hồ sơ trình duyệt của bạn vẫn có thể dùng công cụ khác để lấy dữ liệu này.</p>
+
   <h2>Xoá dữ liệu</h2>
   <ul>
-    <li>Trong Zenlo: <b>Cài đặt → Xoá bản tóm tắt đã lưu</b>, và xoá từng API key bằng nút ×.</li>
-    <li>Gỡ Zenlo bằng <code>Zenlo-Setup.exe</code> (chọn "2. Gỡ Zenlo"), rồi xoá thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu, API key, ghi nhận hết lượt). Gỡ bằng lối tắt <b>Zenlo - Cài đặt</b> thì xoá thêm file <code>%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe</code> mà bộ cài báo còn lại.</li>
-    <li>Gỡ xong, cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng <code>@Zenlo:</code>). Zalo không dùng tới và không gửi chúng đi. Trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm <b>Kiểm tra kết nối</b>, và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.</li>
+    <li>Trong Zenlo: <b>Cài đặt → Xoá bản tóm tắt đã lưu</b>, và xoá từng API key bằng nút ×. Hai việc này chỉ áp dụng cho tài khoản Zalo đang đăng nhập.</li>
+    <li>Gỡ Zenlo bằng <code>Zenlo-Setup.exe</code> (chọn "2. Gỡ Zenlo"), rồi xoá thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu và API key của mọi tài khoản Zalo, ghi nhận hết lượt). Gỡ bằng lối tắt <b>Zenlo - Cài đặt</b> thì xoá thêm file <code>%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe</code> mà bộ cài báo còn lại.</li>
+    <li>Gỡ xong, dữ liệu Zenlo của tài khoản Zalo đăng nhập gần nhất vẫn nằm trong bộ nhớ của Zalo trên máy (các mục có tên bắt đầu bằng <code>@Zenlo:</code>): cài đặt, bản tóm tắt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh. Zalo không dùng tới và không gửi chúng đi. Nếu trước khi gỡ, bạn bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt và xoá ghi chú trong từng hội thoại, thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm <b>Kiểm tra kết nối</b>, mã tài khoản Zalo của dữ liệu đó và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.</li>
   </ul>
 
   <h2 id="zalo-web">Zenlo cho Zalo web</h2>
@@ -124,19 +130,19 @@
   <ul>
     <li><b>Đọc từ đâu:</b> từ dữ liệu Zalo web lưu trong trình duyệt. Khi khoảng bạn chọn cũ hơn những tin trình duyệt đang có, Zenlo nhờ Zalo web tải thêm tin cũ của hội thoại đó từ máy chủ Zalo (máy chủ chỉ trả thêm tin cho nhóm), như khi bạn cuộn lên đọc tin cũ. Yêu cầu này đi từ Zalo web tới máy chủ Zalo bằng tài khoản Zalo của bạn.</li>
     <li><b>Gửi tới đâu:</b> chỉ Gemini (<code>generativelanguage.googleapis.com</code>), bằng API key của bạn; bản này không dùng Claude hay ChatGPT. Kiểm tra bản mới hỏi <code>api.github.com</code> như ở bản Windows. Ngoài hai địa chỉ này và máy chủ Zalo ở trên, tiện ích không kết nối tới đâu khác.</li>
-    <li><b>Quyền xin trình duyệt:</b> chạy trên <code>chat.zalo.me</code> và có bộ nhớ riêng của tiện ích (<code>storage</code>, <code>unlimitedStorage</code>). Tiện ích không có quyền đọc các trang khác, các tab khác hay lịch sử duyệt web.</li>
-    <li><b>Máy dùng chung:</b> dữ liệu của Zenlo không tách theo tài khoản Zalo. Người khác đăng nhập Zalo web trên cùng trình duyệt có thể thấy bản tóm tắt, Bản tin và ghi chú bạn đã lưu, và dùng được API key của bạn (nhưng không đọc được key). Nếu dùng chung máy, hãy dùng một hồ sơ trình duyệt riêng.</li>
+    <li><b>Quyền tiện ích xin trình duyệt:</b> chạy trên <code>chat.zalo.me</code> và có bộ nhớ riêng của tiện ích (<code>storage</code>, <code>unlimitedStorage</code>). Tiện ích không có quyền đọc các trang khác, các tab khác hay lịch sử duyệt web.</li>
+    <li><b>Trình duyệt dùng chung:</b> như ở bản Windows, dữ liệu và API key Gemini lưu riêng cho từng tài khoản Zalo (xem <a class="link" href="#dung-chung">Máy dùng chung</a>). Người khác đăng nhập Zalo web trên cùng trình duyệt sẽ không thấy bản tóm tắt, Bản tin, ghi chú của bạn trong Zenlo và không dùng được key của bạn. Ai mở được hồ sơ trình duyệt của bạn vẫn có thể dùng công cụ của trình duyệt để lấy dữ liệu này; nếu dùng chung máy, hãy dùng một hồ sơ trình duyệt riêng.</li>
   </ul>
   <table>
     <thead><tr><th>Dữ liệu</th><th>Nơi lưu (chỉ trong trình duyệt trên máy bạn)</th></tr></thead>
     <tbody>
-      <tr><td>Cài đặt, ghi chú cho AI, bản tóm tắt, Bản tin và các mục khác như ở bản Windows</td><td>Bộ nhớ của trang <code>chat.zalo.me</code> trong trình duyệt</td></tr>
-      <tr><td>Bản sao lưu của mục trên</td><td>Bộ nhớ riêng của tiện ích</td></tr>
-      <tr><td>API key Gemini</td><td>Bộ nhớ riêng của tiện ích. Trang Zalo web không đọc được; key <b>không</b> được Windows mã hoá như ở bản Windows</td></tr>
+      <tr><td>Cài đặt, ghi chú cho AI, bản tóm tắt, Bản tin và các mục khác như ở bản Windows, của tài khoản Zalo đang đăng nhập</td><td>Bộ nhớ của trang <code>chat.zalo.me</code> trong trình duyệt</td></tr>
+      <tr><td>Bản sao lưu của mục trên, riêng cho từng tài khoản Zalo</td><td>Bộ nhớ riêng của tiện ích</td></tr>
+      <tr><td>API key Gemini, riêng cho từng tài khoản Zalo</td><td>Bộ nhớ riêng của tiện ích. Trang Zalo web không đọc được; key <b>không</b> được Windows mã hoá như ở bản Windows</td></tr>
       <tr><td>Ghi nhận model nào hết lượt trong ngày</td><td>Bộ nhớ riêng của tiện ích</td></tr>
     </tbody>
   </table>
-  <p>Xoá tiện ích khỏi trình duyệt (nút <b>Loại bỏ</b> hoặc <b>Xóa</b> trên thẻ Zenlo ở trang tiện ích) thì trình duyệt xoá luôn bộ nhớ riêng của tiện ích: API key, bản sao lưu và ghi nhận hết lượt. Các mục <code>@Zenlo:</code> trong bộ nhớ của trang <code>chat.zalo.me</code> vẫn còn, như ở bản Windows; trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, và xoá ghi chú trong từng hội thoại.</p>
+  <p>Xoá tiện ích khỏi trình duyệt (nút <b>Loại bỏ</b> hoặc <b>Xóa</b> trên thẻ Zenlo ở trang tiện ích) thì trình duyệt xoá luôn bộ nhớ riêng của tiện ích: API key và bản sao lưu của mọi tài khoản Zalo, ghi nhận hết lượt. Các mục <code>@Zenlo:</code> trong bộ nhớ của trang <code>chat.zalo.me</code> vẫn còn, như ở bản Windows; trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, và xoá ghi chú trong từng hội thoại.</p>
 
   <h2 id="trang-web">Trang web này</h2>
   <p>Trang web của Zenlo đếm lượt xem bằng <a class="link" href="https://www.goatcounter.com/" rel="noopener">GoatCounter</a>, một dịch vụ thống kê mã nguồn mở, để tác giả biết có bao nhiêu người ghé xem và bao nhiêu người bấm Tải về.</p>
@@ -149,13 +155,13 @@
   <p>Việc đếm này chỉ có trên trang web, không có trong ứng dụng Zenlo. Bạn có thể tự kiểm tra: toàn bộ mã đếm nằm trong file <a class="link" href="stats.js?v=dev">stats.js</a>, khoảng 30 dòng.</p>
 
   <h2>Liên hệ</h2>
-  <p>Câu hỏi về quyền riêng tư, báo lỗi hay lỗ hổng bảo mật: <a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">gửi email cho tác giả</a>.</p>
+  <p>Câu hỏi về quyền riêng tư, báo lỗi hay báo lỗ hổng bảo mật: <a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">gửi email cho tác giả</a>.</p>
 </article>
 </main>
 
 <footer class="foot">
   <div class="wrap foot__inner">
-    <span>© 2026 stephit · không liên kết với Zalo hay VNG</span>
+    <span>© 2026 stephit · không thuộc Zalo hay VNG</span>
     <nav aria-label="Liên kết">
       <a href="./">Trang chủ</a>
       <a href="huong-dan.html">Hướng dẫn</a>

@@ -101,7 +101,7 @@
     })
   })
 
-  // Platforms that are not out yet: a "Coming soon" note in the middle of the screen for a moment
+  // Platforms that are not out yet: a "Sắp có" stamp in the middle of the screen for a moment
   let soon = null
   let soonTimer = null
   function showSoon (what) {
@@ -114,9 +114,9 @@
     }
     soon.textContent = ''
     const title = document.createElement('b')
-    title.textContent = 'Coming soon…'
+    title.textContent = 'Sắp có'
     const detail = document.createElement('span')
-    detail.textContent = `${what} đang được làm.`
+    detail.textContent = `${what} chưa phát hành.`
     soon.append(title, detail)
     soon.classList.add('soon--show')
     clearTimeout(soonTimer)
