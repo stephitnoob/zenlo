@@ -354,6 +354,21 @@ html.zenlo-dark {
     gap: 8px;
   }
 
+  // Two buttons in one slot, as wide as the wider: Dừng shows where Tóm tắt was, nothing moves.
+  // Buttons that come and go during a run (Sao chép, Chuyển model khác) sit at the end of the row.
+  &__swap {
+    display: inline-grid;
+
+    > * {
+      grid-area: 1 / 1;
+    }
+
+    > [hidden] {
+      display: inline-flex !important;
+      visibility: hidden;
+    }
+  }
+
   &__btn {
     height: 32px;
     padding: 0 14px;

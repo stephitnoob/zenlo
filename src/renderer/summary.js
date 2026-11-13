@@ -99,8 +99,9 @@
     el.classList.toggle('zenlo__status--error', isError)
   }
 
+  // Dừng takes the place of Tóm tắt (same slot, see .zenlo__swap): the row never moves
   function setRunning (running) {
-    panel.querySelector('.js-summary-run').disabled = running
+    panel.querySelector('.js-summary-run').hidden = running
     panel.querySelector('.js-summary-stop').hidden = !running
   }
 
@@ -181,10 +182,12 @@
       </div>
 
       <div class="zenlo__actions">
-        <button class="zenlo__btn zenlo__btn--primary js-summary-run">Tóm tắt</button>
-        <button class="zenlo__btn js-summary-stop" hidden>Dừng</button>
-        <button class="zenlo__btn js-summary-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
+        <span class="zenlo__swap">
+          <button class="zenlo__btn zenlo__btn--primary js-summary-run">Tóm tắt</button>
+          <button class="zenlo__btn js-summary-stop" hidden>Dừng</button>
+        </span>
         ${Z.copyButtonHTML('js-summary-copy')}
+        <button class="zenlo__btn js-summary-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
       </div>
 
       <div class="zenlo__status zenlo__estimate"></div>

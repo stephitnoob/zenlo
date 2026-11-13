@@ -545,7 +545,10 @@
         calls.forEach((call) => call.cancel())
       }
     }
+    // Dừng takes the place of Tạo bản tin (same slot, see .zenlo__swap)
+    const runButton = overlay.querySelector('.js-digest-run')
     const stopButton = overlay.querySelector('.js-digest-stop')
+    runButton.hidden = true
     stopButton.hidden = false
     const skipButton = overlay.querySelector('.js-digest-skip')
     // The waiting cards count the seconds; the skip button shows once a request waits long
@@ -578,6 +581,7 @@
     waits.clear()
     running = null
     stopButton.hidden = true
+    runButton.hidden = false
     skipButton.hidden = true
     if (cancelled) setStatus('Đã dừng.')
     else if (failed) setStatus(`${failed} hội thoại bị lỗi, xem trên từng thẻ. Bấm "Tạo bản tin" để thử lại.`, true)
@@ -614,12 +618,14 @@
       <div class="zenlo__hint">Các hội thoại còn tin chưa đọc trong Zalo</div>
 
       <div class="zenlo__actions">
-        <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
-        <button class="zenlo__btn js-digest-stop" hidden>Dừng</button>
-        <button class="zenlo__btn js-digest-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
-        ${Z.copyButtonHTML('js-digest-copy')}
+        <span class="zenlo__swap">
+          <button class="zenlo__btn zenlo__btn--primary js-digest-run">Tạo bản tin</button>
+          <button class="zenlo__btn js-digest-stop" hidden>Dừng</button>
+        </span>
         <button class="zenlo__btn js-digest-refresh">Làm mới</button>
         <button class="zenlo__btn js-digest-read-all" title="Đánh dấu đã đọc mọi hội thoại trong danh sách">Đã đọc hết</button>
+        ${Z.copyButtonHTML('js-digest-copy')}
+        <button class="zenlo__btn js-digest-skip" hidden title="Bỏ model đang chờ, hỏi bản Gemini thấp hơn">Chuyển model khác</button>
       </div>
 
       <div class="zenlo__status zenlo__estimate zenlo-digest__summary-line"></div>
