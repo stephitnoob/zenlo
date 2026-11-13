@@ -664,14 +664,19 @@
 
   // ---------- Theme ----------
 
-  // Zalo's own theme (light or dark) picks the accent shade; Zalo has no class for it, so the
-  // page background decides
+  // Zalo's own theme (light or dark) picks the accent shade. Zalo marks dark mode with body.dark;
+  // without it, a page background that is dark. In light mode that background is transparent
+  // (rgba(0, 0, 0, 0)), which must not read as black.
   function updateTheme () {
-    const target = document.getElementById('container') || document.body
-    const match = window.getComputedStyle(target).backgroundColor.match(/\d+(\.\d+)?/g)
-    if (!match) return
-    const [r, g, b] = match.map(Number)
-    const dark = (0.299 * r + 0.587 * g + 0.114 * b) < 128
+    let dark = document.body.classList.contains('dark')
+    if (!dark) {
+      const target = document.getElementById('container') || document.body
+      const match = window.getComputedStyle(target).backgroundColor.match(/\d+(\.\d+)?/g)
+      if (match) {
+        const [r, g, b, a = 1] = match.map(Number)
+        dark = a > 0.5 && (0.299 * r + 0.587 * g + 0.114 * b) < 128
+      }
+    }
     document.documentElement.classList.toggle('zenlo-dark', dark)
   }
 
