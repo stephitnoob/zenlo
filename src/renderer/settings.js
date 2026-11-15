@@ -370,7 +370,7 @@
     el.className = 'zenlo zenlo-settings'
     el.innerHTML = `
       <section class="zenlo-settings__section">
-        <div class="zenlo-settings__heading">AI dùng để tóm tắt${help('chon-ai')}</div>
+        <div class="zenlo-settings__heading">AI dùng để tóm tắt${help('choose-ai')}</div>
         <div class="zenlo-settings__choice"${Z.IS_WEB ? ' hidden' : ''}>
           <label><input type="radio" name="zenlo-provider" value="claude"> Claude</label>
           <label><input type="radio" name="zenlo-provider" value="codex"> Codex (ChatGPT)</label>
@@ -400,7 +400,7 @@
         <div class="js-settings-gemini">
           <div class="zenlo-settings__guide js-settings-guide" hidden>
             <b>Chưa có key?</b> Mở <button type="button" class="zenlo__inline-link js-open-aistudio">Google AI Studio</button>, bấm <b>Create API key</b>, dán vào ô dưới.
-            <button type="button" class="zenlo__inline-link" data-guide="lay-key">Hướng dẫn có hình</button>
+            <button type="button" class="zenlo__inline-link" data-guide="get-key">Hướng dẫn có hình</button>
           </div>
           <div class="zenlo-settings__label">API key Gemini <small>(tối đa 5)</small>${help('gemini')}</div>
           <div class="zenlo-settings__keys js-settings-keys"></div>
@@ -432,7 +432,7 @@
       </section>
 
       <section class="zenlo-settings__section">
-        <div class="zenlo-settings__heading">Tóm tắt và Bản tin${help('mac-dinh')}</div>
+        <div class="zenlo-settings__heading">Tóm tắt và Bản tin${help('defaults')}</div>
         <div class="zenlo__grid">
           <label>Độ dài Tóm tắt<select class="js-settings-length" data-feature="summary">${options(LENGTHS, Z.getLength('summary'))}</select></label>
           <label>Tìm tin chưa đọc trong vòng<select class="js-settings-lookback">${LOOKBACK_DAYS.map((d) => `<option value="${d}"${String(Z.getLookback() / Z.DAY) === d ? ' selected' : ''}>${d} ngày</option>`).join('')}</select></label>
@@ -440,7 +440,7 @@
       </section>
 
       <section class="zenlo-settings__section">
-        <div class="zenlo-settings__heading">Dữ liệu${help('dat-lai')}</div>
+        <div class="zenlo-settings__heading">Dữ liệu${help('reset')}</div>
         <div class="zenlo__actions">
           <button class="zenlo__btn js-settings-clear">Xoá bản tóm tắt đã lưu</button>
         </div>

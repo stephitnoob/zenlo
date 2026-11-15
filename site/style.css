@@ -3957,7 +3957,7 @@ a.cite {
   /* Phones: "Phiên bản" gives way to "Hỏi đáp"; it is in the footer of every page. All three
      links need about 465px */
   @media (max-width: 479px) {
-    .top__link[href="phien-ban.html"] {
+    .top__link[href="changelog"] {
       display: none;
     }
   }

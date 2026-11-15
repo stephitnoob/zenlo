@@ -33,9 +33,9 @@ Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases c�
 
 Bộ cài nói rõ trên màn hình sẽ sửa gì, rồi mới sửa file `resources\app.asar` của Zalo để thêm Zenlo. Bản gốc được giữ thành `app.asar.bak`; chọn "2. Gỡ Zenlo" thì mọi thư mục phiên bản Zalo đang có Zenlo đều về đúng bản gốc. Bộ cài sửa thư mục phiên bản Zalo đang chạy, cùng các bản mới hơn mà Zalo đã tải sẵn để chạy lần sau; Zalo đang tắt thì sửa bản mới nhất. Bộ cài bỏ qua thư mục thiếu `Zalo.exe` và thư mục có số phiên bản là một ngày quá xa trong tương lai (như `Zalo-27.12.31`).
 
-Zalo web: tải `Zenlo-ZaloWeb.zip` (cũng trên Releases), giải nén vào một thư mục cố định, mở `edge://extensions` hoặc `chrome://extensions`, bật Chế độ nhà phát triển (Chrome: Chế độ dành cho nhà phát triển), bấm **Tải phần mở rộng đã giải nén** (Chrome: **Tải tiện ích đã giải nén**) và chọn thư mục đó. Cập nhật: giải nén bản mới đè lên thư mục cũ rồi bấm tải lại tiện ích. Nhờ trường `key` trong manifest, mã của tiện ích giữ nguyên qua các bản, nên key Gemini và cài đặt còn nguyên. Hướng dẫn có hình: [zenlo.io.vn/huong-dan.html#zalo-web](https://zenlo.io.vn/huong-dan.html#zalo-web).
+Zalo web: tải `Zenlo-ZaloWeb.zip` (cũng trên Releases), giải nén vào một thư mục cố định, mở `edge://extensions` hoặc `chrome://extensions`, bật Chế độ nhà phát triển (Chrome: Chế độ dành cho nhà phát triển), bấm **Tải phần mở rộng đã giải nén** (Chrome: **Tải tiện ích đã giải nén**) và chọn thư mục đó. Cập nhật: giải nén bản mới đè lên thư mục cũ rồi bấm tải lại tiện ích. Nhờ trường `key` trong manifest, mã của tiện ích giữ nguyên qua các bản, nên key Gemini và cài đặt còn nguyên. Hướng dẫn có hình: [zenlo.io.vn/guide#zalo-web](https://zenlo.io.vn/guide#zalo-web).
 
-Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://zenlo.io.vn/ky-so.html) · [Các phiên bản](https://zenlo.io.vn/phien-ban.html)
+Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURITY.md) · [Code signing policy](https://zenlo.io.vn/code-signing) · [Các phiên bản](https://zenlo.io.vn/changelog)
 
 ## Yêu cầu (để phát triển)
 
@@ -95,7 +95,7 @@ Zenlo đang xin chứng chỉ ký số miễn phí của SignPath Foundation; c�
 - Chỉ ký `Zenlo-Setup.exe`, do GitHub Actions build từ tag phiên bản ([release.yml](.github/workflows/release.yml)); mỗi yêu cầu ký được duyệt thủ công.
 - Team roles: Authors, Reviewers, Approvers: [stephit](https://github.com/stephitnoob).
 - Quyền riêng tư: [PRIVACY.md](PRIVACY.md), mục "Mọi kết nối mạng của Zenlo".
-- Chi tiết: [Code signing policy](https://zenlo.io.vn/ky-so.html).
+- Chi tiết: [Code signing policy](https://zenlo.io.vn/code-signing).
 
 ## Bản quyền
 

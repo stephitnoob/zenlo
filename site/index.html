@@ -57,14 +57,14 @@
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 8.5A8 8 0 1 0 20 12"/><path d="M9 9h6l-6 6h6"/></svg>
       <span>zenlo</span><small class="brand__by">by stephit</small>
     </a>
-    <a class="top__link" href="huong-dan.html">Hướng dẫn</a>
-    <a class="top__link" href="phien-ban.html">Phiên bản</a>
-    <a class="top__link" href="#cau-hoi">Hỏi đáp</a>
+    <a class="top__link" href="guide">Hướng dẫn</a>
+    <a class="top__link" href="changelog">Phiên bản</a>
+    <a class="top__link" href="#faq">Hỏi đáp</a>
     <button class="icon-btn js-theme" type="button">
       <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
     </button>
-    <a class="btn btn--small" href="#cai-dat">Tải về</a>
+    <a class="btn btn--small" href="#install">Tải về</a>
   </div>
 </header>
 
@@ -96,7 +96,7 @@
   </section>
 
   <!-- Why Zenlo exists -->
-  <section class="why" id="vi-sao">
+  <section class="why" id="why">
     <div class="wrap">
       <div class="why__numbers">
         <p><b>81,3 triệu</b>người dùng Zalo mỗi tháng</p>
@@ -115,7 +115,7 @@
   <!-- Try it: one Zalo window with Zenlo docked on the right. It plays once by itself with a
        pretend cursor; the visitor's first touch stops it and a ticket of five stamps takes over,
        a pulse on what to press next. -->
-  <section class="chapter play" id="thu" aria-labelledby="play-title">
+  <section class="chapter play" id="try" aria-labelledby="play-title">
     <div class="wrap">
       <div class="chapter__head">
         <h2 id="play-title">Thử tóm tắt một nhóm chat</h2>
@@ -290,7 +290,7 @@
 
   <!-- Extra: more reactions. A band of its own: every reaction flows past, and a click throws it
        onto the message, the way it lands under a message in Zalo -->
-  <section class="rx-show" id="cam-xuc">
+  <section class="rx-show" id="reactions">
     <div class="wrap rx-show__inner">
       <div class="rx-show__text">
         <p class="rx-show__new">Mới</p>
@@ -347,7 +347,7 @@
   </section>
 
   <!-- Who it suits -->
-  <section class="chapter" id="hop-voi-ai">
+  <section class="chapter" id="who-for">
     <div class="wrap">
       <div class="chapter__head">
         <h2>Zenlo hợp với ai</h2>
@@ -376,7 +376,7 @@
   </section>
 
   <!-- Install -->
-  <section class="chapter" id="cai-dat">
+  <section class="chapter" id="install">
     <div class="wrap">
       <div class="chapter__head">
         <h2>Tải và cài đặt</h2>
@@ -386,7 +386,7 @@
       <!-- Two ways in: Zalo on the computer, and Zalo in the browser. Each with its button, the
            steps in pictures, and the way to the full guide -->
       <div class="get">
-        <article class="get__item" id="tai-pc">
+        <article class="get__item" id="get-pc">
           <p class="get__for">Bản cài · Windows 10, 11</p>
           <h3>Zalo trên máy tính</h3>
           <ol class="quick">
@@ -430,19 +430,19 @@
             </li>
           </ol>
           <div class="get__actions">
-            <a class="btn btn--seal js-download" href="#cai-dat">
+            <a class="btn btn--seal js-download" href="#install">
               <span class="seal" aria-hidden="true"><i>Z</i><i>Z</i></span>
               <span class="js-download-label">Tải Zenlo miễn phí cho Windows</span>
             </a>
-            <a class="get__guide" href="huong-dan.html#cai-zenlo">Hướng dẫn chi tiết <span aria-hidden="true">→</span></a>
+            <a class="get__guide" href="guide#install-zenlo">Hướng dẫn chi tiết <span aria-hidden="true">→</span></a>
           </div>
           <p class="download__facts">
-            <span class="js-version">–</span> · <span class="js-size">–</span> · miễn phí · <a class="link" href="phien-ban.html">Có gì mới</a> · <a class="link" href="phien-ban.html#thong-bao">Báo khi có bản mới</a><br>
+            <span class="js-version">–</span> · <span class="js-size">–</span> · miễn phí · <a class="link" href="changelog">Có gì mới</a> · <a class="link" href="changelog#notifications">Báo khi có bản mới</a><br>
             SHA-256 của Zenlo-Setup.exe <span class="js-sha">–</span>
           </p>
         </article>
 
-        <article class="get__item" id="tai-web">
+        <article class="get__item" id="get-web">
           <p class="get__for">Tiện ích trình duyệt · Edge, Chrome trên máy tính</p>
           <h3>Zalo web</h3>
           <ol class="quick">
@@ -491,7 +491,7 @@
               <span class="seal" aria-hidden="true"><i>Z</i><i>Z</i></span>
               <span class="js-download-web-label">Tải Zenlo cho Zalo web</span>
             </a>
-            <a class="get__guide" href="huong-dan.html#zalo-web">Hướng dẫn chi tiết <span aria-hidden="true">→</span></a>
+            <a class="get__guide" href="guide#zalo-web">Hướng dẫn chi tiết <span aria-hidden="true">→</span></a>
           </div>
           <p class="download__facts">
             <span class="js-web-version">–</span> · <span class="js-web-size">–</span> · miễn phí<br>
@@ -509,8 +509,8 @@
       <div class="aside aside--install trust">
         <div class="trust__text">
           <p>GitHub tự build mỗi bản phát hành từ mã nguồn công khai và cấp <a class="link" href="https://github.com/stephitnoob/zenlo/attestations" rel="noopener">giấy chứng thực nguồn gốc</a>, để bạn kiểm tra file tải về đúng là build từ mã nguồn đó.<span class="js-virustotal-line" hidden> Bạn cũng xem được <a class="link js-virustotal" href="https://www.virustotal.com/" rel="noopener">kết quả quét VirusTotal</a> của chính file này.</span></p>
-          <p>Zenlo không có máy chủ riêng. Tin nhắn chỉ đi tới dịch vụ AI bạn chọn, còn dữ liệu của Zenlo nằm trên máy bạn. Mã nguồn mở theo giấy phép GPL-3.0. Chi tiết ở trang <a class="link" href="privacy.html">Quyền riêng tư</a> và <a class="link" href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
-          <p><b>Ký số:</b> bộ cài chưa có chữ ký số. Zenlo đã xin chứng chỉ miễn phí của <a class="link" href="https://signpath.org" rel="noopener">SignPath Foundation</a> nhưng chưa được duyệt vì dự án còn mới, sau này sẽ xin lại. Xem <a class="link" href="ky-so.html">Code signing policy</a>.</p>
+          <p>Zenlo không có máy chủ riêng. Tin nhắn chỉ đi tới dịch vụ AI bạn chọn, còn dữ liệu của Zenlo nằm trên máy bạn. Mã nguồn mở theo giấy phép GPL-3.0. Chi tiết ở trang <a class="link" href="privacy">Quyền riêng tư</a> và <a class="link" href="terms">Điều khoản sử dụng</a>.</p>
+          <p><b>Ký số:</b> bộ cài chưa có chữ ký số. Zenlo đã xin chứng chỉ miễn phí của <a class="link" href="https://signpath.org" rel="noopener">SignPath Foundation</a> nhưng chưa được duyệt vì dự án còn mới, sau này sẽ xin lại. Xem <a class="link" href="code-signing">Code signing policy</a>.</p>
         <p>Góp ý, báo lỗi: <a class="link js-feedback" href="mailto:stephit.zenlo@outlook.com">gửi email</a>.</p>
         </div>
         <figure class="trust__fig">
@@ -578,7 +578,7 @@
   </section>
 
   <!-- Answers for people who read nothing else -->
-  <section class="chapter" id="cau-hoi">
+  <section class="chapter" id="faq">
     <div class="wrap">
       <div class="chapter__head">
         <h2>Câu hỏi thường gặp</h2>
@@ -594,7 +594,7 @@
         </details>
         <details>
           <summary>Zenlo có virus không?</summary>
-          <p>Không. Mã nguồn công khai, mỗi bản do GitHub tự build, và ở <a class="link" href="#cai-dat">phần tải về</a> có link xem kết quả quét VirusTotal của chính file đó.</p>
+          <p>Không. Mã nguồn công khai, mỗi bản do GitHub tự build, và ở <a class="link" href="#install">phần tải về</a> có link xem kết quả quét VirusTotal của chính file đó.</p>
         </details>
         <details>
           <summary>Tóm tắt có đúng không?</summary>
@@ -634,11 +634,11 @@
   <div class="wrap foot__inner">
     <span>© 2026 stephit · không thuộc Zalo hay VNG</span>
     <nav aria-label="Liên kết">
-      <a href="huong-dan.html">Hướng dẫn</a>
-      <a href="phien-ban.html">Phiên bản</a>
-      <a href="privacy.html">Quyền riêng tư</a>
-      <a href="dieu-khoan.html">Điều khoản</a>
-      <a href="ky-so.html">Code signing policy</a>
+      <a href="guide">Hướng dẫn</a>
+      <a href="changelog">Phiên bản</a>
+      <a href="privacy">Quyền riêng tư</a>
+      <a href="terms">Điều khoản</a>
+      <a href="code-signing">Code signing policy</a>
       <a class="js-source" href="https://github.com/stephitnoob/zenlo">Mã nguồn</a>
       <a class="js-feedback" href="mailto:stephit.zenlo@outlook.com">Góp ý</a>
     </nav>

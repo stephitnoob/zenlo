@@ -1255,7 +1255,7 @@
       setBeacon(spot && spot.el)
       if (mode === 'auto') say('Zenlo đang tự chạy thử một lượt. Bấm vào khung bất kỳ lúc nào để tự làm.')
       else if (mode === 'idle') say('Kéo tới khung bên dưới, Zenlo sẽ tự chạy thử một lượt.')
-      else say(spot ? spot.say : 'Đủ năm dấu. Cài vào Zalo của bạn, Zenlo cũng chạy y như vậy: <a class="link" href="./#cai-dat">tải về</a>.')
+      else say(spot ? spot.say : 'Đủ năm dấu. Cài vào Zalo của bạn, Zenlo cũng chạy y như vậy: <a class="link" href="./#install">tải về</a>.')
     }
     function mark (step) {
       done.add(step)

@@ -31,6 +31,8 @@ http.createServer((request, response) => {
     return
   }
   if (name.endsWith('/')) name += 'index.html'
+  // Like GitHub Pages: /guide serves guide.html
+  else if (!path.extname(name) && fs.existsSync(path.join(ROOT, name + '.html'))) name += '.html'
   const file = path.join(ROOT, name)
   // Nothing outside site/
   if (!file.startsWith(ROOT + path.sep)) {

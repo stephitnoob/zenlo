@@ -27,11 +27,11 @@
   // Zenlo's public links; an empty one is not shown. Filled in when the site and repository exist.
   const LINKS = {
     site: 'https://zenlo.io.vn/',
-    guide: 'https://zenlo.io.vn/huong-dan.html',
-    versions: 'https://zenlo.io.vn/phien-ban.html',
+    guide: 'https://zenlo.io.vn/guide',
+    versions: 'https://zenlo.io.vn/changelog',
     source: 'https://github.com/stephitnoob/zenlo',
-    privacy: 'https://zenlo.io.vn/privacy.html',
-    terms: 'https://zenlo.io.vn/dieu-khoan.html',
+    privacy: 'https://zenlo.io.vn/privacy',
+    terms: 'https://zenlo.io.vn/terms',
     feedback: 'mailto:stephit.zenlo@outlook.com?subject=G%C3%B3p%20%C3%BD%20Zenlo',
     geminiKey: 'https://aistudio.google.com/apikey'
   }
@@ -43,7 +43,7 @@
   const IS_WEB = typeof ZENLO_WEB !== 'undefined' && ZENLO_WEB === true
   // Where "Xem bản mới" leads: what is new (Zalo PC's installer updates in place), or how to put
   // the new zip over the extension's folder
-  LINKS.update = IS_WEB ? `${LINKS.guide}#cap-nhat-web` : LINKS.versions
+  LINKS.update = IS_WEB ? `${LINKS.guide}#update-web` : LINKS.versions
 
   // Added under a summary when it is copied (not shown in the panel), so a summary pasted into a
   // chat says where it came from

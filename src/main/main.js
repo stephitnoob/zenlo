@@ -1058,7 +1058,7 @@ ipcMain.handle('zenlo:open-link', (event, url) => {
 
 // A Windows notification for a newer Zenlo, shown once per version by the page; a click opens the
 // versions page. The text and the link are fixed here, only the version comes from the page.
-const VERSIONS_PAGE = 'https://zenlo.io.vn/phien-ban.html'
+const VERSIONS_PAGE = 'https://zenlo.io.vn/changelog'
 let updateNotification = null
 
 ipcMain.handle('zenlo:update:notify', (event, tag) => {

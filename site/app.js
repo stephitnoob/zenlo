@@ -11,6 +11,17 @@
 
   const $$ = (selector) => document.querySelectorAll(selector)
 
+  // Sections had Vietnamese names until 15/11/2026. Old links (older apps, search results, shared
+  // links) still carry them: move to the section's new name.
+  const OLD_SECTIONS = {
+    '': { 'vi-sao': 'why', thu: 'try', 'cam-xuc': 'reactions', 'hop-voi-ai': 'who-for', 'cai-dat': 'install', 'tai-pc': 'get-pc', 'tai-web': 'get-web', 'cau-hoi': 'faq' },
+    changelog: { 'thong-bao': 'notifications' },
+    privacy: { 'ket-noi': 'connections', 'dung-chung': 'shared-pc', 'trang-web': 'this-site' }
+  }
+  const page = window.location.pathname.replace(/^\/(zenlo\/)?/, '').replace(/(index)?\.html$/, '')
+  const renamed = (OLD_SECTIONS[page] || {})[window.location.hash.slice(1)]
+  if (renamed) window.location.replace(`#${renamed}`)
+
   // The post (style.css): every button presses down like a rubber stamp, a main download button's
   // wax seal breaks open, and a copy leaves a violet ink mark where the button was hit
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -260,7 +271,7 @@
           if (latest && hit.tag !== latest) {
             line.append(`Đây là Zenlo ${hit.tag}. Bản mới nhất là ${latest}. `)
             const get = el('a', 'link', 'Tải bản mới')
-            get.href = './#cai-dat'
+            get.href = './#install'
             line.appendChild(get)
           } else {
             const notes = el('a', 'link', 'ghi chú phát hành')
@@ -325,7 +336,7 @@
   const onPhone = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent) ||
     (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
 
-  function copyLinkInstead (a, { leadText = 'Zenlo chạy trên máy tính Windows.', link = 'zenlo.io.vn/#cai-dat' } = {}) {
+  function copyLinkInstead (a, { leadText = 'Zenlo chạy trên máy tính Windows.', link = 'zenlo.io.vn/#install' } = {}) {
     const box = document.createElement('div')
     box.className = 'phone-get'
     const line = document.createElement('p')
@@ -364,7 +375,7 @@
   if (onPhone) {
     $$('.js-download').forEach((a) => copyLinkInstead(a))
     // The web zip is no use on a phone either: a link to the guide, for the computer
-    $$('.js-download-web').forEach((a) => copyLinkInstead(a, { leadText: 'Zenlo cho Zalo web chạy trên trình duyệt máy tính.', link: 'zenlo.io.vn/#tai-web' }))
+    $$('.js-download-web').forEach((a) => copyLinkInstead(a, { leadText: 'Zenlo cho Zalo web chạy trên trình duyệt máy tính.', link: 'zenlo.io.vn/#get-web' }))
   }
 
   function setDownload (href, label) {
@@ -373,7 +384,7 @@
         a.href = href
         a.removeAttribute('aria-disabled')
       } else {
-        a.href = '#cai-dat'
+        a.href = '#install'
         a.setAttribute('aria-disabled', 'true')
       }
     })
