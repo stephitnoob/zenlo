@@ -12,18 +12,20 @@ Mọi thứ nằm trong **khung Zenlo** ở cạnh phải cửa sổ Zalo. Khung
 - **Bản tin** (tab): liệt kê các hội thoại mà Zalo đang tính là chưa đọc. Hội thoại nào có người nhắc tới bạn (kể cả khi nhắc cả nhóm) thì có nhãn "@ nhắc bạn", và Zenlo tìm tin chưa đọc của hội thoại đó lùi tới 30 ngày. Tick chọn hội thoại cần tóm tắt, kéo ⋮⋮ để xếp thứ tự ưu tiên (Zenlo nhớ thứ tự này). Bản tin viết ngắn, chỉ ghi những gì bạn sẽ lỡ nếu không đọc (việc cần làm, câu cần trả lời, lịch, hạn, tiền...), mỗi ý có số nguồn trỏ tới tin gốc. Hội thoại không có gì như vậy chỉ ghi "Không có gì liên quan tới bạn." kèm một câu nói nhóm đang bàn gì. Zenlo gộp nhiều hội thoại vào một lần gọi AI để đỡ tốn lượt. Tạo bản tin không gửi trạng thái "Đã xem"; chỉ nút "Đã đọc" / "Đã đọc hết" mới đánh dấu đã đọc trong Zalo.
 - **Ghi chú cho AI** ("Thêm ghi chú" / "Sửa" dưới tên hội thoại trong tab Tóm tắt): mỗi hội thoại một ghi chú, tối đa 300 ký tự, ví dụ "Hoa là sếp mình" hay "chỉ cần hạn chót". AI đọc ghi chú mỗi lần tóm tắt hội thoại đó, cả trong Bản tin, và ưu tiên ghi chú hơn cách viết mặc định.
 - **Thả cảm xúc**: nút **+** ở cuối thanh cảm xúc mở hơn 80 cảm xúc (cái dùng gần đây lên đầu); "Sửa thanh cảm xúc" chọn 6 cảm xúc hiện sẵn trên thanh. Cảm xúc gửi đi qua Zalo, như khi bạn bấm trên thanh cảm xúc của Zalo.
+- **Sticker từ ảnh** (chỉ có trên Zalo PC): nút sticker màu tím cạnh nút sticker của Zalo mở **Sticker của bạn** (giữ tối đa 100 sticker). Bấm **+** để làm sticker từ ảnh trên máy, hoặc dán ảnh bằng Ctrl+V; chuột phải một ảnh trong chat rồi chọn **Làm sticker** cũng được. Trong khung chỉnh: kéo và thu phóng ảnh, **Tách nền** ngay trên máy (ảnh khó thì nhờ remove.bg), thêm chuyển động, hiệu ứng, ánh sáng, chữ, khung hoặc phụ kiện để thành sticker động. Người nhận thấy như sticker thật trên mọi bản Zalo, kể cả điện thoại, không cần cài gì. Chuột phải một sticker trong chat để **Lưu sticker** về kho; sticker tĩnh có thêm **Làm sticker động**.
 - **Sao chép** bản tóm tắt hoặc bản tin (không kèm số nguồn), hoặc **Sao chép kèm nguồn** ở mũi tên ▾ cạnh nút: giữ số `[n]` và thêm danh sách "Nguồn:" (giờ, người gửi, nội dung tin, cắt khoảng 80 ký tự). Cuối văn bản sao chép có một dòng ghi nguồn Zenlo.
 - **Cài đặt** (bánh răng trên hàng tab): chọn AI (Gemini, Claude hoặc Codex), model, effort; thêm hoặc xoá API key Gemini; chọn độ dài mặc định và số ngày tìm tin chưa đọc; xoá bản tóm tắt đã lưu, đặt lại mặc định; kiểm tra kết nối, xem phiên bản và kiểm tra bản mới.
 
 ## Cách hoạt động
 
-- **Đọc tin nhắn** từ dữ liệu Zalo đã lưu trên máy, không cuộn khung chat, không gửi gì lên máy chủ Zalo. Riêng bản Zalo web: khi khoảng thời gian bạn chọn cũ hơn những tin trình duyệt đang có, Zenlo nhờ Zalo web tải thêm tin cũ của nhóm, như khi bạn cuộn lên đọc.
+- **Đọc tin nhắn** từ dữ liệu Zalo đã lưu trên máy, không cuộn khung chat, không gửi gì lên máy chủ Zalo (ngoài sticker bạn tự làm, xem dưới). Riêng bản Zalo web: khi khoảng thời gian bạn chọn cũ hơn những tin trình duyệt đang có, Zenlo nhờ Zalo web tải thêm tin cũ của nhóm, như khi bạn cuộn lên đọc.
 - **Trạng thái chưa đọc lấy từ Zalo.** Zalo xoá số tin chưa đọc ngay khi mở hội thoại, nên Zenlo ghi lại con số đó trước khi bạn mở, để "Từ tin chưa đọc" vẫn đúng.
 - **Gọi Claude** bằng [Claude Code](https://claude.com/claude-code) ở chế độ headless (`claude -p`), dùng gói Claude Pro/Max của bạn. Không dùng API key, không nạp `CLAUDE.md` hay memory cá nhân vào ngữ cảnh.
 - **Gọi ChatGPT** bằng [Codex CLI](https://github.com/openai/codex), đăng nhập bằng gói ChatGPT của bạn. Chữ hiện dần qua `codex app-server`: Zenlo tắt MCP server, plugin, bộ nhớ, `notify` và kiểm tra lại trước khi gửi tin nhắn; MCP hay hook còn chạy thì dùng `codex exec --ignore-user-config` (chữ ra một lần), chỉ khi `codex login status` đã xác nhận đăng nhập bằng ChatGPT. Cả hai cách đều chạy chỉ đọc trong thư mục trống, tắt công cụ, không nạp `AGENTS.md` của dự án, bỏ `CODEX_API_KEY`/`OPENAI_API_KEY` khỏi môi trường và từ chối chạy khi Codex đăng nhập bằng API key hay cách nào khác ngoài ChatGPT (Bedrock, access token…), để không bị tính tiền theo API.
 - **Gọi Gemini** bằng API key của bạn (tối đa 5 key), lưu mã hoá bằng Windows (`safeStorage`) trên máy. Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện.
-- **Dữ liệu của Zenlo** (cài đặt, ghi chú, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm bản sao lưu, key Gemini và ghi nhận model hết lượt trong `%APPDATA%\Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
-- **Mỗi tài khoản Zalo một bộ dữ liệu.** Bản tóm tắt, Bản tin, ghi chú, cài đặt và key Gemini thuộc về tài khoản Zalo đang đăng nhập. Khi người khác đăng nhập Zalo trên cùng máy (hoặc cùng trình duyệt với bản Zalo web), Zenlo cất dữ liệu của người trước vào bản sao lưu của người đó và nạp dữ liệu của người sau. Độ rộng khung Zenlo, lựa chọn kiểm tra bản mới và danh sách model Claude, Codex là của máy nên dùng chung. Key và dữ liệu từ các bản Zenlo cũ (chưa tách theo tài khoản) thuộc về tài khoản Zalo đầu tiên mở Zenlo sau khi cập nhật. Chi tiết ở [PRIVACY.md](PRIVACY.md).
+- **Sticker**: lúc bạn lưu một sticker, Zenlo tải ảnh của nó lên máy chủ Zalo qua My Documents của bạn, như khi gửi ảnh, nhưng không tạo tin nhắn nào. Sticker động gồm một ảnh WebP và một ảnh xem trước. Ai có link ảnh cũng mở được. Bấm gửi thì Zalo gửi sticker bằng link đó. Zenlo giữ thêm một bản trên máy (IndexedDB) để tải lại khi link không còn. **Tách nền** chạy ngay trên máy: lần đầu dùng, Zenlo tải khoảng 15 MB công cụ (ONNX Runtime và model U²-Net bản nhỏ) vào `%APPDATA%\Zenlo\models`, kiểm tra mã SHA-256 rồi mới dùng. Nút remove.bg chỉ chép ảnh vào clipboard và mở trang remove.bg; bạn tự tải ảnh lên đó.
+- **Dữ liệu của Zenlo** (cài đặt, ghi chú, bản tóm tắt đã lưu, thứ tự và ô tick trong Bản tin, danh sách sticker) nằm trong bộ nhớ của Zalo và còn nguyên qua các lần Zalo cập nhật. Zenlo giữ thêm bản sao lưu, key Gemini và ghi nhận model hết lượt trong `%APPDATA%\Zenlo`, và tự khôi phục nếu Zalo xoá bộ nhớ.
+- **Mỗi tài khoản Zalo một bộ dữ liệu.** Bản tóm tắt, Bản tin, ghi chú, cài đặt, danh sách sticker và key Gemini thuộc về tài khoản Zalo đang đăng nhập. Khi người khác đăng nhập Zalo trên cùng máy (hoặc cùng trình duyệt với bản Zalo web), Zenlo cất dữ liệu của người trước vào bản sao lưu của người đó và nạp dữ liệu của người sau. Độ rộng khung Zenlo, lựa chọn kiểm tra bản mới và danh sách model Claude, Codex là của máy nên dùng chung. Key và dữ liệu từ các bản Zenlo cũ (chưa tách theo tài khoản) thuộc về tài khoản Zalo đầu tiên mở Zenlo sau khi cập nhật. Chi tiết ở [PRIVACY.md](PRIVACY.md).
 - **Cài vào Zalo** bằng cách giải nén `app.asar`, thêm Zenlo, giữ bản gốc ở `app.asar.bak`.
 - **Báo bản mới**: lần đầu mở, Zenlo hỏi có muốn được báo khi có bản mới không. Chọn Có thì mỗi ngày Zenlo hỏi GitHub một lần và hiện thông báo của Windows khi có bản mới; không gửi gì về bạn. Đổi được trong Cài đặt.
 
@@ -59,7 +61,7 @@ npm run zalo:install
 | `npm run dev` | Tự build lại mỗi khi sửa code |
 | `npm run zalo:status` | Xem Zenlo đang được cài thế nào |
 | `npm run zalo:uninstall` | Gỡ Zenlo, đưa Zalo về bản gốc |
-| `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 230 KB, không cần Node.js) kèm SHA-256 |
+| `npm run build:setup` | Build `build/setup/Zenlo-Setup.exe` (bộ cài C#, khoảng 380 KB, không cần Node.js) kèm SHA-256 |
 | `npm run build:ext` | Build rồi đóng gói bản Zalo web thành `build/ext/Zenlo-ZaloWeb.zip` kèm SHA-256 |
 | `npm run build:ext-dev` | Build bản Zalo web để phát triển: nạp `dist-ext/` vào trình duyệt một lần, sau đó mỗi lần build (hoặc khi `npm run dev` đang chạy) tiện ích và tab Zalo web tự nạp lại |
 | `npm run site` | Xem trang web trên máy ở http://127.0.0.1:4173 (không lưu cache, luôn thấy bản mới nhất) |
@@ -75,8 +77,8 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 
 | Đường dẫn | Vai trò |
 |---|---|
-| `src/renderer/` | Chạy trong trang Zalo, gom thành `dist/zenlo.js`: `core.js` (dữ liệu và trạng thái chưa đọc của Zalo, bản chép hội thoại, prompt, gọi AI, sao lưu theo tài khoản Zalo), `drawer.js` (khung Zenlo, nút ở thanh trái), `summary.js` (Tóm tắt), `digest.js` (Bản tin), `settings.js` (Cài đặt), `reactions.js` (nút + và thanh cảm xúc nhanh), `styles.js` (gắn lại CSS khi Zalo xoá) |
-| `src/main/` | Tiến trình chính của Zalo: `main.js` chạy `claude -p`, `codex app-server` / `codex exec` hoặc gọi Gemini, lưu key mã hoá và bản sao lưu theo tài khoản Zalo; `preload.js` là cầu nối `window.$zenlo` |
+| `src/renderer/` | Chạy trong trang Zalo, gom thành `dist/zenlo.js`: `core.js` (dữ liệu và trạng thái chưa đọc của Zalo, bản chép hội thoại, prompt, gọi AI, sao lưu theo tài khoản Zalo), `drawer.js` (khung Zenlo, nút ở thanh trái), `summary.js` (Tóm tắt), `digest.js` (Bản tin), `settings.js` (Cài đặt), `reactions.js` (nút + và thanh cảm xúc nhanh), `stickers.js` (kho sticker, khung chỉnh, menu chuột phải), `sticker-effects.js` (chuyển động, hiệu ứng, chữ, khung, phụ kiện), `sticker-motion.js` (ghép sticker động WebP), `styles.js` (gắn lại CSS khi Zalo xoá) |
+| `src/main/` | Tiến trình chính của Zalo: `main.js` chạy `claude -p`, `codex app-server` / `codex exec` hoặc gọi Gemini, lưu key mã hoá và bản sao lưu theo tài khoản Zalo; `sticker-background.js` tải và kiểm tra công cụ tách nền, `sticker-worker.js` chạy tách nền trong worker; `onnxruntime-notice.txt` là giấy phép của ONNX Runtime; `preload.js` là cầu nối `window.$zenlo` |
 | `src/extension/` | Bản Zalo web (tiện ích trình duyệt MV3): `manifest.json`; `shim.js` tạo `window.$zenlo` trong trang; `bridge.js` (content script riêng) giữ key và bản sao lưu theo tài khoản Zalo, gọi Gemini, hỏi GitHub bản mới; `gemini-fetch.js` gửi yêu cầu tới Gemini bằng `fetch`; `background.js` mở Zalo web khi bấm nút tiện ích; `dev-reload.js` chỉ có trong bản phát triển |
 | `src/shared/` | Dùng chung cho Zalo PC và Zalo web: `gemini.js` (chuỗi model Gemini, hạn mức, đọc câu trả lời) |
 | `src/styles/` | Giao diện (SCSS) |
@@ -90,7 +92,7 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 
 ## Code signing policy
 
-Zenlo đang xin chứng chỉ ký số miễn phí của SignPath Foundation; các bản tới nay **chưa được ký số**. Khi được chấp thuận: Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+Zenlo đã xin chứng chỉ ký số miễn phí của SignPath Foundation nhưng chưa được duyệt (27/10/2026) vì dự án còn mới; sau này sẽ xin lại. Các bản tới nay **chưa được ký số**. Khi được chấp thuận: Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 
 - Chỉ ký `Zenlo-Setup.exe`, do GitHub Actions build từ tag phiên bản ([release.yml](.github/workflows/release.yml)); mỗi yêu cầu ký được duyệt thủ công.
 - Team roles: Authors, Reviewers, Approvers: [stephit](https://github.com/stephitnoob).
@@ -104,5 +106,7 @@ Copyright (C) 2026 stephit.
 Zenlo là phần mềm tự do, phát hành theo [Giấy phép Công cộng GNU phiên bản 3](LICENSE) (GPL-3.0-only). Bạn được dùng, nghiên cứu, sửa đổi và phát hành lại Zenlo, kể cả bản đã sửa, miễn là giữ cùng giấy phép và công khai mã nguồn của bản đó. Zenlo không kèm bất kỳ bảo hành nào; chi tiết trong file [LICENSE](LICENSE).
 
 Zenlo phi lợi nhuận và không có bản trả phí. Nếu phát hành bản sửa đổi, mong bạn đặt tên khác để người dùng không nhầm với bản chính thức. Bạn cứ góp ý, báo lỗi hoặc gửi pull request trên GitHub.
+
+Bộ cài có kèm ONNX Runtime Web (MIT, © Microsoft) để tách nền sticker; giấy phép nằm trong `onnxruntime-notice.txt`. Model U²-Net (Apache-2.0) được tải riêng ở lần đầu tách nền.
 
 Zenlo do stephit phát triển cùng Claude (Anthropic). Đây là dự án cá nhân, không liên kết với Zalo hay VNG.

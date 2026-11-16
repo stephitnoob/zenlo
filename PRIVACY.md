@@ -1,6 +1,6 @@
 # Chính sách quyền riêng tư của Zenlo
 
-Cập nhật: 13/11/2026
+Cập nhật: 16/11/2026
 
 Zenlo là một tiện ích cho Zalo, chạy trên máy tính của bạn: trong Zalo PC trên Windows, hoặc trong Zalo web dưới dạng tiện ích trình duyệt (những điểm khác của bản này ở [mục riêng](#zenlo-cho-zalo-web)). Trang này nói rõ Zenlo đọc gì, gửi gì, gửi đi đâu và lưu ở đâu.
 
@@ -9,6 +9,7 @@ Zenlo là một tiện ích cho Zalo, chạy trên máy tính của bạn: trong
 - **Zenlo không có máy chủ.** Tác giả Zenlo không nhận, không lưu và không thấy được tin nhắn, tài khoản hay bất kỳ dữ liệu nào của bạn.
 - **Không cần tài khoản Zenlo, không quảng cáo, không theo dõi.** Ứng dụng Zenlo không gửi số liệu sử dụng (telemetry) đi đâu cả. Trang web của Zenlo chỉ đếm lượt xem ẩn danh, không dùng cookie (xem [Trang web](#trang-web)).
 - **Zenlo chỉ gửi tin nhắn tới dịch vụ AI do chính bạn chọn**, và chỉ khi bạn bấm Tóm tắt hoặc Tạo bản tin.
+- **Sticker bạn làm được tải lên máy chủ Zalo**, như khi gửi ảnh, lúc bạn bấm Lưu (xem [Sticker](#sticker)). Tách nền chạy ngay trên máy.
 - **Dữ liệu của Zenlo tách theo tài khoản Zalo.** Trong Zenlo, người khác đăng nhập Zalo trên cùng máy không thấy bản tóm tắt, ghi chú của bạn và không dùng được API key của bạn (xem [Nhiều tài khoản Zalo trên một máy](#nhiều-tài-khoản-zalo-trên-một-máy)).
 
 ## Zenlo đọc gì
@@ -23,7 +24,7 @@ Khi bạn mở khung Zenlo (để đếm tin và ước lượng trước khi g�
 - ghi chú bạn tự viết cho hội thoại đó (Thêm ghi chú trong tab Tóm tắt), nếu có;
 - số tin chưa đọc mà Zalo ghi nhận.
 
-Zenlo không đọc ảnh, video, tệp đính kèm hay tin nhắn thoại; chỉ đọc tên tệp và chú thích ảnh nếu có. Việc đọc này không làm Zalo gửi trạng thái "Đã xem" cho ai.
+Để tóm tắt, Zenlo không đọc ảnh, video, tệp đính kèm hay tin nhắn thoại; chỉ đọc tên tệp và chú thích ảnh nếu có. Riêng khi bạn chọn **Làm sticker** trên một ảnh, hoặc **Lưu sticker** / **Làm sticker động** trên một sticker trong chat, Zenlo mở đúng ảnh hay sticker đó (tải từ máy chủ Zalo nếu cần) để làm sticker cho bạn. Việc đọc này không làm Zalo gửi trạng thái "Đã xem" cho ai.
 
 Ngoài ra, từ lúc Zalo mở xong, Zenlo đọc mã tài khoản Zalo đang đăng nhập để biết dữ liệu Zenlo nào là của tài khoản đó. Mã này chỉ dùng trên máy, không gửi tới dịch vụ AI hay nơi nào khác.
 
@@ -45,9 +46,18 @@ Zenlo không gửi ảnh, video, tệp hay tin nhắn thoại; chỉ gửi tên 
 | **Claude** (Anthropic) | Qua Claude Code đã cài và đăng nhập trên máy bạn, dùng gói Claude Pro/Max của bạn | Theo chính sách của Anthropic cho tài khoản Claude của bạn |
 | **Gemini** (Google) | Gửi thẳng tới `generativelanguage.googleapis.com` bằng API key của bạn | **Với key miễn phí, Google có thể dùng nội dung gửi lên để huấn luyện và cải thiện sản phẩm**, gồm cả tin nhắn của những người khác trong hội thoại. Với key trả phí thì không |
 
-Kết nối luôn được mã hoá (HTTPS). Zenlo không gửi dữ liệu tới bất kỳ địa chỉ nào khác, trừ một trường hợp: khi bạn bấm **Kiểm tra bản mới** trong Cài đặt, hoặc đồng ý cho Zenlo tự kiểm tra mỗi ngày (Zenlo hỏi một lần khi mở lần đầu), Zenlo hỏi GitHub (`api.github.com`) bản mới nhất là bản nào. Yêu cầu này không chứa tin nhắn, ghi chú hay thông tin nào về bạn.
+Kết nối luôn được mã hoá (HTTPS). Ngoài sticker (mục [Sticker](#sticker)), Zenlo không gửi dữ liệu tới bất kỳ địa chỉ nào khác, trừ một trường hợp: khi bạn bấm **Kiểm tra bản mới** trong Cài đặt, hoặc đồng ý cho Zenlo tự kiểm tra mỗi ngày (Zenlo hỏi một lần khi mở lần đầu), Zenlo hỏi GitHub (`api.github.com`) bản mới nhất là bản nào. Yêu cầu này không chứa tin nhắn, ghi chú hay thông tin nào về bạn.
 
 Vì tin nhắn trong nhóm có cả nội dung của người khác, hãy cân nhắc trước khi gửi những hội thoại nhạy cảm tới dịch vụ AI.
+
+## Sticker
+
+Sticker từ ảnh chỉ có trên Zalo PC.
+
+- **Lưu sticker:** khi bạn bấm **Lưu** hoặc **Lưu và gửi**, Zenlo tải ảnh sticker lên máy chủ Zalo qua My Documents của bạn, như khi gửi ảnh, nhưng không tạo tin nhắn nào. Sticker động gồm một ảnh WebP và một ảnh xem trước; Zenlo tải ảnh WebP về một lần để kiểm tra Zalo đã nhận đủ. Ai có link ảnh cũng mở được ảnh đó.
+- **Gửi sticker:** Zalo gửi sticker bằng link ảnh ở trên; người nhận xem ảnh từ máy chủ Zalo. Với sticker đã lưu quá 24 giờ, trước khi gửi Zenlo hỏi máy chủ Zalo link còn dùng được không (không gửi gì thêm); link không còn thì Zenlo tải ảnh lên lại từ bản giữ trên máy.
+- **Tách nền** chạy ngay trên máy, ảnh không rời máy. Lần đầu bạn bấm **Tách nền**, Zenlo tải khoảng 15 MB công cụ (ONNX Runtime Web và model U²-Net bản nhỏ) từ `github.com` (bản lưu của Zenlo, hoặc nơi phát hành gốc) hay `cdn.jsdelivr.net`, kiểm tra mã SHA-256 rồi mới dùng. Yêu cầu tải không chứa thông tin nào về bạn.
+- **Nút remove.bg** chỉ chép ảnh vào clipboard và mở trang `www.remove.bg` trong trình duyệt. Zenlo không gửi ảnh lên đó; nếu bạn tự dán ảnh vào remove.bg thì ảnh được xử lý theo chính sách của remove.bg.
 
 ## Mọi kết nối mạng của Zenlo
 
@@ -60,6 +70,10 @@ Ngoài các trường hợp dưới đây, ứng dụng Zenlo không kết nối
 | Khi bạn bấm **Kiểm tra kết nối** | Dịch vụ AI bạn chọn | Một câu thử ngắn, không có tin nhắn. Với Codex, Zenlo hỏi thêm danh sách model của tài khoản (lệnh `codex debug models`). Với Claude, danh sách model đọc từ dữ liệu Claude Code đã lưu trên máy, không gửi gì thêm |
 | Khi bạn bấm **Kiểm tra bản mới**, hoặc mỗi ngày một lần nếu bạn chọn **Có, báo cho tôi** khi Zenlo hỏi "Báo cho bạn khi có Zenlo bản mới?" | `api.github.com` | Chỉ hỏi số phiên bản mới nhất; không có tin nhắn, ghi chú hay thông tin về bạn. Tắt bằng cách bỏ chọn "Tự kiểm tra bản mới mỗi ngày" |
 | Khi bạn bấm một link (trong bản tóm tắt, trong Cài đặt) | Trang web của link đó, mở trong trình duyệt của bạn | Như khi bạn tự mở link |
+| Khi bạn lưu một sticker, hoặc gửi một sticker mà link ảnh đã mất | Máy chủ Zalo, bằng tài khoản Zalo của bạn | Ảnh sticker (mục [Sticker](#sticker)) |
+| Khi bạn gửi một sticker đã lưu quá 24 giờ; khi lưu sticker động; khi chọn **Lưu sticker** hay **Làm sticker động** trên sticker trong chat | Máy chủ ảnh của Zalo | Hỏi link ảnh còn không, hoặc tải ảnh sticker đó về; không gửi gì thêm |
+| Lần đầu bạn bấm **Tách nền** | `github.com`, `cdn.jsdelivr.net` | Chỉ tải công cụ tách nền về máy; không gửi ảnh hay thông tin về bạn |
+| Khi bạn bấm **remove.bg ↗** | `www.remove.bg`, mở trong trình duyệt của bạn | Như khi bạn tự mở trang; ảnh chỉ nằm trong clipboard |
 
 Claude Code và Codex là chương trình của Anthropic và OpenAI cài trên máy bạn; chúng tự kết nối tới máy chủ của hãng theo chính sách của hãng. Khi Zenlo gọi chúng, Zenlo tắt thống kê và các kết nối không cần thiết mà chúng cho phép tắt.
 
@@ -73,6 +87,9 @@ Mọi thứ chỉ nằm trên máy bạn:
 | Bản sao lưu của mục trên | `%APPDATA%\Zenlo\storage-backup-<mã tài khoản Zalo>.json`, mỗi tài khoản Zalo một file |
 | API key Gemini | `%APPDATA%\Zenlo\secrets.json`, **được mã hoá bằng Windows** (chỉ tài khoản Windows của bạn giải mã được), riêng cho từng tài khoản Zalo |
 | Ghi nhận model nào hết lượt trong ngày | `%APPDATA%\Zenlo\gemini-quota.json` |
+| Danh sách sticker của bạn (link ảnh trên máy chủ Zalo, kích thước) | Bộ nhớ của Zalo trên máy, có trong bản sao lưu ở trên |
+| Ảnh của từng sticker (PNG hoặc WebP, ảnh xem trước) | Bộ nhớ của Zalo trên máy (IndexedDB `zenlo-stickers`), để tải lên lại khi link mất |
+| Công cụ tách nền (khoảng 15 MB) | `%APPDATA%\Zenlo\models` |
 
 Bộ nhớ của Zalo chỉ giữ dữ liệu Zenlo của tài khoản Zalo đang đăng nhập; dữ liệu của các tài khoản khác nằm trong bản sao lưu của từng tài khoản.
 
@@ -80,8 +97,8 @@ Bộ nhớ của Zalo chỉ giữ dữ liệu Zenlo của tài khoản Zalo đan
 
 Ở cả bản Windows lẫn bản Zalo web, dữ liệu của Zenlo thuộc về tài khoản Zalo đang đăng nhập:
 
-- Bản tóm tắt, Bản tin, ghi chú, cài đặt, cảm xúc dùng gần đây, thanh cảm xúc nhanh và API key Gemini là của từng tài khoản Zalo. Khi một tài khoản khác đăng nhập Zalo trên cùng máy (hoặc cùng trình duyệt), Zenlo xoá dữ liệu của tài khoản trước khỏi bộ nhớ của Zalo, chỉ giữ lại trong bản sao lưu của tài khoản đó, rồi nạp dữ liệu của tài khoản sau.
-- Độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm **Kiểm tra kết nối** là của máy, các tài khoản dùng chung.
+- Bản tóm tắt, Bản tin, ghi chú, cài đặt, cảm xúc dùng gần đây, thanh cảm xúc nhanh, danh sách sticker và API key Gemini là của từng tài khoản Zalo. Khi một tài khoản khác đăng nhập Zalo trên cùng máy (hoặc cùng trình duyệt), Zenlo xoá dữ liệu của tài khoản trước khỏi bộ nhớ của Zalo, chỉ giữ lại trong bản sao lưu của tài khoản đó, rồi nạp dữ liệu của tài khoản sau.
+- Độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm **Kiểm tra kết nối** và công cụ tách nền là của máy, các tài khoản dùng chung. Ảnh sticker nằm chung một chỗ trên máy, nhưng mỗi tài khoản chỉ thấy sticker trong danh sách của mình.
 - API key và dữ liệu lưu từ các bản Zenlo cũ (chưa tách theo tài khoản) thuộc về tài khoản Zalo đầu tiên mở Zenlo sau khi cập nhật.
 - Khi Zalo chưa cho biết tài khoản nào đang đăng nhập, Zenlo không lưu key, không gọi Gemini và không sao lưu.
 
@@ -89,14 +106,15 @@ Việc tách này giúp những người dùng chung máy không thấy dữ li�
 
 ## Xoá dữ liệu
 
-- Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, và xoá từng API key bằng nút ×. Các nút này chỉ xoá dữ liệu của tài khoản Zalo đang đăng nhập.
-- Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` (bản sao lưu và API key của mọi tài khoản Zalo, ghi nhận hết lượt). Gỡ bằng lối tắt **Zenlo - Cài đặt** thì xoá thêm file `%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe` mà bộ cài báo còn lại.
-- Sau khi gỡ, bộ nhớ của Zalo trên máy vẫn còn cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh của tài khoản Zalo dùng Zenlo gần nhất (các mục có tên bắt đầu bằng `@Zenlo:`). Zalo không dùng tới và không gửi chúng đi. Nếu trước khi gỡ, bạn bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm **Kiểm tra kết nối**, mã của tài khoản Zalo đó và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.
+- Trong Zenlo: **Cài đặt → Xoá bản tóm tắt đã lưu**, xoá từng API key bằng nút ×, và xoá từng sticker trong **Sticker của bạn** (nút × hoặc chuột phải); xoá sticker thì xoá cả ảnh giữ trên máy, còn ảnh đã tải lên máy chủ Zalo thì Zenlo không xoá được. Các nút này chỉ xoá dữ liệu của tài khoản Zalo đang đăng nhập.
+- Gỡ Zenlo bằng bộ cài (chọn **Gỡ Zenlo**), rồi xoá thư mục `%APPDATA%\Zenlo` (bản sao lưu và API key của mọi tài khoản Zalo, ghi nhận hết lượt, công cụ tách nền). Gỡ bằng lối tắt **Zenlo - Cài đặt** thì xoá thêm file `%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe` mà bộ cài báo còn lại.
+- Sau khi gỡ, bộ nhớ của Zalo trên máy vẫn còn cài đặt, ghi chú, thứ tự và ô tick trong Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh của tài khoản Zalo dùng Zenlo gần nhất (các mục có tên bắt đầu bằng `@Zenlo:`). Ảnh sticker cũng còn trong bộ nhớ của Zalo (IndexedDB `zenlo-stickers`), trừ sticker bạn đã xoá. Zalo không dùng tới và không gửi chúng đi. Nếu trước khi gỡ, bạn bấm **Xoá bản tóm tắt đã lưu** và **Đặt lại mặc định** trong Cài đặt và xoá ghi chú trong từng hội thoại thì chỉ còn ô tick, thứ tự Bản tin, cảm xúc dùng gần đây, thanh cảm xúc nhanh, độ rộng khung Zenlo, lựa chọn và kết quả kiểm tra bản mới, danh sách model tìm được khi bấm **Kiểm tra kết nối**, mã của tài khoản Zalo đó và một mốc thời gian đánh dấu bộ nhớ; các mục này không chứa nội dung tin nhắn.
 
 ## Zenlo cho Zalo web
 
 Bản cho Zalo web là một tiện ích trình duyệt (tệp `Zenlo-ZaloWeb.zip`, mã ở `src/extension/`), chỉ chạy trong trang `chat.zalo.me`. Các mục trên vẫn đúng với bản này, trừ những điểm sau.
 
+- **Không có sticker từ ảnh:** bản Zalo web không có tính năng này, nên không tải ảnh lên Zalo hay tải công cụ tách nền.
 - **Đọc từ đâu:** từ dữ liệu Zalo web lưu trong trình duyệt. Khi khoảng bạn chọn cũ hơn những tin trình duyệt đang có, Zenlo nhờ Zalo web tải thêm tin cũ của hội thoại đó từ máy chủ Zalo (máy chủ chỉ trả thêm tin cho nhóm), như khi bạn cuộn lên đọc tin cũ. Yêu cầu này đi từ Zalo web tới máy chủ Zalo bằng tài khoản Zalo của bạn.
 - **Gửi tới đâu:** chỉ Gemini (`generativelanguage.googleapis.com`), bằng API key của bạn; bản này không dùng Claude hay ChatGPT. Kiểm tra bản mới hỏi `api.github.com` như ở bản Windows. Ngoài hai địa chỉ này và máy chủ Zalo ở trên, tiện ích không kết nối tới đâu khác.
 - **Quyền xin trình duyệt:** chạy trên `chat.zalo.me` và có bộ nhớ riêng của tiện ích (`storage`, `unlimitedStorage`). Tiện ích không có quyền đọc các trang khác, các tab khác hay lịch sử duyệt web.
