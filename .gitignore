@@ -10,3 +10,7 @@ dist-ext/
 # Personal: Claude Code memory and local settings, never published
 CLAUDE.md
 .claude/
+
+# Codex (ChatGPT) workspace files, never published
+AGENTS.md
+.agents/
