@@ -30,7 +30,7 @@ namespace Zenlo
 {
     internal static class Setup
     {
-        static readonly string[] Assets = { "zenlo.js", "zenlo.css", "zenlo-main.js", "zenlo-preload.js" };
+        static readonly string[] Assets = { "zenlo.js", "zenlo.css", "zenlo-main.js", "zenlo-preload.js", "zenlo-sticker-worker.js", "onnxruntime-notice.txt" };
         const string ZenloFolder = "zenlo";      // inside Zalo's pc-dist
         const string DevMarker = "zenlo-dev";    // left by the developer's installer in dev mode
         const string ShortcutName = "Zenlo - Cài đặt.lnk";
@@ -135,6 +135,8 @@ namespace Zenlo
             Console.WriteLine("    %LOCALAPPDATA%\\Zenlo, để cài lại khi Zalo cập nhật.");
             Console.WriteLine("  Zenlo chỉ gửi tin nhắn tới dịch vụ AI bạn chọn, khi bạn bấm Tóm tắt hoặc Tạo bản tin.");
             Console.WriteLine("  Kiểm tra bản mới (hỏi GitHub) chỉ chạy khi bạn bấm, hoặc khi bạn đồng ý lúc Zenlo hỏi.");
+            Console.WriteLine("  Sticker bạn làm được tải lên máy chủ Zalo như ảnh, lúc bạn bấm Lưu. Lần đầu tách nền,");
+            Console.WriteLine("  Zenlo tải công cụ khoảng 15 MB về máy.");
             Console.WriteLine("  Quyền riêng tư: " + PrivacyUrl);
             Console.WriteLine();
         }
@@ -143,8 +145,13 @@ namespace Zenlo
         static bool ConfirmCloseZalo()
         {
             if (!IsZaloRunning()) return true;
-            string answer = Ask("Zalo đang mở. Bộ cài sẽ tạm tắt Zalo, làm xong thì tự mở lại. Tiếp tục? (c/k): ");
-            return answer != null && answer.ToLowerInvariant() == "c";
+            string answer = Ask("Zalo đang mở. Bộ cài sẽ tạm tắt Zalo, làm xong thì tự mở lại. Tiếp tục? (c: có; k: không): ");
+            // "c", "có", "co" (typed without Vietnamese input) or "có" with its accent as a separate
+            // mark (some Vietnamese keyboards), which the console may even turn into "c?": all start with c
+            string a = answer == null ? "" : answer.Trim().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+            if (a.StartsWith("c")) return true;
+            Console.WriteLine("  Đã huỷ, Zalo vẫn mở như cũ.");
+            return false;
         }
 
         static void RunInstall()
