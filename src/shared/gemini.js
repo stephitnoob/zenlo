@@ -81,8 +81,9 @@ export const isKeyProblem = (status, body) => status === 401 || ((status === 400
 // The reason of a 429: per-day quota (wait for the reset) or per-minute (sent too fast)
 export const isDailyQuota = (body) => /PerDay/i.test(body) || (/per day|daily/i.test(body) && !/PerMinute/i.test(body))
 
-// A Gemini key written out in an error text (Google's or the network's), masked like in settings
-export const hideKeys = (text) => String(text).replace(/AIza[\w-]{20,}/g, maskKey)
+// A Gemini key written out in an error text (Google's or the network's), masked like in settings.
+// Google has issued keys in more than one form ("AIza…", "AQ.…")
+export const hideKeys = (text) => String(text).replace(/AIza[\w-]{20,}|AQ\.[\w.-]{20,}/g, maskKey)
 
 export const geminiError = (status, body) => {
   let message = ''

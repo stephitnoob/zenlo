@@ -253,6 +253,16 @@ await test('Lời báo lỗi của Google có key: chỉ hiện key đã che', a
   assert.match(last.message, /AIza…0000/)
 })
 
+await test('Key dạng mới (AQ.…) trong lời báo lỗi cũng bị che', async () => {
+  const leaked = 'AQ.Ab8RN6LEAKEDLEAKEDLEAKED-0000'
+  const body = JSON.stringify({ error: { message: `Request with key ${leaked} is malformed` } })
+  script = { 'gemini-3.6-flash': [{ status: 400, body }], 'gemini-3.5-flash': [{ status: 400, body }] }
+  const last = await summarize({ retryWindow: 0 })
+  assert.equal(last.type, 'error')
+  assert.ok(!last.message.includes(leaked), last.message)
+  assert.match(last.message, /AQ\.A…0000/)
+})
+
 await test('403 của riêng một model (một key): sang model kế tiếp, không bỏ key', async () => {
   script = { 'gemini-3.6-flash': [{ status: 403, body: JSON.stringify({ error: { status: 'PERMISSION_DENIED', message: 'Permission denied on resource project.' } }) }] }
   const last = await summarize({ retryWindow: 0 })

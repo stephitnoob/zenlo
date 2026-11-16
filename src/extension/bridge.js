@@ -95,7 +95,7 @@ function errorText (error) {
 }
 
 const handlers = {
-  // Masks only ("AIza…x9Qk"): the keys themselves never leave this script
+  // Masks only ("AQ.A…x9Qk"): the keys themselves never leave this script
   async getSettings () {
     return { geminiKeys: (await getKeys()).map(maskKey), maxKeys: MAX_KEYS, web: true }
   },
