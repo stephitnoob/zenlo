@@ -42,7 +42,8 @@ const targets = [
   { ...common, entryPoints: [path.join(ROOT, 'src', 'renderer', 'index.js')], outfile: path.join(DIST, 'zenlo.js'), format: 'iife', platform: 'browser', target: 'chrome108' },
   // Zalo's main process and preload (Node 16 in Electron 22)
   { ...common, entryPoints: [path.join(ROOT, 'src', 'main', 'main.js')], outfile: path.join(DIST, 'zenlo-main.js'), format: 'cjs', platform: 'node', target: 'node16', external: ['electron'] },
-  { ...common, entryPoints: [path.join(ROOT, 'src', 'main', 'preload.js')], outfile: path.join(DIST, 'zenlo-preload.js'), format: 'cjs', platform: 'node', target: 'node16', external: ['electron'] }
+  { ...common, entryPoints: [path.join(ROOT, 'src', 'main', 'preload.js')], outfile: path.join(DIST, 'zenlo-preload.js'), format: 'cjs', platform: 'node', target: 'node16', external: ['electron'] },
+  { ...common, entryPoints: [path.join(ROOT, 'src', 'main', 'sticker-worker.js')], outfile: path.join(DIST, 'zenlo-sticker-worker.js'), format: 'cjs', platform: 'node', target: 'node16', legalComments: 'inline' }
 ]
 
 // ---------- Browser extension (Zalo web), built into dist-ext/ ----------
@@ -115,6 +116,7 @@ function buildStyles () {
 if (!watching) fs.rmSync(DIST, { recursive: true, force: true })
 fs.mkdirSync(DIST, { recursive: true })
 fs.mkdirSync(EXT, { recursive: true })
+fs.copyFileSync(path.join(ROOT, 'src', 'main', 'onnxruntime-notice.txt'), path.join(DIST, 'onnxruntime-notice.txt'))
 buildExtensionFiles()
 
 if (watching) {

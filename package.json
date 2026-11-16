@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
+    "onnxruntime-web": "1.17.3",
     "sass": "^1.106.1",
     "standard": "^17.1.2"
   },

@@ -15,6 +15,7 @@ const crypto = require('crypto')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
+const { createStickerBackground } = require('./sticker-background')
 
 const PARTITION_NAME = 'persist:zalo'
 const PRELOAD_PATH = path.join(__dirname, 'zenlo-preload.js')
@@ -956,6 +957,25 @@ const isTrustedSender = (event) => {
   }
 }
 
+let stickerBackground
+const getStickerBackground = () => {
+  if (!stickerBackground) stickerBackground = createStickerBackground(path.join(ZENLO_DIR(), 'models'))
+  return stickerBackground
+}
+// false until the tools are downloaded: the page then says the first time takes a moment
+ipcMain.handle('zenlo:sticker:background-ready', async (event) => {
+  if (!isTrustedSender(event)) return false
+  return getStickerBackground().ready().catch(() => false)
+})
+ipcMain.handle('zenlo:sticker:remove-background', async (event, pixels) => {
+  if (!isTrustedSender(event)) return { error: 'Không mở được công cụ tách nền.' }
+  try {
+    return { mask: await getStickerBackground()(pixels) }
+  } catch (error) {
+    return { error: error.message || 'Không tách được nền.' }
+  }
+})
+
 // What the page may send: a request's text (the summary panel splits a conversation into parts of
 // 300 000 characters, the digest packs 60 000) and the localStorage mirror
 const MAX_REQUEST_CHARS = 2000000
@@ -1021,8 +1041,8 @@ app.on('will-quit', () => {
 })
 
 // Links Zenlo may open in the default browser: Google AI Studio (Gemini keys), Claude Code's
-// page, Zenlo's website and repository, and e-mail. Anything else is refused.
-const EXTERNAL_HOSTS = ['aistudio.google.com', 'ai.google.dev', 'claude.com', 'www.claude.com', 'docs.claude.com', 'github.com', 'zenlo.io.vn']
+// page, Zenlo's website and repository, remove.bg (stickers), and e-mail. Anything else is refused.
+const EXTERNAL_HOSTS = ['aistudio.google.com', 'ai.google.dev', 'claude.com', 'www.claude.com', 'docs.claude.com', 'github.com', 'zenlo.io.vn', 'www.remove.bg']
 
 const isAllowedExternal = (url) => {
   let parsed
@@ -1109,7 +1129,7 @@ ipcMain.handle('zenlo:settings:get', async (event) => {
   const codexPath = findCodexExecutable()
   const login = await getCodexLogin(codexPath)
   return {
-    // Masks only ("AIza…x9Qk"): the keys themselves never leave this process
+    // Masks only ("AQ.A…x9Qk"): the keys themselves never leave this process
     geminiKeys: getGeminiKeys().map(maskKey),
     maxKeys: MAX_KEYS,
     claudePath: findClaudeExecutable(),

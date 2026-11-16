@@ -53,6 +53,8 @@ function exposeBridge () {
     // Backup of Zenlo's localStorage in %APPDATA%\Zenlo
     saveStorage: (data) => ipcRenderer.send('zenlo:storage:save', data),
     loadStorage: () => ipcRenderer.invoke('zenlo:storage:load'),
+    removeStickerBackground: (pixels) => ipcRenderer.invoke('zenlo:sticker:remove-background', pixels),
+    stickerBackgroundReady: () => ipcRenderer.invoke('zenlo:sticker:background-ready'),
     // Opens an allowed link (AI Studio, Zenlo's site, e-mail) in the default browser
     openExternal: (url) => ipcRenderer.invoke('zenlo:open-external', url),
     // Opens a link from a summary (http or https) in the default browser

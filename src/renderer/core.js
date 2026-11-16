@@ -1240,6 +1240,128 @@
     return id ? { id, name: getConvName(id) } : null
   }
 
+  // ---------- Stickers made from photos ----------
+
+  // Zalo's two sticker layouts for user images both go through its photo-by-URL transport.
+  const MSG_PHOTO = 2
+  const LAYOUT_NO_BORDER = 3
+
+  // Zalo's controller of the open chat (the one sending what is typed there), found on the React
+  // components around the message box
+  function getChatController () {
+    let fiber = reactFiberOf(required(document.querySelector('#richInput'), 'ô soạn tin'))
+    for (let depth = 0; fiber && depth < 30; depth++) {
+      const props = fiber.memoizedProps
+      if (props && props.chatController && typeof props.chatController._sendMessage === 'function') return props.chatController
+      fiber = fiber.return
+    }
+    return required(null, 'bộ gửi tin')
+  }
+
+  function stickerConversation (expectedId) {
+    const controller = getChatController()
+    const conv = required(controller._getConversationInfo(), 'hội thoại đang mở')
+    const active = getCurrentConversation()?.id
+    if (!active || String(controller.convId || conv.userId) !== String(active) || (expectedId && active !== expectedId)) {
+      throw new Error('Bạn đã đổi hội thoại. Hãy mở lại khung sticker rồi thử lại.')
+    }
+    return { controller, conv }
+  }
+
+  const stickerClientId = () => required(findExport('NMlV', 'a', (v) =>
+    typeof v.next === 'function' && typeof v.setGetTimeServerFunc === 'function'), 'bộ tạo mã tin').next()
+
+  // The low-level uploader preserves the original bytes and returns a media URL.
+  // Using our own My Documents as the upload destination keeps asset creation independent of the
+  // recipient. Only the later sendPhotoSticker call creates a message.
+  async function uploadPhoto (file, width, height) {
+    if (!cache.photoUploader) {
+      cache.photoUploader = required(findExport('UYGI', 'b', (v) =>
+        typeof v.uploadFile === 'function' && typeof v.sendFileByChunkV2 === 'function' &&
+        typeof v.cancelUpload === 'function'), 'bộ tải ảnh')
+    }
+    const config = required(findExport('NDmK', 'default', (v) =>
+      'sendToMeId' in v && Array.isArray(v.reactionMsgInfo)), 'cấu hình My Documents')
+    const myDocuments = required(config.sendToMeId && String(config.sendToMeId), 'My Documents')
+    const upload = cache.photoUploader
+    const clientId = stickerClientId()
+    let timer
+    try {
+      const expiration = new Promise((resolve, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error('Tải sticker lên quá lâu.'))
+          try { upload.cancelUpload(clientId) } catch (error) {}
+        }, 45000)
+      })
+      const task = upload.uploadFile({
+        toUid: myDocuments,
+        rawFile: file,
+        isGroup: false,
+        clientId,
+        feature: 1, // Zalo upload feature: SendMsg
+        additionalParams: { photoResolutionMode: 1 }, // original bytes
+        extData: { width, height, uploadMainType: 2, fType: 1, e2ee: false }
+      }, {}, {
+        onStart () {},
+        callbackError () {},
+        signalProgress () {}
+      })
+      const result = await Promise.race([task, expiration])
+      const media = result?.urlRes?.fileAsync
+      const link = media?.hdUrl || media?.rawUrl
+      const address = new URL(link)
+      if (address.protocol !== 'https:' || !/(^|\.)(zdn\.vn|zadn\.vn|zalo\.me)$/.test(address.hostname)) throw new Error('Invalid media URL')
+      return link
+    } catch (error) {
+      log('sticker: upload failed', error)
+      throw new Error('Zalo không tải được ảnh sticker lên. Hãy thử lại.')
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  // The animation metadata goes through the same branch as Zalo's generated stickers.
+  function sendPhotoSticker (link, width, height, { expectedId, thumbnail, contentId } = {}) {
+    const { controller, conv } = stickerConversation(expectedId)
+    const content = {
+      sendByUrl: true,
+      toId: conv.userId,
+      title: '',
+      img: link,
+      oriUrl: link,
+      thumbUrl: thumbnail || link,
+      hdUrl: link,
+      width,
+      height,
+      file: {},
+      properties: { subType: 0, color: -1, size: -1, type: LAYOUT_NO_BORDER }
+    }
+    const options = thumbnail
+      ? {
+          isAISticker: true,
+          contentId: contentId || String(stickerClientId()),
+          thumbWidth: width,
+          thumbHeight: height,
+          webp: { url: link, width, height },
+          pStickerType: 1,
+          propertyExt: { sSrcStr: '', sSrcType: -1 }
+        }
+      : undefined
+    return new Promise((resolve, reject) => {
+      const failed = () => reject(new Error('Zalo không xác nhận đã gửi sticker.'))
+      const send = controller._sendMessage(conv, MSG_PHOTO, content, false, [], false, true, null, true, true, false, resolve, failed, options)
+      Promise.resolve(send).then(() => failed(), failed)
+    })
+  }
+
+  // A sticker of Zalo's own (from its sticker sets), sent by its id the way Zalo's sticker panel
+  // sends it: nothing is uploaded, the receivers' Zalo draws it from its own set
+  function sendZaloSticker ({ id, catId, type }, { expectedId } = {}) {
+    const { controller } = stickerConversation(expectedId)
+    if (typeof controller._sendSticker !== 'function') required(null, 'bộ gửi sticker của Zalo')
+    controller._sendSticker({ id: Number(id), cateId: Number(catId), type: Number(type) })
+  }
+
   function waitForConversation (convId, timeout = 3000) {
     return new Promise((resolve) => {
       const started = Date.now()
@@ -2125,6 +2247,9 @@
     mentionsMe,
     openConversation,
     getCurrentConversation,
+    uploadPhoto,
+    sendPhotoSticker,
+    sendZaloSticker,
     waitForConversation,
     jumpToMessage,
     getLatestMessages,

@@ -18,7 +18,7 @@ const DIST = path.join(ROOT, 'dist')
 const SOURCE = path.join(ROOT, 'installer', 'setup')
 const OUT = path.join(ROOT, 'build', 'setup')
 const EXE = path.join(OUT, 'Zenlo-Setup.exe')
-const ASSETS = ['zenlo.js', 'zenlo.css', 'zenlo-main.js', 'zenlo-preload.js']
+const ASSETS = ['zenlo.js', 'zenlo.css', 'zenlo-main.js', 'zenlo-preload.js', 'zenlo-sticker-worker.js', 'onnxruntime-notice.txt']
 const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
 
 for (const name of ASSETS) {
