@@ -46,14 +46,14 @@
 <article class="doc doc--page">
   <h1>Code signing policy</h1>
   <p class="lede">Chính sách ký số của Zenlo</p>
-  <p class="updated">Cập nhật 27/10/2026</p>
+  <p class="updated">Cập nhật 16/11/2026</p>
 
   <div class="tip"><b>Trạng thái:</b> các bản đã phát hành tới nay <b>chưa được ký số</b>, nên Windows có thể cảnh báo khi mở. Zenlo xin chứng chỉ miễn phí của SignPath Foundation lần đầu vào tháng 10/2026 nhưng chưa được duyệt vì dự án còn mới; Zenlo sẽ nộp lại. Trang này mô tả cách Zenlo sẽ ký khi có chứng chỉ.</div>
 
   <p>Khi được duyệt: Free code signing provided by <a class="link" href="https://signpath.io" rel="noopener">SignPath.io</a>, certificate by <a class="link" href="https://signpath.org" rel="noopener">SignPath Foundation</a>.</p>
 
   <h2>File nào được ký</h2>
-  <p>Chỉ <code>Zenlo-Setup.exe</code>, bộ cài của Zenlo cho Windows. File này được build hoàn toàn từ <a class="link" href="https://github.com/stephitnoob/zenlo" rel="noopener">mã nguồn công khai</a> của Zenlo, phát hành theo giấy phép <a class="link" href="https://github.com/stephitnoob/zenlo/blob/main/LICENSE" rel="noopener">GPL-3.0</a>. Bộ cài không chứa mã của bên thứ ba ngoài thư viện có sẵn của Windows (.NET Framework).</p>
+  <p>Chỉ <code>Zenlo-Setup.exe</code>, bộ cài của Zenlo cho Windows. File này được build hoàn toàn từ <a class="link" href="https://github.com/stephitnoob/zenlo" rel="noopener">mã nguồn công khai</a> của Zenlo, phát hành theo giấy phép <a class="link" href="https://github.com/stephitnoob/zenlo/blob/main/LICENSE" rel="noopener">GPL-3.0</a>. Ngoài thư viện có sẵn của Windows (.NET Framework), bộ cài chỉ chứa thêm một mã của bên thứ ba: ONNX Runtime Web 1.17.3 của Microsoft (giấy phép MIT), dùng để tách nền sticker ngay trên máy; giấy phép của nó đi kèm trong file <code>onnxruntime-notice.txt</code>.</p>
 
   <h2>Quy trình</h2>
   <ol>
@@ -75,7 +75,7 @@
   <p>Mọi thành viên dùng xác thực hai lớp (MFA) cho GitHub và SignPath.</p>
 
   <h2>Quyền riêng tư</h2>
-  <p>Zenlo không gửi thông tin tới hệ thống nào ngoài các dịch vụ người dùng chọn: tin nhắn chỉ được gửi tới dịch vụ AI người dùng chọn (Gemini, Claude hoặc ChatGPT qua Codex) khi người dùng bấm Tóm tắt hoặc Tạo bản tin; việc hỏi GitHub bản mới nhất chỉ chạy khi người dùng bấm hoặc đồng ý khi Zenlo hỏi. Bộ cài không kết nối mạng. Danh sách đầy đủ mọi kết nối ở trang <a class="link" href="privacy#connections">Quyền riêng tư</a>, và được nhắc lại trong bộ cài.</p>
+  <p>Zenlo không gửi thông tin tới hệ thống nào ngoài các dịch vụ người dùng chọn: tin nhắn chỉ được gửi tới dịch vụ AI người dùng chọn (Gemini, Claude hoặc ChatGPT qua Codex) khi người dùng bấm Tóm tắt hoặc Tạo bản tin; việc hỏi GitHub bản mới nhất chỉ chạy khi người dùng bấm hoặc đồng ý khi Zenlo hỏi; sticker người dùng làm được tải lên máy chủ Zalo như ảnh khi người dùng bấm Lưu; công cụ tách nền (khoảng 15 MB) chỉ được tải một lần, khi người dùng bấm Tách nền lần đầu, và được kiểm tra bằng SHA-256. Bộ cài không kết nối mạng. Danh sách đầy đủ mọi kết nối ở trang <a class="link" href="privacy#connections">Quyền riêng tư</a>, và được nhắc lại trong bộ cài.</p>
 
   <h2>Thay đổi trên máy</h2>
   <p>Bộ cài sửa file <code>resources\app.asar</code> của Zalo để thêm Zenlo, sau khi đã nói rõ điều này trên màn hình. Bản gốc được giữ thành <code>app.asar.bak</code>; chọn "2. Gỡ Zenlo" là Zalo về đúng bản gốc. Bộ cài cũng tạo lối tắt "Zenlo - Cài đặt" trong Start, và gỡ Zenlo là xoá luôn lối tắt này.</p>
@@ -89,7 +89,7 @@
 
   <h2 lang="en">In English</h2>
   <div lang="en">
-    <p>Zenlo signs only <code>Zenlo-Setup.exe</code>, built by GitHub Actions from a tagged commit of its public GPL-3.0 repository, with no third-party code besides Windows system libraries. Every signing request is approved manually. Authors, reviewers and approvers: <a class="link" href="https://github.com/stephitnoob" rel="noopener">stephit</a>, who uses MFA. Zenlo sends chats only to the AI service the user picks, when the user asks for a summary; the update check runs only when the user asks or agrees to it when Zenlo asks. Full list of network connections: <a class="link" href="privacy#connections">privacy policy</a>. The installer modifies Zalo's <code>app.asar</code> after saying so, keeps the original as a backup, and provides uninstallation. Status: a first application to SignPath Foundation (October 2026) was not approved because the project is new; Zenlo will reapply. Releases so far are unsigned.</p>
+    <p>Zenlo signs only <code>Zenlo-Setup.exe</code>, built by GitHub Actions from a tagged commit of its public GPL-3.0 repository, with no third-party code besides Windows system libraries and ONNX Runtime Web 1.17.3 (MIT, Microsoft) for on-device background removal in stickers, whose license ships as <code>onnxruntime-notice.txt</code>. Every signing request is approved manually. Authors, reviewers and approvers: <a class="link" href="https://github.com/stephitnoob" rel="noopener">stephit</a>, who uses MFA. Zenlo sends chats only to the AI service the user picks, when the user asks for a summary; the update check runs only when the user asks or agrees to it when Zenlo asks; stickers the user makes are uploaded to Zalo's own servers when the user saves them; the background-removal tools (about 15 MB) are downloaded once, on first use, and checked by SHA-256. Full list of network connections: <a class="link" href="privacy#connections">privacy policy</a>. The installer modifies Zalo's <code>app.asar</code> after saying so, keeps the original as a backup, and provides uninstallation. Status: a first application to SignPath Foundation (October 2026) was not approved because the project is new; Zenlo will reapply. Releases so far are unsigned.</p>
   </div>
 </article>
 </main>

@@ -15,6 +15,7 @@
     ['Hướng dẫn › Lấy API key Gemini', '/guide#get-key', 'laykey key apikey geminikey laykeygemini'],
     ['Hướng dẫn › Tóm tắt một hội thoại', '/guide#summary', 'tomtat summary'],
     ['Hướng dẫn › Bản tin', '/guide#digest', 'bantin digest'],
+    ['Hướng dẫn › Sticker từ ảnh', '/guide#stickers', 'sticker nhandan stickerdong tachnen lamsticker'],
     ['Hướng dẫn › Gemini, Claude hay ChatGPT', '/guide#choose-ai', 'chonai ai'],
     ['Hướng dẫn › Gemini', '/guide#gemini', 'gemini'],
     ['Hướng dẫn › Claude', '/guide#claude', 'claude'],

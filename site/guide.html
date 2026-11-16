@@ -55,7 +55,7 @@
     </div>
 
     <h1>Hướng dẫn sử dụng</h1>
-    <p class="lede">Zenlo có hai việc chính: <b>Tóm tắt</b> một hội thoại và <b>Bản tin</b> gom mọi hội thoại chưa đọc vào một chỗ. Ngoài ra còn có hơn 80 cảm xúc để thả cho tin nhắn. Trang này nói cách dùng từng thứ, khi nào nên dùng và từng mục trong Cài đặt.</p>
+    <p class="lede">Zenlo có hai việc chính: <b>Tóm tắt</b> một hội thoại và <b>Bản tin</b> gom mọi hội thoại chưa đọc vào một chỗ. Ngoài ra còn có hơn 80 cảm xúc để thả cho tin nhắn và sticker làm từ ảnh của bạn. Trang này hướng dẫn cách dùng từng phần, lúc nào nên dùng, và giải thích từng mục trong Cài đặt.</p>
 
     <section class="part" id="start">
       <h2>Bắt đầu</h2>
@@ -117,7 +117,7 @@
         <ol>
           <li>Mở <a class="link" href="https://aistudio.google.com/apikey" rel="noopener" target="_blank">aistudio.google.com/apikey</a> và đăng nhập Google.</li>
           <li>Bấm <b>Create API key</b> (tiếng Việt: <b>Tạo khóa API</b>). Nếu được hỏi chọn dự án, chọn tạo dự án mới.</li>
-          <li>Sao chép key vừa tạo. Key bắt đầu bằng <code>AIza</code>.</li>
+          <li>Sao chép key vừa tạo.</li>
           <li>Trong Zalo: bấm nút Zenlo ở thanh trái → bánh răng (Cài đặt) → dán vào ô <b>API key Gemini</b>, Zenlo lưu key ngay → bấm <b>Kiểm tra kết nối</b>.</li>
         </ol>
         <p>Lần đầu mở Zenlo khi chưa có key, đầu khung Zenlo có dòng nhắc kèm nút <b>Mở Cài đặt</b>, bấm vào là tới đúng chỗ dán key.</p>
@@ -212,13 +212,13 @@
         <h3>Cách làm</h3>
         <ol>
           <li>Bấm nút Zenlo ở thanh bên trái. Zenlo liệt kê các hội thoại có tin chưa đọc; hội thoại có người nhắc tên bạn hoặc @All có nhãn <b>@ nhắc bạn</b>.</li>
-          <li>Bỏ tick hội thoại không cần tóm tắt. Hội thoại mà mọi tin chưa đọc đều là thông báo tự động (thông báo tài khoản, thẻ) mặc định bỏ tick; tự tick lại thì Zenlo nhớ.</li>
+          <li>Bỏ tick hội thoại không cần tóm tắt. Hội thoại chỉ toàn tin tự động (biến động số dư, thẻ) được bỏ tick sẵn; bạn tick lại thì Zenlo nhớ.</li>
           <li>Giữ <b>⋮⋮</b> và kéo để xếp hội thoại quan trọng lên đầu.</li>
           <li>Bấm <b>Tạo bản tin</b>. Mỗi hội thoại một thẻ, tóm tắt hiện dần. Bấm <b>Dừng</b> để ngắt giữa chừng.</li>
         </ol>
         <p>Zenlo gửi nhiều hội thoại trong cùng một lần gọi AI, nên một bản tin thường chỉ tốn một lượt của key Gemini.</p>
         <p>Xong thì <b>Sao chép</b> lấy cả bản tin, mỗi hội thoại một đoạn có tên ở đầu, kèm một dòng ghi nguồn Zenlo ở cuối. <b>Sao chép kèm nguồn</b> (mũi tên <b>▾</b>) thêm số nguồn và danh sách nguồn cho từng hội thoại.</p>
-        <p>Zenlo nhớ ô tick bạn bấm và thứ tự bạn kéo cho lần sau: hội thoại bạn kéo và các hội thoại bạn để phía trên nó giữ chỗ, phần còn lại vẫn tự sắp xếp (hội thoại mới nhắc bạn vẫn lên trên). <b>Sắp xếp tự động</b> xoá thứ tự đã kéo; <b>Chọn hết</b> và <b>Bỏ chọn hết</b> đổi mọi ô tick một lần, giữ tới khi mở lại Zalo; <b>Làm mới</b> tải lại danh sách.</p>
+        <p>Zenlo nhớ ô tick bạn bấm và thứ tự bạn kéo cho lần sau. Hội thoại bạn đã kéo, và những hội thoại nằm trên nó, giữ nguyên vị trí. Các hội thoại khác vẫn tự sắp xếp, hội thoại mới có người nhắc bạn vẫn lên trên. <b>Sắp xếp tự động</b> xoá thứ tự đã kéo; <b>Chọn hết</b> và <b>Bỏ chọn hết</b> đổi mọi ô tick một lần, giữ tới khi mở lại Zalo; <b>Làm mới</b> tải lại danh sách.</p>
         <p>Hội thoại đã tóm tắt có dấu <b>✓</b>. Bấm Tạo bản tin lần nữa chỉ tóm tắt những hội thoại chưa có.</p>
       </section>
 
@@ -241,8 +241,48 @@
       <p>Zenlo thêm một nút <b>+</b> ở cuối thanh cảm xúc trên mỗi tin, mở ra hơn 80 cảm xúc.</p>
       <ul>
         <li>Bấm <b>+</b> để mở bảng cảm xúc, những cái bạn vừa dùng nằm ở mục <b>Gần đây</b> trên cùng. Bấm một cái là thả cho tin đó, y như bấm trên thanh của Zalo, người khác thấy như bình thường.</li>
-        <li><b>Sửa thanh cảm xúc</b> trong bảng đó chọn 6 cảm xúc hiện sẵn trên thanh: bấm emoji bên dưới để thêm, bấm emoji ở hàng trên để bỏ, rồi bấm <b>Lưu</b>. <b>Mặc định của Zalo</b> đưa thanh về như cũ.</li>
+        <li>Trong bảng đó, bấm <b>Sửa thanh cảm xúc</b> để chọn 6 cảm xúc luôn hiện trên thanh: bấm emoji bên dưới để thêm, bấm emoji ở hàng trên để bỏ, rồi bấm <b>Lưu</b>. Bấm <b>Mặc định của Zalo</b> để đưa thanh về như cũ.</li>
       </ul>
+    </section>
+
+    <section class="part" id="stickers">
+      <h2>Sticker từ ảnh</h2>
+      <p>Biến một ảnh bất kỳ thành sticker. Người nhận thấy như sticker thật trên mọi bản Zalo, kể cả trên điện thoại, không cần cài gì. Hiện chỉ có trên Zalo PC.</p>
+
+      <section id="make-sticker">
+        <h3>Làm sticker</h3>
+        <ul>
+          <li>Bấm nút sticker màu tím, ngay cạnh nút sticker của Zalo dưới khung chat, để mở <b>Sticker của bạn</b>. Bấm <b>+</b> để chọn ảnh trên máy, hoặc bấm <span class="kbd">Ctrl</span> + <span class="kbd">V</span> để dán ảnh vừa chép.</li>
+          <li>Hoặc chuột phải một ảnh trong chat, chọn <b>Làm sticker</b>.</li>
+          <li>Trong khung chỉnh, kéo ảnh để căn cho vừa, cuộn chuột để phóng to hay thu nhỏ.</li>
+          <li><b>Tách nền</b> bỏ phần nền quanh người hoặc vật, ngay trên máy bạn. <b>Khôi phục nền</b> lấy lại ảnh như cũ. Lần đầu tách nền, Zenlo tải công cụ khoảng 15 MB về máy; các lần sau không phải tải nữa.</li>
+          <li>Ảnh khó tách (tóc rối, nền nhiều chi tiết) thì bấm <b>remove.bg ↗</b>. Zenlo chép ảnh vào clipboard và mở trang remove.bg. Bạn dán ảnh vào đó, tải ảnh PNG đã tách về, rồi kéo thả file vào khung chỉnh hoặc dán lại.</li>
+          <li>Bấm <b>Lưu</b> để cất sticker vào kho, hoặc <b>Lưu và gửi</b> để gửi luôn vào hội thoại đang mở.</li>
+        </ul>
+      </section>
+
+      <section id="animated-stickers">
+        <h3>Sticker động</h3>
+        <p>Khung chỉnh có các tab <b>Chuyển động</b>, <b>Hiệu ứng</b>, <b>Ánh sáng</b>, <b>Chữ</b>, <b>Khung</b> và <b>Phụ kiện</b>. Mỗi lựa chọn có ô xem trước chuyển động. Nút xúc xắc chọn ngẫu nhiên chuyển động, hiệu ứng và ánh sáng, giữ nguyên chữ và khung bạn đã chọn.</p>
+        <ul>
+          <li><b>Chữ:</b> gõ chữ rồi chọn kiểu, ví dụ nảy, nhấp nháy, gõ từng chữ hay bong bóng thoại.</li>
+          <li><b>Khung:</b> bo góc, tròn, viền trắng, polaroid, tim, tem thư.</li>
+          <li><b>Phụ kiện:</b> kính râm, vương miện, tai mèo, tai thỏ… Zenlo tự đặt phụ kiện lên chỗ đoán là đầu. Kéo trên ô xem trước để dời, cuộn chuột để đổi cỡ. Mỗi sticker một phụ kiện.</li>
+        </ul>
+        <p>Sticker chỉ có khung hoặc chữ đứng yên vẫn là sticker tĩnh. Chọn chuyển động, hiệu ứng, ánh sáng, chữ chạy hay phụ kiện thì sticker thành sticker động, dài 2 giây và lặp lại.</p>
+      </section>
+
+      <section id="sticker-store">
+        <h3>Kho sticker</h3>
+        <ul>
+          <li>Bấm một sticker trong <b>Sticker của bạn</b> để gửi vào hội thoại đang mở. Sticker vừa gửi lên đầu kho.</li>
+          <li>Bấm <b>×</b> trên sticker, hoặc chuột phải nó, để xoá.</li>
+          <li>Sticker tĩnh có nút <b>✦</b> để làm thành sticker động.</li>
+          <li>Thấy sticker hay trong chat (của bạn bè hay của Zalo), chuột phải nó rồi chọn <b>Lưu sticker</b> để cất vào kho. Sticker tĩnh có thêm <b>Làm sticker động</b>.</li>
+          <li>Kho giữ tối đa 100 sticker. Đầu kho ghi số đang có; đủ 100 thì phải xoá bớt mới lưu thêm được.</li>
+        </ul>
+        <p>Kho sticker là của từng tài khoản Zalo. Khi bạn lưu, Zenlo tải ảnh sticker lên máy chủ Zalo như khi gửi ảnh, nhưng không tạo tin nhắn nào; ai có link ảnh cũng mở được ảnh đó. Chi tiết ở trang <a class="link" href="privacy#stickers">Quyền riêng tư</a>.</p>
+      </section>
     </section>
 
     <section class="part" id="settings">
@@ -268,10 +308,10 @@
 
         <h4>Model</h4>
         <p>Danh sách lấy trực tiếp từ Google theo key của bạn. Mặc định là <b>Từ Gemini 3.6 Flash</b>: hai bản mới nhất thường đông người dùng key miễn phí, 3.6 thường thoáng hơn. Key không có 3.6 thì bắt đầu từ bản thấp hơn kế tiếp. Chọn <b>Từ Gemini X Flash</b> nghĩa là bắt đầu thử từ model đó; nếu model đang quá tải, Zenlo lần lượt chuyển xuống bản thấp hơn, ví dụ 3.8 → 3.7 → 3.6 → 3.5 Flash → Flash-Lite.</p>
-        <p>Thanh màu cạnh mỗi model là mức đông người dùng ước lượng, không phải đo trực tiếp. Model bị làm mờ là mọi key của bạn đã hết lượt cho model đó hôm nay.</p>
+        <p>Thanh màu cạnh mỗi model cho biết model đang đông hay vắng; đây là ước lượng, không phải số đo thật. Model bị làm mờ là mọi key của bạn đã hết lượt cho model đó hôm nay.</p>
 
         <h4>Effort</h4>
-        <p>Mức suy nghĩ của model. <b>high</b> (mặc định) viết kỹ hơn nhưng chậm hơn; <b>low</b> thường nhanh hơn nhưng dễ sót việc hơn, nhất là với Flash-Lite.</p>
+        <p>Mức suy nghĩ của model. <b>high</b> (mặc định) viết kỹ hơn nhưng chậm hơn; <b>medium</b> ở giữa; <b>low</b> thường nhanh hơn nhưng dễ sót việc hơn, nhất là với Flash-Lite.</p>
 
         <h4>Chờ Gemini tối đa</h4>
         <p>Thời gian chờ Gemini bắt đầu trả lời, tính chung cho cả lượt. Model báo quá tải thì Zenlo chuyển xuống bản thấp hơn và dùng tiếp thời gian còn lại; hết thời gian mà chưa model nào trả lời thì Zenlo dừng và báo Gemini đang nghẽn. Mặc định 45 giây.</p>
@@ -318,7 +358,7 @@
         <h3>Xoá và đặt lại</h3>
         <ul>
           <li><b>Xoá bản tóm tắt đã lưu</b>: xoá mọi bản tóm tắt và bản tin đã lưu trên máy. Ô tick và thứ tự trong Bản tin giữ nguyên.</li>
-          <li><b>Đặt lại mặc định</b>: đưa cài đặt AI, độ dài và mức lùi tìm tin chưa đọc về như lúc mới cài. API key, bản tóm tắt, ô tick, thứ tự, thanh cảm xúc nhanh và lựa chọn tự kiểm tra bản mới giữ nguyên.</li>
+          <li><b>Đặt lại mặc định</b>: đưa cài đặt AI, độ dài và số ngày tìm tin chưa đọc về như lúc mới cài. API key, bản tóm tắt, ô tick, thứ tự, thanh cảm xúc nhanh, sticker và lựa chọn tự kiểm tra bản mới giữ nguyên.</li>
         </ul>
       </section>
 
@@ -347,7 +387,7 @@
     <section class="part" id="uninstall">
       <h2>Gỡ Zenlo</h2>
       <p>Mở <b>Zenlo - Cài đặt</b> (hoặc <code>Zenlo-Setup.exe</code>), gõ <code>2</code>, Enter; Zalo đang mở thì gõ <code>c</code> để đồng ý tắt. Zalo trở về đúng bản gốc; lối tắt trong Start và bản bộ cài giữ trên máy cũng được xoá. Gỡ bằng <b>Zenlo - Cài đặt</b> thì bộ cài không tự xoá được chính nó: xoá tay file <code>%LOCALAPPDATA%\Zenlo\Zenlo-Setup.exe</code> mà nó báo.</p>
-      <p>Dữ liệu của Zenlo vẫn còn trên máy, phòng khi bạn cài lại: thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu và API key của từng tài khoản Zalo) và vài mục trong bộ nhớ của Zalo (cài đặt, bản tóm tắt, ghi chú, thứ tự Bản tin, cảm xúc dùng gần đây của tài khoản Zalo đăng nhập gần nhất). Muốn xoá gần hết: trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, xoá ghi chú trong từng hội thoại; gỡ xong thì xoá thư mục <code>%APPDATA%\Zenlo</code>. Chỉ còn ô tick, thứ tự Bản tin, cảm xúc bạn chọn và độ rộng khung Zenlo, không có nội dung tin nhắn.</p>
+      <p>Dữ liệu của Zenlo vẫn còn trên máy, phòng khi bạn cài lại: thư mục <code>%APPDATA%\Zenlo</code> (bản sao lưu và API key của từng tài khoản Zalo, công cụ tách nền) và vài mục trong bộ nhớ của Zalo (cài đặt, bản tóm tắt, ghi chú, thứ tự Bản tin, cảm xúc dùng gần đây, danh sách sticker của tài khoản Zalo đăng nhập gần nhất, và ảnh của các sticker chưa xoá). Muốn xoá gần hết: trước khi gỡ, bấm <b>Xoá bản tóm tắt đã lưu</b> và <b>Đặt lại mặc định</b> trong Cài đặt, xoá ghi chú trong từng hội thoại; gỡ xong thì xoá thư mục <code>%APPDATA%\Zenlo</code>. Chỉ còn ô tick, thứ tự Bản tin, cảm xúc bạn chọn, độ rộng khung Zenlo và sticker bạn chưa xoá, không có nội dung tin nhắn.</p>
     </section>
 
     <section class="part" id="zalo-web">
@@ -422,9 +462,10 @@
         <h3>Khác với bản Windows</h3>
         <ul>
           <li><b>Chỉ dùng Gemini.</b> Claude và ChatGPT (Codex) cần chương trình cài trên máy, trình duyệt không gọi được.</li>
-          <li><b>Tin cũ có giới hạn.</b> Zalo web chỉ có tin nhắn trong một khoảng gần đây. Với nhóm, Zenlo tự tải thêm tin cũ từ máy chủ Zalo cho đủ khoảng bạn chọn. Với trò chuyện riêng, Zalo web chỉ có tin từ lúc bạn đăng nhập Zalo web và phần đã đồng bộ từ điện thoại. Khoảng bạn chọn cũ hơn những tin có được thì Zenlo báo tin cũ nhất có từ ngày nào.</li>
+          <li><b>Tin cũ có giới hạn.</b> Zalo web chỉ có tin nhắn trong một khoảng gần đây. Với nhóm, Zenlo tự tải thêm tin cũ từ máy chủ Zalo cho đủ khoảng bạn chọn. Với trò chuyện riêng, Zalo web chỉ có tin từ lúc bạn đăng nhập Zalo web và phần đã đồng bộ từ điện thoại. Nếu khoảng bạn chọn bắt đầu trước tin cũ nhất mà Zalo web có, Zenlo báo tin cũ nhất đó từ ngày nào.</li>
           <li><b>Key Gemini</b> nằm trong bộ nhớ riêng của tiện ích, trong trình duyệt. Trang Zalo web không đọc được, nhưng key không được Windows mã hoá như ở bản Windows.</li>
           <li><b>Mỗi trình duyệt một bộ cài đặt.</b> Cài đặt, ghi chú và bản tóm tắt lưu trong trình duyệt đang dùng, không đi theo sang trình duyệt hay máy khác.</li>
+          <li><b>Chưa có sticker từ ảnh.</b> Tính năng này hiện chỉ có trên Zalo PC.</li>
           <li><b>Không cần cài lại khi Zalo cập nhật.</b> Có bản Zenlo mới thì chỉ có dòng báo trong khung Zenlo, không có thông báo của Windows.</li>
         </ul>
       </section>
@@ -446,7 +487,7 @@
 
       <section id="out-of-quota">
         <h3>Báo hết lượt</h3>
-        <p>Mọi key đã dùng hết lượt miễn phí trong ngày cho các model Zenlo thử. Có thể chờ tới khoảng 14–15 giờ chiều, thêm key từ một dự án Google khác, hoặc tạm chọn model thấp hơn như Flash-Lite. Cài đặt ghi rõ key nào hết lượt và mấy giờ mở lại.</p>
+        <p>Mọi key của bạn đã hết lượt miễn phí hôm nay ở mọi model Zenlo đã thử. Có thể chờ tới khoảng 14–15 giờ chiều, thêm key từ một dự án Google khác, hoặc tạm chọn model thấp hơn như Flash-Lite. Cài đặt ghi rõ key nào hết lượt và mấy giờ mở lại.</p>
       </section>
 
       <section id="slow">
@@ -490,11 +531,11 @@
     <section class="part" id="your-data">
       <h2>Dữ liệu của bạn</h2>
       <ul>
-        <li><b>Gửi đi khi nào:</b> tin nhắn chỉ được gửi khi bạn bấm Tóm tắt hoặc Tạo bản tin. Kiểm tra kết nối chỉ gửi một câu thử; Kiểm tra bản mới chỉ hỏi GitHub số phiên bản mới nhất.</li>
-        <li><b>Gửi gì:</b> chữ của các tin trong khoảng đã chọn, tên người gửi, mô tả ngắn cho ảnh, tệp, sticker (ví dụ tên tệp), và ghi chú bạn viết cho hội thoại đó. Ảnh và tệp không được gửi.</li>
+        <li><b>Gửi đi khi nào:</b> tin nhắn chỉ được gửi khi bạn bấm Tóm tắt hoặc Tạo bản tin. Kiểm tra kết nối chỉ gửi một câu thử; Kiểm tra bản mới chỉ hỏi GitHub số phiên bản mới nhất. Sticker bạn làm chỉ được tải lên máy chủ Zalo khi bạn bấm Lưu.</li>
+        <li><b>Gửi gì:</b> chữ của các tin trong khoảng đã chọn, tên người gửi, mô tả ngắn cho ảnh, tệp, sticker (ví dụ tên tệp), và ghi chú bạn viết cho hội thoại đó. Ảnh và tệp không được gửi tới AI.</li>
         <li><b>Gửi tới đâu:</b> chỉ tới AI bạn chọn, qua HTTPS. Zenlo không có máy chủ riêng.</li>
-        <li><b>Lưu ở đâu:</b> chỉ trên máy bạn. Cài đặt, ghi chú và bản tóm tắt nằm trong Zalo, có bản sao trong <code>%APPDATA%\Zenlo</code>. API key được Windows mã hoá. Bản Zalo web lưu mọi thứ trong trình duyệt, xem <a class="link" href="#other-browsers">Khác với bản Windows</a>.</li>
-        <li><b>Theo từng tài khoản Zalo:</b> bản tóm tắt, Bản tin, ghi chú, cài đặt và key Gemini thuộc về tài khoản Zalo đang đăng nhập. Người khác đăng nhập Zalo trên cùng máy hay cùng trình duyệt thì Zenlo cất dữ liệu của bạn đi và nạp dữ liệu của người đó. Độ rộng khung Zenlo, lựa chọn kiểm tra bản mới và danh sách model Claude, Codex là của máy, dùng chung. Dữ liệu và key có từ trước bản 0.3.1 thuộc về tài khoản đầu tiên mở Zenlo sau khi cập nhật.</li>
+        <li><b>Lưu ở đâu:</b> trên máy bạn, trừ ảnh sticker đã tải lên máy chủ Zalo. Cài đặt, ghi chú, bản tóm tắt và kho sticker nằm trong Zalo, có bản sao trong <code>%APPDATA%\Zenlo</code>. API key được Windows mã hoá. Bản Zalo web lưu mọi thứ trong trình duyệt, xem <a class="link" href="#other-browsers">Khác với bản Windows</a>.</li>
+        <li><b>Theo từng tài khoản Zalo:</b> bản tóm tắt, Bản tin, ghi chú, cài đặt, kho sticker và key Gemini thuộc về tài khoản Zalo đang đăng nhập. Người khác đăng nhập Zalo trên cùng máy hay cùng trình duyệt thì Zenlo cất dữ liệu của bạn đi và nạp dữ liệu của người đó. Độ rộng khung Zenlo, lựa chọn kiểm tra bản mới và danh sách model Claude, Codex là của máy, dùng chung. Dữ liệu và key có từ trước bản 0.3.1 thuộc về tài khoản đầu tiên mở Zenlo sau khi cập nhật.</li>
       </ul>
       <p>Chi tiết đầy đủ ở trang <a class="link" href="privacy">Quyền riêng tư</a>. Mã nguồn để công khai tại <a class="link js-source" href="https://github.com/stephitnoob/zenlo">GitHub</a>.</p>
     </section>

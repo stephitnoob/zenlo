@@ -516,7 +516,7 @@
 
   const AI = {
     gemini: {
-      field: ['API key Gemini', 'AIza…k3Qf'],
+      field: ['API key Gemini', 'AQ.A…k3Qf'],
       log: ['generativelanguage.googleapis.com', 'HTTPS · bằng key của bạn'],
       note: 'Key miễn phí, không cần thẻ. Với key miễn phí, Google có thể dùng nội dung gửi lên để cải thiện sản phẩm.'
     },

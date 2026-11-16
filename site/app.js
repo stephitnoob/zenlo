@@ -384,7 +384,7 @@
         a.href = href
         a.removeAttribute('aria-disabled')
       } else {
-        a.href = '#install'
+        a.href = './#install'
         a.setAttribute('aria-disabled', 'true')
       }
     })
@@ -440,7 +440,7 @@
         setText('.js-web-sha', webSha || 'xem trong ghi chú phát hành')
       } else {
         $$('.js-download-web').forEach((a) => {
-          a.href = '#zalo-web'
+          a.href = './#get-web'
           a.setAttribute('aria-disabled', 'true')
         })
         setText('.js-download-web-label', 'Sắp phát hành')
@@ -453,8 +453,8 @@
       if (!document.querySelector('.js-version, .js-size-small, .js-sha')) return
       const asset = zip || (release.assets || []).find((a) => a.name === 'Zenlo-Setup.exe')
       const sha = ((release.body || '').match(/\b[a-f0-9]{64}\b/) || [])[0]
-      // The C# installer is about 180 KB, the old one 90 MB
-      const size = !asset ? 'khoảng 200 KB' : asset.size < 1048576 ? `${Math.round(asset.size / 1024)} KB` : `${Math.round(asset.size / 1048576)} MB`
+      // The C# installer (zip) is a few hundred KB, the old one 90 MB
+      const size = !asset ? 'vài trăm KB' : asset.size < 1048576 ? `${Math.round(asset.size / 1024)} KB` : `${Math.round(asset.size / 1048576)} MB`
       const tag = release.tag_name || 'bản mới nhất'
       setText('.js-version', tag)
       setText('.js-size', size)
