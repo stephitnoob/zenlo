@@ -7,6 +7,7 @@
 
 import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
+import { readFileSync } from 'node:fs'
 import { loadCore } from '../summary-eval/load-core.mjs'
 
 const Z = loadCore()
@@ -399,7 +400,7 @@ test('Ô "Đến" lấy hết phút đó, ô "Từ" từ đầu phút', () => {
 
 // ---------- Installer: which Zalo version folder ----------
 
-const { pickVersionDir, pickTargetDirs, isFutureVersion } = createRequire(import.meta.url)('../../installer/zalo.js')
+const { pickVersionDir, pickTargetDirs, planInstall, isFutureVersion, isUnsupportedVersion, FIRST_UNSUPPORTED, UNSUPPORTED_HELP } = createRequire(import.meta.url)('../../installer/zalo.js')
 const NOV_11 = new Date(2026, 10, 11).getTime()
 const FOLDERS = ['Zalo-26.9.10', 'Zalo-26.10.20', 'Zalo-26.11.10', 'Zalo-27.12.31']
 
@@ -418,9 +419,52 @@ test('Bộ cài: Zalo đã tắt thì bỏ qua thư mục có ngày phiên bản
 })
 
 test('Bộ cài: Zalo đã tải sẵn bản mới mà vẫn chạy bản cũ thì cài vào cả hai', () => {
-  const names = ['Zalo-26.10.20', 'Zalo-26.11.10', 'Zalo-26.11.20', 'Zalo-27.12.31']
-  assert.deepEqual(pickTargetDirs(names, { running: ['Zalo-26.11.10'], now: NOV_11 }), ['Zalo-26.11.10', 'Zalo-26.11.20'])
-  assert.deepEqual(pickTargetDirs(names, { now: NOV_11 }), ['Zalo-26.11.20'])
+  const names = ['Zalo-26.10.20', 'Zalo-26.11.10', 'Zalo-26.11.15', 'Zalo-27.12.31']
+  assert.deepEqual(pickTargetDirs(names, { running: ['Zalo-26.11.10'], now: NOV_11 }), ['Zalo-26.11.10', 'Zalo-26.11.15'])
+  assert.deepEqual(pickTargetDirs(names, { now: NOV_11 }), ['Zalo-26.11.15'])
+})
+
+test('Bộ cài: từ Zalo 26.11.20 trở đi thì không cài', () => {
+  assert.equal(isUnsupportedVersion([26, 11, 10], NOV_11), false)
+  assert.equal(isUnsupportedVersion([26, 11, 19], NOV_11), false)
+  assert.equal(isUnsupportedVersion([26, 11, 20], NOV_11), true)
+  assert.equal(isUnsupportedVersion([26, 12, 1], NOV_11), true)
+  assert.equal(isUnsupportedVersion([26, 11, 20, 1], NOV_11), true)
+  assert.equal(isUnsupportedVersion([26, 9, 30], NOV_11), false)
+  assert.equal(isUnsupportedVersion([26, 11], NOV_11), false)
+  // Not a date, but a higher number: judged by the number
+  assert.equal(isUnsupportedVersion([27], NOV_11), true)
+  assert.equal(isUnsupportedVersion([26, 13, 40], NOV_11), true)
+  // A far-future name made to stop updates says nothing about the real version
+  assert.equal(isUnsupportedVersion([27, 12, 31], NOV_11), false)
+})
+
+test('Bộ cài: dừng hẳn, hay cài vào bản cũ và bỏ qua bản mới tải sẵn', () => {
+  const plan = (names, options) => planInstall(names, { now: NOV_11, ...options })
+  assert.deepEqual(plan(['Zalo-26.11.10']), { stop: null, targets: ['Zalo-26.11.10'], skipped: [] })
+  assert.deepEqual(plan(['Zalo-26.11.20']), { stop: 'Zalo-26.11.20', targets: [], skipped: [] })
+  // Running the old one while the new ones wait: the old ones get Zenlo, the unsupported one is left out
+  assert.deepEqual(plan(['Zalo-26.11.10', 'Zalo-26.11.15', 'Zalo-26.11.20'], { running: ['Zalo-26.11.10'] }),
+    { stop: null, targets: ['Zalo-26.11.10', 'Zalo-26.11.15'], skipped: ['Zalo-26.11.20'] })
+  // Left-out ones in version order, whatever order the folders were read in
+  assert.deepEqual(plan(['Zalo-26.12.1', 'Zalo-26.11.25', 'Zalo-26.11.10'], { running: ['Zalo-26.11.10'] }).skipped,
+    ['Zalo-26.11.25', 'Zalo-26.12.1'])
+  // Running the new one, or Zalo closed with the new one the newest: stop
+  assert.equal(plan(['Zalo-26.11.10', 'Zalo-26.11.20'], { running: ['Zalo-26.11.20'] }).stop, 'Zalo-26.11.20')
+  assert.equal(plan(['Zalo-26.11.10', 'Zalo-26.11.20']).stop, 'Zalo-26.11.20')
+  // A far-future folder is neither a target nor left out
+  assert.deepEqual(plan(['Zalo-26.11.10', 'Zalo-27.12.31']), { stop: null, targets: ['Zalo-26.11.10'], skipped: [] })
+  assert.deepEqual(plan(['Zalo-27.12.31']), { stop: null, targets: ['Zalo-27.12.31'], skipped: [] })
+  // Once that date is near, it is a real version again, and too new
+  assert.equal(plan(['Zalo-27.12.31'], { now: new Date(2027, 11, 1).getTime() }).stop, 'Zalo-27.12.31')
+})
+
+test('Bộ cài: hai bộ cài dừng ở cùng một bản Zalo và chỉ cùng một chỗ', () => {
+  const setup = readFileSync(new URL('../../installer/setup/Setup.cs', import.meta.url), 'utf8')
+  const first = setup.match(/FirstUnsupported = \{ ([\d, ]+) \}/)
+  assert.ok(first, 'Setup.cs không còn FirstUnsupported')
+  assert.deepEqual(first[1].split(',').map(Number), FIRST_UNSUPPORTED)
+  for (const url of UNSUPPORTED_HELP.match(/https:\/\/\S+/g)) assert.ok(setup.includes(`"${url}"`), url)
 })
 
 // ---------- Zalo accounts ----------
