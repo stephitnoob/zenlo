@@ -14,6 +14,12 @@ Nên kèm:
 
 Tác giả sẽ trả lời trong vòng 7 ngày. Khi có bản sửa, nếu bạn muốn, ghi chú phát hành sẽ ghi tên bạn.
 
+## Phiên bản được hỗ trợ
+
+- Zenlo: chỉ bản mới nhất được sửa lỗi bảo mật. Dùng bản cũ hơn thì hãy cập nhật.
+- Zalo PC: bản trước 26.11.20. Từ bản 26.11.20 trở đi, bộ cài không cài Zenlo.
+- Zalo web: Edge và Chrome trên máy tính.
+
 ## Phạm vi
 
 Trong phạm vi:

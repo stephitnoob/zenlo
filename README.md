@@ -4,6 +4,8 @@ Zenlo là trình quản lí hội thoại mã nguồn mở cho **Zalo PC** trên
 
 Có thêm bản cho **Zalo web** (`chat.zalo.me`): một tiện ích cho Edge và Chrome, chỉ dùng Gemini.
 
+Zenlo chỉ cài được vào Zalo PC **trước bản 26.11.20**. Từ bản 26.11.20 trở đi, bộ cài báo chưa dùng được rồi dừng lại, không đổi gì trong Zalo. Khi đó, hãy dùng [Zenlo cho Zalo web](https://zenlo.io.vn/guide#zalo-web).
+
 ## Tính năng
 
 Mọi thứ nằm trong **khung Zenlo** ở cạnh phải cửa sổ Zalo. Khung chat tự thu hẹp lại nên không bị che. Nút Zenlo ở thanh bên trái mở Bản tin, nút trên thanh tiêu đề hội thoại mở Tóm tắt; đóng bằng ×, bấm lại nút đó hoặc phím Esc. Kéo mép trái của khung để đổi độ rộng (Zenlo nhớ độ rộng này), bấm đúp vào mép để về mặc định.
@@ -31,9 +33,11 @@ Mọi thứ nằm trong **khung Zenlo** ở cạnh phải cửa sổ Zalo. Khung
 
 ## Tải về
 
-Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases của kho mã này, giải nén, mở `Zenlo-Setup.exe` và chọn "1. Cài Zenlo" (trình duyệt ít cảnh báo file zip hơn; trong zip chỉ có đúng file `.exe` đó, cũng có trên Releases). Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
+Người dùng: tải `Zenlo-Setup.zip` từ trang web hoặc mục Releases của kho mã này, giải nén, mở `Zenlo-Setup.exe` và chọn "1. Cài Zenlo" (trình duyệt ít cảnh báo file zip hơn; trong zip chỉ có đúng file `.exe` đó, cũng có trên Releases). Bộ cài giữ một bản trong `%LOCALAPPDATA%\Zenlo` và tạo lối tắt **"Zenlo - Cài đặt"** trong Start: mỗi lần Zalo cập nhật (nút Zenlo biến mất), mở lối tắt đó và chọn 1 lại. Lối tắt của Zenlo 0.4.0 trở về trước không chặn Zalo 26.11.20 trở đi: nếu lỡ cài bằng nó và Zalo báo lỗi, mở lối tắt đó và chọn 2 để đưa Zalo về bản gốc. Mỗi bản phát hành được build tự động trên GitHub Actions, kèm SHA-256 và chứng thực nguồn gốc; cách kiểm chứng ở [SECURITY.md](SECURITY.md).
 
 Bộ cài nói rõ trên màn hình sẽ sửa gì, rồi mới sửa file `resources\app.asar` của Zalo để thêm Zenlo. Bản gốc được giữ thành `app.asar.bak`; chọn "2. Gỡ Zenlo" thì mọi thư mục phiên bản Zalo đang có Zenlo đều về đúng bản gốc. Bộ cài sửa thư mục phiên bản Zalo đang chạy, cùng các bản mới hơn mà Zalo đã tải sẵn để chạy lần sau; Zalo đang tắt thì sửa bản mới nhất. Bộ cài bỏ qua thư mục thiếu `Zalo.exe` và thư mục có số phiên bản là một ngày quá xa trong tương lai (như `Zalo-27.12.31`).
+
+Nếu bản Zalo đang chạy (hoặc bản mới nhất, khi Zalo đang tắt) là 26.11.20 trở đi, bộ cài dừng ngay, chưa tắt Zalo. Nếu Zalo đang chạy bản cũ hơn nhưng đã tải sẵn một bản từ 26.11.20 trở đi, bộ cài chỉ cài vào bản đang chạy, không cài vào bản tải sẵn, và gỡ Zenlo cũ nếu bản tải sẵn đã có. Bộ cài cũng báo rằng khi Zalo chuyển sang bản đó, nút Zenlo sẽ mất. Mở bộ cài là bản bộ cài cũ hơn giữ trong `%LOCALAPPDATA%\Zenlo` (lối tắt **"Zenlo - Cài đặt"**) được thay bằng bản này.
 
 Zalo web: tải `Zenlo-ZaloWeb.zip` (cũng trên Releases), giải nén vào một thư mục cố định, mở `edge://extensions` hoặc `chrome://extensions`, bật Chế độ nhà phát triển (Chrome: Chế độ dành cho nhà phát triển), bấm **Tải phần mở rộng đã giải nén** (Chrome: **Tải tiện ích đã giải nén**) và chọn thư mục đó. Cập nhật: giải nén bản mới đè lên thư mục cũ rồi bấm tải lại tiện ích. Nhờ trường `key` trong manifest, mã của tiện ích giữ nguyên qua các bản, nên key Gemini và cài đặt còn nguyên. Hướng dẫn có hình: [zenlo.io.vn/guide#zalo-web](https://zenlo.io.vn/guide#zalo-web).
 
@@ -41,7 +45,7 @@ Xem thêm: [Chính sách quyền riêng tư](PRIVACY.md) · [Bảo mật](SECURI
 
 ## Yêu cầu (để phát triển)
 
-- Zalo PC trên Windows
+- Zalo PC trên Windows, bản trước 26.11.20 (chỉ cần cho các lệnh `zalo:*`)
 - Node.js 22.2 trở lên
 - Để build bộ cài `Zenlo-Setup.exe`: .NET Framework 4.x có sẵn trong Windows 10/11 (dùng trình biên dịch C# `csc.exe` đi kèm)
 - Một trong ba: API key Gemini; Claude Code đã đăng nhập bằng gói Claude Pro/Max; hoặc Codex đã đăng nhập bằng gói ChatGPT
@@ -71,7 +75,7 @@ npm run zalo:install
 | `npm run test:gemini` | Thử chuỗi model Gemini trong tiến trình chính thật, với máy chủ Google giả (không tốn lượt) |
 | `npm run test:codex` | Thử cách gọi Codex với một Codex giả (không gọi Codex thật) |
 
-Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệnh cài.
+Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệnh cài. Zalo lên 26.11.20 trở đi thì lệnh cài báo lỗi và dừng.
 
 ## Cấu trúc
 
@@ -86,7 +90,7 @@ Mỗi lần Zalo tự cập nhật, Zenlo sẽ mất. Khi đó chạy lại lệ
 | `installer/` | Cài / gỡ vào Zalo PC: `zalo.js` cho các lệnh npm khi phát triển (có chế độ dev); `setup/Setup.cs` là bộ cài `Zenlo-Setup.exe` cho người dùng |
 | `scripts/pack-ext.mjs` | Đóng gói `dist-ext/` thành `Zenlo-ZaloWeb.zip` |
 | `scripts/build-setup.mjs` | Biên dịch bộ cài C# thành một file `.exe`, nhúng sẵn các file Zenlo đã build |
-| `test/` | `unit/`: thử các hàm của `core.js` và cách bộ cài chọn thư mục Zalo; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `extension/`: thử cầu nối của bản Zalo web (key và bản sao lưu theo tài khoản); `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
+| `test/` | `unit/`: thử các hàm của `core.js`, cách bộ cài chọn thư mục Zalo và chặn Zalo từ 26.11.20; `gemini/`, `codex/`: thử cách gọi AI với dịch vụ giả; `extension/`: thử cầu nối của bản Zalo web (key và bản sao lưu theo tài khoản); `summary-eval/`: các hội thoại giả có cài bẫy để so prompt trên Claude, Codex và Gemini thật (tốn lượt, chạy tay) |
 | `site/` | Trang web giới thiệu và tải về (GitHub Pages) |
 | `.github/workflows/` | Build và phát hành tự động, đưa trang web lên |
 
