@@ -28,6 +28,28 @@ const log = (...args) => console.log(...args)
 
 const versionOf = (name) => name.slice('Zalo-'.length).split('.').map(Number)
 
+// > 0 when a is newer than b
+function compareVersions (a, b) {
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) - (b[i] || 0)
+  }
+  return 0
+}
+
+// From this Zalo PC version on, Zenlo cannot be installed the current way
+const FIRST_UNSUPPORTED = [26, 11, 20]
+const FIRST_UNSUPPORTED_NAME = FIRST_UNSUPPORTED.join('.')
+
+// A far-future name is not a real version (see isFutureVersion), so it is not judged by it
+const isUnsupportedVersion = (version, now = Date.now()) =>
+  compareVersions(version, FIRST_UNSUPPORTED) >= 0 && !isFutureVersion(version, now)
+
+const UNSUPPORTED_HELP = [
+  'Bạn vẫn dùng được Zenlo trên Zalo web (chat.zalo.me, mở bằng Edge hoặc Chrome):',
+  '  tải Zenlo-ZaloWeb.zip ở https://github.com/stephitnoob/zenlo/releases/latest',
+  '  cách cài: https://zenlo.io.vn/guide#zalo-web'
+].join('\n')
+
 // Zalo's versions are dates ("26.11.10" for 10/11/2026): one more than two months ahead is not a
 // release. A "Zalo-27.12.31" made to stop updates once took Zenlo in while Zalo ran 26.11.10.
 function isFutureVersion (version, now = Date.now()) {
@@ -43,13 +65,7 @@ function isFutureVersion (version, now = Date.now()) {
 function pickVersionDir (names, { running = [], now = Date.now() } = {}) {
   const live = names.find((name) => running.some((r) => r.toLowerCase() === name.toLowerCase()))
   if (live) return live
-  const newerFirst = (a, b) => {
-    const [va, vb] = [versionOf(a), versionOf(b)]
-    for (let i = 0; i < Math.max(va.length, vb.length); i++) {
-      if ((vb[i] || 0) !== (va[i] || 0)) return (vb[i] || 0) - (va[i] || 0)
-    }
-    return 0
-  }
+  const newerFirst = (a, b) => compareVersions(versionOf(b), versionOf(a))
   const real = names.filter((name) => !isFutureVersion(versionOf(name), now))
   return [...(real.length ? real : names)].sort(newerFirst)[0]
 }
@@ -86,14 +102,24 @@ function runningVersionNames () {
 function pickTargetDirs (names, { running = [], now = Date.now() } = {}) {
   const first = pickVersionDir(names, { running, now })
   const firstVersion = versionOf(first)
-  const newer = (name) => {
-    const v = versionOf(name)
-    for (let i = 0; i < Math.max(v.length, firstVersion.length); i++) {
-      if ((v[i] || 0) !== (firstVersion[i] || 0)) return (v[i] || 0) > (firstVersion[i] || 0)
-    }
-    return false
-  }
+  const newer = (name) => compareVersions(versionOf(name), firstVersion) > 0
   return [first, ...names.filter((name) => newer(name) && !isFutureVersion(versionOf(name), now))]
+}
+
+// What installing does with the version folders, decided before Zalo is closed:
+// - stop: the folder to patch first is a Zalo Zenlo cannot go into, so nothing is changed;
+// - otherwise the folders to patch, and the newer ones left out (an older Zenlo in one of those
+//   is taken out, since that Zalo cannot run it)
+function planInstall (names, { running = [], now = Date.now() } = {}) {
+  const picked = pickTargetDirs(names, { running, now })
+  const unsupported = (name) => isUnsupportedVersion(versionOf(name), now)
+  if (unsupported(picked[0])) return { stop: picked[0], targets: [], skipped: [] }
+  const byVersion = (a, b) => compareVersions(versionOf(a), versionOf(b))
+  return {
+    stop: null,
+    targets: picked.filter((name) => !unsupported(name)),
+    skipped: picked.filter(unsupported).sort(byVersion)
+  }
 }
 
 // Picked before Zalo is closed, while it still tells which folder it runs
@@ -188,22 +214,53 @@ function addZenloFiles (appDir, dev, source) {
 }
 
 function install ({ dev = false, source = DIST } = {}) {
-  const targets = targetResourcesDirs()
-  for (const resourcesDir of targets) log(`Zalo: ${resourcesDir}`)
+  const names = zaloVersionDirs()
+  if (!names.length) throw new Error('Không tìm thấy thư mục phiên bản Zalo nào.')
+  const { stop, targets, skipped } = planInstall(names, { running: runningVersionNames() })
+  const resourcesOf = (name) => path.join(ZALO_ROOT, name, 'resources')
+  const shortName = (name) => name.replace(/^Zalo-/, '')
+  // Stopped before Zalo is closed or changed
+  if (stop) {
+    // Put in by an older Zenlo, which did not stop here
+    const oldZenlo = isFile(path.join(resourcesOf(stop), 'app.asar.bak'))
+      ? '\nZalo này đang có Zenlo bản cũ. Chạy "npm run zalo:uninstall" để đưa Zalo về bản gốc.'
+      : ''
+    throw new Error(`Zalo PC ${shortName(stop)} chưa dùng được với Zenlo: Zenlo chỉ cài được vào Zalo PC trước bản ${FIRST_UNSUPPORTED_NAME}. Bộ cài dừng lại, không đổi gì trong Zalo.\n${UNSUPPORTED_HELP}${oldZenlo}`)
+  }
+  for (const name of targets) log(`Zalo: ${resourcesOf(name)}`)
   log('Đang tắt Zalo…')
   stopZalo()
-  installInto(targets[0], dev, source)
-  for (const resourcesDir of targets.slice(1)) {
+  installInto(resourcesOf(targets[0]), dev, source)
+  for (const name of targets.slice(1)) {
     try {
-      installInto(resourcesDir, dev, source)
+      installInto(resourcesOf(name), dev, source)
     } catch (error) {
       // The version that runs now has Zenlo; a newer one that could not take it is only told
-      log(`Không cài được vào ${resourcesDir}: ${error.message}`)
+      log(`Không cài được vào ${resourcesOf(name)}: ${error.message}`)
     }
   }
+  const cleaned = takeOutOfSkipped(skipped.map(resourcesOf))
   log(dev
     ? 'Đã cài Zenlo (chế độ phát triển). Mở lại Zalo; sau mỗi lần build bấm Ctrl+Shift+R trong Zalo.'
     : 'Đã cài Zenlo. Mở lại Zalo.')
+  if (skipped.length) {
+    log(`\nZalo đã tải sẵn bản ${skipped.map(shortName).join(', ')}. Zenlo chưa dùng được với Zalo từ ${FIRST_UNSUPPORTED_NAME} nên bộ cài không cài vào đó${cleaned ? ', và đã gỡ Zenlo bản cũ khỏi đó' : ''}. Nếu Zalo mở bản mới, sẽ không có nút Zenlo.\n${UNSUPPORTED_HELP}`)
+  }
+}
+
+// An older Zenlo may have gone into a newer Zalo that Zalo downloaded but Zenlo cannot run in: that
+// folder goes back to its original. Returns whether one had Zenlo.
+function takeOutOfSkipped (dirs) {
+  let cleaned = false
+  for (const resourcesDir of dirs) {
+    try {
+      if (restoreOriginal(resourcesDir)) cleaned = true
+      fs.rmSync(path.join(resourcesDir, DEV_MARKER), { force: true })
+    } catch (error) {
+      log(`Không đưa được ${resourcesDir} về bản gốc: ${error.message}`)
+    }
+  }
+  return cleaned
 }
 
 function installInto (resourcesDir, dev, source) {
@@ -292,4 +349,4 @@ function status () {
   log(installed ? `Zenlo: đã cài${dev ? ' (chế độ phát triển)' : ''}` : 'Zenlo: chưa cài')
 }
 
-module.exports = { install, uninstall, status, getStatus, pickVersionDir, pickTargetDirs, isFutureVersion }
+module.exports = { install, uninstall, status, getStatus, pickVersionDir, pickTargetDirs, planInstall, isFutureVersion, isUnsupportedVersion, FIRST_UNSUPPORTED, UNSUPPORTED_HELP }

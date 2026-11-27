@@ -35,6 +35,11 @@ namespace Zenlo
         const string DevMarker = "zenlo-dev";    // left by the developer's installer in dev mode
         const string ShortcutName = "Zenlo - Cài đặt.lnk";
         const string PrivacyUrl = "https://zenlo.io.vn/privacy";
+        const string ReleasesUrl = "https://github.com/stephitnoob/zenlo/releases/latest";
+        const string ZaloWebGuideUrl = "https://zenlo.io.vn/guide#zalo-web";
+        // From this Zalo PC version on, Zenlo cannot be installed the current way
+        static readonly int[] FirstUnsupported = { 26, 11, 20 };
+        static readonly string FirstUnsupportedName = string.Join(".", FirstUnsupported);
 
         static readonly string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         static readonly string RoamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -61,6 +66,7 @@ namespace Zenlo
                 return 0;
             }
 
+            RefreshKeptCopy();
             while (true)
             {
                 Header();
@@ -113,7 +119,7 @@ namespace Zenlo
             try
             {
                 string resources = FindResourcesDir();
-                Console.WriteLine("  Zalo:  " + Path.GetFileName(Path.GetDirectoryName(resources)).Replace("Zalo-", ""));
+                Console.WriteLine("  Zalo:  " + VersionName(resources) + (IsUnsupported(resources) ? " (chưa dùng được với Zenlo)" : ""));
                 Console.WriteLine("  Zenlo: " + (File.Exists(Path.Combine(resources, "app.asar.bak")) ? "đã cài" : "chưa cài"));
             }
             catch (Exception error)
@@ -156,26 +162,63 @@ namespace Zenlo
 
         static void RunInstall()
         {
+            // Picked before Zalo is closed, while it still tells which folder it runs. A Zalo that
+            // Zenlo cannot go into stops everything here, before Zalo is closed or changed.
+            List<string> picked = TargetResourcesDirs();
+            if (IsUnsupported(picked[0]))
+            {
+                Console.WriteLine("Zalo PC " + VersionName(picked[0]) + " chưa dùng được với Zenlo: Zenlo chỉ cài được vào Zalo PC");
+                Console.WriteLine("trước bản " + FirstUnsupportedName + ". Bộ cài dừng lại, không đổi gì trong Zalo.");
+                Console.WriteLine();
+                UnsupportedHelp();
+                if (File.Exists(Path.Combine(picked[0], "app.asar.bak")))
+                {
+                    // Put in by an older Zenlo, which did not stop here
+                    Console.WriteLine();
+                    Console.WriteLine("Zalo này đang có Zenlo bản cũ. Chọn 2 (Gỡ Zenlo) để đưa Zalo về bản gốc.");
+                }
+                return;
+            }
+            List<string> targets = picked.FindAll((resources) => !IsUnsupported(resources));
+            List<string> skipped = picked.FindAll(IsUnsupported);
+            skipped.Sort((a, b) => CompareVersions(VersionOf(Path.GetDirectoryName(a)), VersionOf(Path.GetDirectoryName(b))));
+
             if (!ConfirmCloseZalo()) return;
             bool wasRunning = IsZaloRunning();
-            Install();
+            bool cleaned = Install(targets, skipped);
             bool kept = KeepForReinstall();
             Console.WriteLine();
             Console.WriteLine("Xong. Cài đặt, bản tóm tắt và Bản tin của bạn vẫn còn nguyên.");
             if (wasRunning && StartZalo())
             {
-                Console.WriteLine("Đang mở lại Zalo. Bấm nút Zenlo ở thanh bên trái để bắt đầu.");
+                Console.WriteLine(skipped.Count > 0 ? "Đang mở lại Zalo." : "Đang mở lại Zalo. Bấm nút Zenlo ở thanh bên trái để bắt đầu.");
             }
             else
             {
                 Console.WriteLine("Mở Zalo, rồi bấm nút Zenlo ở thanh bên trái để bắt đầu.");
             }
-            if (kept)
+            if (skipped.Count > 0)
+            {
+                // Zalo starts the newer version next time, so the reinstall tip below would not hold
+                Console.WriteLine();
+                Console.WriteLine("Zalo đã tải sẵn bản " + string.Join(", ", skipped.ConvertAll<string>(VersionName)) + ". Zenlo chưa dùng được với Zalo từ " + FirstUnsupportedName);
+                Console.WriteLine("nên bộ cài không cài vào đó" + (cleaned ? ", và đã gỡ Zenlo bản cũ khỏi đó" : "") + ". Nếu Zalo mở bản mới, sẽ không có nút Zenlo.");
+                UnsupportedHelp();
+            }
+            else if (kept)
             {
                 Console.WriteLine();
                 Console.WriteLine("Mỗi khi Zalo cập nhật, nút Zenlo sẽ biến mất. Khi đó: mở Start, gõ \"Zenlo\",");
                 Console.WriteLine("chọn \"Zenlo - Cài đặt\" rồi chọn 1. Không cần tải lại.");
             }
+        }
+
+        // What to do when Zalo PC is FirstUnsupported or newer
+        static void UnsupportedHelp()
+        {
+            Console.WriteLine("Bạn vẫn dùng được Zenlo trên Zalo web (chat.zalo.me, mở bằng Edge hoặc Chrome):");
+            Console.WriteLine("  tải Zenlo-ZaloWeb.zip ở " + ReleasesUrl);
+            Console.WriteLine("  cách cài: " + ZaloWebGuideUrl);
         }
 
         static void RunUninstall()
@@ -250,6 +293,19 @@ namespace Zenlo
             {
                 return false;
             }
+        }
+
+        // A far-future name is not a real version (see IsFutureVersion), so it is not judged by it
+        static bool IsUnsupported(string resources)
+        {
+            int[] version = VersionOf(Path.GetDirectoryName(resources));
+            return CompareVersions(version, FirstUnsupported) >= 0 && !IsFutureVersion(version);
+        }
+
+        // "26.11.20" for ...\Zalo-26.11.20\resources
+        static string VersionName(string resources)
+        {
+            return Path.GetFileName(Path.GetDirectoryName(resources)).Substring("Zalo-".Length);
         }
 
         [DllImport("kernel32.dll")]
@@ -394,10 +450,11 @@ namespace Zenlo
 
         // Into the version folder Zalo runs from (or the newest real one), and every real version newer
         // than it: Zalo may have downloaded an update it starts next time, while it still runs the older one.
-        // The folders are picked before Zalo is closed, while it still tells which one it runs.
-        static void Install()
+        // The folders are picked (TargetResourcesDirs) before Zalo is closed, while it still tells which one it runs.
+        // skipped: newer versions Zalo downloaded that Zenlo cannot go into. An older Zenlo may have gone
+        // into one of them; that folder goes back to its original. Returns whether one had Zenlo.
+        static bool Install(List<string> targets, List<string> skipped)
         {
-            List<string> targets = TargetResourcesDirs();
             foreach (string resources in targets) Console.WriteLine("Zalo: " + resources);
             Console.WriteLine("Đang tắt Zalo…");
             StopZalo();
@@ -414,7 +471,22 @@ namespace Zenlo
                     Console.WriteLine("Không cài được vào " + targets[i] + ": " + error.Message);
                 }
             }
+            bool cleaned = false;
+            foreach (string resources in skipped)
+            {
+                try
+                {
+                    if (RestoreOriginal(resources)) cleaned = true;
+                    string marker = Path.Combine(resources, DevMarker);
+                    if (File.Exists(marker)) File.Delete(marker);
+                }
+                catch (Exception error)
+                {
+                    Console.WriteLine("Không đưa được " + resources + " về bản gốc: " + error.Message);
+                }
+            }
             Console.WriteLine("Đã cài Zenlo.");
+            return cleaned;
         }
 
         static List<string> TargetResourcesDirs()
@@ -541,6 +613,24 @@ namespace Zenlo
         static bool IsKeptCopy()
         {
             return string.Equals(Path.GetFullPath(SelfPath()), Path.GetFullPath(KeptExe), StringComparison.OrdinalIgnoreCase);
+        }
+
+        // A kept copy older than this program (the one the "Zenlo - Cài đặt" shortcut opens) is replaced
+        // by this one, so the shortcut also stops at the Zalo versions Zenlo cannot go into. A newer
+        // kept copy is left as it is.
+        static void RefreshKeptCopy()
+        {
+            try
+            {
+                if (!File.Exists(KeptExe) || IsKeptCopy()) return;
+                Version kept = new Version(FileVersionInfo.GetVersionInfo(KeptExe).FileVersion);
+                Version self = Assembly.GetExecutingAssembly().GetName().Version;
+                if (self > kept) File.Copy(SelfPath(), KeptExe, true);
+            }
+            catch (Exception)
+            {
+                // No version in the kept file, or it is in use: left as it is
+            }
         }
 
         // A copy of this program and a Start Menu shortcut "Zenlo - Cài đặt". Returns true when both are in place.
